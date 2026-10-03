@@ -1,7 +1,7 @@
 # NVDAIAs – Converse com o ChatGPT, o Gemini e o Claude pelo NVDA
 
 * Autor: Wellington Cruz
-* Versão: 1.2.0
+* Versão: 1.3.0
 * Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 * Licença: GNU General Public License, versão 2
 
@@ -51,9 +51,33 @@ Ordem dos elementos com a tecla Tab:
 2. **Modelo**: o modelo da IA escolhida. Você pode escolher da lista ou digitar o nome de outro modelo.
 3. **Conversa**: árvore com as mensagens. O primeiro item é **Conversas anteriores**, que começa recolhido. Depois dele vêm as mensagens da conversa atual; cada item começa com "Você:" ou com o nome da IA.
 4. **Pergunta**: campo onde você digita.
-5. Botões: Enviar, Cancelar envio, Ler mensagem, Copiar mensagem, Nova conversa, Salvar conversa, Conectar conta, Configurações e Fechar.
+5. **Anexar arquivos** e **Enviar**, ao lado do campo Pergunta.
+6. **Arquivos anexados**: lista que só aparece quando há arquivos esperando para ir com a próxima pergunta.
+7. Botões: Cancelar envio, Ler mensagem, Copiar mensagem, Nova conversa, Salvar conversa, Conectar conta, Configurações e Fechar.
 
 Como o campo Pergunta vem logo depois da lista, **Shift+Tab no campo Pergunta leva direto para a lista da conversa**, e Tab na lista volta para a pergunta.
+
+### Anexar arquivos
+
+O botão **Anexar arquivos** (Alt+X), logo depois do campo Pergunta (Tab a partir dele), abre a janela padrão do Windows para escolher arquivos. Ela mostra todos os formatos, e você pode marcar vários arquivos de uma vez.
+
+| Tipo de arquivo | O que acontece | IAs |
+|---|---|---|
+| Imagens (JPG, PNG, GIF, WebP; BMP, TIFF e outras são convertidas para PNG) | Enviada como imagem | ChatGPT, Gemini e Claude |
+| PDF | Enviado como documento; a IA lê o texto e as imagens das páginas | ChatGPT, Gemini e Claude |
+| Word (.docx), Excel (.xlsx), PowerPoint (.pptx, com as anotações), OpenDocument (.odt, .ods, .odp), EPUB, RTF, HTML | O texto é extraído no seu computador e enviado | ChatGPT, Gemini e Claude |
+| Texto, CSV, JSON, XML, Markdown, código-fonte, legendas e qualquer outro arquivo de texto | Enviado como texto | ChatGPT, Gemini e Claude |
+| Áudio (MP3, WAV, M4A, OGG, FLAC...) e vídeo (MP4, MOV, WEBM...) | Enviado para a IA ouvir ou assistir | Só o Gemini |
+| Office antigo (.doc, .xls, .ppt) | Não é lido. O NVDAIAs pede para salvar como .docx, .xlsx, .pptx ou PDF | - |
+| Programas, arquivos compactados e outros binários | Não é lido. O NVDAIAs explica e sugere converter | - |
+
+Como funciona:
+
+* Depois de anexar, o NVDA diz o nome dos arquivos e quantos vão com a próxima pergunta. Eles aparecem na lista **Arquivos anexados**, abaixo da pergunta (Alt+U), com o tipo e o tamanho. **Delete** remove o arquivo selecionado.
+* Pode enviar sem digitar nada: o NVDAIAs pede para a IA analisar e resumir os arquivos. Ou escreva a pergunta, por exemplo "Compare os números do relatório com a planilha".
+* Se a IA escolhida não aceitar o arquivo (áudio com ChatGPT ou Claude), ou se houver erro ou cancelamento, a pergunta e os arquivos voltam para você tentar de novo.
+* Os arquivos ficam na conversa: a mensagem mostra "[anexos: ...]", as perguntas seguintes podem falar deles, e eles são guardados no histórico.
+* Limites: 20 MB por arquivo. Textos muito longos são cortados em 300 mil caracteres, e o NVDA avisa.
 
 ### Conversas anteriores
 
@@ -154,7 +178,8 @@ Os tokens só são gravados quando você pressiona OK ou Aplicar.
 * O que você digita, o histórico da conversa e as imagens de tela que você pedir para descrever são enviados diretamente do seu computador para a IA escolhida (OpenAI, Google ou Anthropic), por conexão segura (HTTPS). Não passam por nenhum outro servidor. Cada empresa trata esses dados conforme a política de privacidade dela.
 * Cuidado ao descrever a tela: tudo o que estiver visível na área capturada é enviado, inclusive dados pessoais.
 * O complemento não funciona nas telas seguras do Windows (tela de logon e controle de conta de usuário).
-* As conversas são salvas automaticamente depois de cada resposta, na pasta `NVDAIAs-history` da configuração do NVDA, **criptografadas com a proteção de dados do Windows**, como os tokens. As imagens de tela descritas também ficam guardadas na conversa. Você pode apagar uma conversa com Delete, apagar todas nas configurações ou desligar o histórico. Ao desinstalar o complemento, o histórico é apagado. **Salvar conversa** continua gravando um arquivo de texto comum, sem criptografia.
+* As conversas são salvas automaticamente depois de cada resposta, na pasta `NVDAIAs-history` da configuração do NVDA, **criptografadas com a proteção de dados do Windows**, como os tokens. As imagens de tela descritas e os arquivos anexados também ficam guardados na conversa.
+* Os arquivos anexados são enviados diretamente para a IA escolhida, como as perguntas. Você pode apagar uma conversa com Delete, apagar todas nas configurações ou desligar o histórico. Ao desinstalar o complemento, o histórico é apagado. **Salvar conversa** continua gravando um arquivo de texto comum, sem criptografia.
 
 ## Mensagens de erro
 
@@ -169,6 +194,10 @@ Os tokens só são gravados quando você pressiona OK ou Aplicar.
 | "bloqueada pelo provedor" | A IA se recusou a responder ou o filtro de segurança dela bloqueou a pergunta. |
 
 ## Histórico de versões
+
+### 1.3.0
+
+* Botão Anexar arquivos ao lado do campo Pergunta, aceitando qualquer arquivo. Imagens e PDF vão para as três IAs; Word, Excel, PowerPoint, OpenDocument, EPUB, RTF, HTML, CSV, código e outros textos são lidos no computador e enviados como texto; áudio e vídeo vão para o Gemini.
 
 ### 1.2.0
 

@@ -303,7 +303,7 @@ def run():
 	check("screenshot is a PNG", bool(imgEntry.image) and imgEntry.image[:8] == b"\x89PNG\r\n\x1a\n", imgEntry.image[:8] if imgEntry.image else None)
 	check("image question mentions the element", "Botão Enviar" in imgEntry.text, imgEntry.text)
 	check("image answer received", entries[-1].role == "assistant" and "Imagem" in entries[-1].text, entries[-1].text)
-	check("list shows [image attached]", "[image attached]" in current(dlg)[-2])
+	check("list shows the attached screenshot", "[attached: screenshot.png]" in current(dlg)[-2], current(dlg)[-2])
 	api._navigator = types.SimpleNamespace(location=None, name="", roleText="")
 	plugin.script_describeNavigator(None)
 	check("object without position is reported", RECORD["spoken"][-1] == "This object has no position on the screen")
@@ -467,6 +467,100 @@ def run():
 	core.conf()["saveHistory"] = True
 	dlg.onHistoryChanged()
 	check("history item back when history is on", dlg._historyNode is not None)
+
+	# 17. Attach files ---------------------------------------------------------------------
+	dlg = chatDialog.ChatDialog._instance
+	import tempfile as _tf
+	folder = _tf.mkdtemp()
+
+	def mk(name, data):
+		path = os.path.join(folder, name)
+		with open(path, "wb") as f:
+			f.write(data)
+		return path
+
+	focusable = [c for c in dlg.GetChildren() if c.AcceptsFocusFromKeyboard() and not isinstance(c, wx.StaticText)]
+	qi = focusable.index(dlg.questionEdit)
+	check("Attach button comes right after the question field", focusable[qi + 1] is dlg.attachButton and focusable[qi + 2] is dlg.sendButton, [type(c).__name__ for c in focusable])
+	check("attached files list hidden while empty", not dlg.attachmentsList.IsShown())
+	dlg.Raise()
+	dlg.questionEdit.SetFocus()
+	pump(timeout=0.4)
+	wx.UIActionSimulator().Char(wx.WXK_TAB)
+	pump(timeout=0.4)
+	check("real Tab from the question goes to Attach files", wx.Window.FindFocus() is dlg.attachButton, wx.Window.FindFocus())
+	dlg.questionEdit.SetFocus()
+	core.store().set("anthropic", mock_server.VALID["anthropic"])
+	dlg.providerChoice.SetSelection(2)
+	dlg.onProviderChanged(None)
+	pdfPath = mk("contrato.pdf", b"%PDF-1.7 fake pdf")
+	txtPath = mk("notas.txt", "Reunião às 10h".encode("utf-8"))
+	exePath = mk("programa.exe", b"MZ\x90\x00" + b"\x00\x01" * 40)
+	mp3Path = mk("audio.mp3", b"ID3\x03fake")
+	RECORD["spoken"].clear()
+	nboxes = len(RECORD["messageBoxes"])
+	added = dlg.addAttachmentFiles([pdfPath, txtPath, exePath])
+	check("valid files attached, unreadable one refused", added == 2 and len(RECORD["messageBoxes"]) == nboxes + 1 and "cannot read the content of programa.exe" in RECORD["messageBoxes"][-1], RECORD["messageBoxes"][-1:])
+	check("attachment announced", RECORD["spoken"][-1].startswith("Attached: contrato.pdf, notas.txt. 2 file(s)"), RECORD["spoken"][-1:])
+	check("attached files list shown", dlg.attachmentsList.IsShown() and dlg.attachmentsList.GetStrings()[0].startswith("contrato.pdf (PDF,"), dlg.attachmentsList.GetStrings())
+	dlg.addAttachmentFiles([mp3Path])
+	check("audio with Claude warns to choose Gemini", "only Gemini" in RECORD["spoken"][-1])
+	dlg.attachmentsList.SetSelection(2)
+	evt = keyDown(dlg.attachmentsList, wx.WXK_DELETE)
+	dlg.onAttachmentsKeyDown(evt)
+	check("Delete removes an attached file", [a.name for a in dlg.pendingAttachments] == ["contrato.pdf", "notas.txt"] and RECORD["spoken"][-1] == "audio.mp3 removed")
+	mock_server.REQUESTS.clear()
+	dlg.questionEdit.SetValue("")
+	dlg.onSend(None)
+	check("files can be sent without typing", plugin.session.busy and "with 2 file(s)" in RECORD["spoken"][-1], RECORD["spoken"][-1:])
+	pump(lambda: not plugin.session.busy, 10)
+	check("Claude received the PDF and the text", mock_server.LAST_ATTACHMENTS.get("anthropic") == ["document", "text"], mock_server.LAST_ATTACHMENTS)
+	check("pending files cleared after sending", dlg.pendingAttachments == [] and not dlg.attachmentsList.IsShown())
+	userEntry = plugin.session.conversation.entries[-2]
+	check("default question used", userEntry.text.startswith("Please analyse the attached file"))
+	check("message in the tree shows the files", current(dlg)[-2].startswith("You: [attached: contrato.pdf, notas.txt]"), current(dlg)[-2])
+	tree = dlg.conversationTree
+	tree.SelectItem(topItems(dlg)[-2])
+	dlg.onReadMessage(None)
+	check("reading window lists the files", "Attached files: contrato.pdf, notas.txt" in RECORD["browseable"][-1][0])
+	# follow-up keeps sending the files (they are part of the history)
+	dlg.questionEdit.SetValue("E o prazo?")
+	dlg.onSend(None)
+	pump(lambda: not plugin.session.busy, 10)
+	body = [r for r in mock_server.REQUESTS if r["method"] == "POST"][-1]["body"]
+	check("history with files sent again on follow-up", body["messages"][-3]["content"][0]["type"] == "document", body["messages"][-3]["content"][0]["type"])
+	# saved in the history with the files
+	saved = core.history().load(plugin.session.conversation.id)
+	names = [a["name"] for e in saved["entries"] for a in e.get("attachments", [])]
+	check("files saved in the conversation history", names == ["contrato.pdf", "notas.txt"], names)
+	# audio with Claude: error gives question and files back
+	dlg.addAttachmentFiles([mp3Path])
+	dlg.questionEdit.SetValue("Transcreva")
+	n = len(plugin.session.conversation)
+	dlg.onSend(None)
+	pump(lambda: not plugin.session.busy, 10)
+	check("audio refused by Claude with a clear message", any("cannot read the attached file audio.mp3" in m for m in RECORD["spoken"][-3:]), RECORD["spoken"][-3:])
+	check("question and file given back after the error", dlg.questionEdit.GetValue() == "Transcreva" and [a.name for a in dlg.pendingAttachments] == ["audio.mp3"] and len(plugin.session.conversation) == n)
+	core.store().set("gemini", mock_server.VALID["gemini"])
+	dlg.providerChoice.SetSelection(1)
+	dlg.onProviderChanged(None)
+	plugin.session.newConversation()
+	dlg.onSend(None)
+	pump(lambda: not plugin.session.busy, 10)
+	check("Gemini accepts the audio", mock_server.LAST_ATTACHMENTS.get("gemini") == ["audio/mp3"] and dlg.pendingAttachments == [], mock_server.LAST_ATTACHMENTS.get("gemini"))
+	# cancel gives the files back
+	mock_server.DELAY["seconds"] = 1.5
+	dlg.addAttachmentFiles([txtPath])
+	dlg.questionEdit.SetValue("lento")
+	dlg.onSend(None)
+	pump(timeout=0.3)
+	dlg.onCancelSend(None)
+	check("cancel gives the files back", [a.name for a in dlg.pendingAttachments] == ["notas.txt"])
+	pump(timeout=2)
+	mock_server.DELAY["seconds"] = 0
+	dlg.pendingAttachments = []
+	dlg._refreshAttachments()
+	dlg.questionEdit.SetValue("")
 
 	# 15. Secure screens ----------------------------------------------------------------
 	import globalVars

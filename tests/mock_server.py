@@ -14,6 +14,7 @@ REQUESTS = []
 #: Optional overrides: {"openai": (status, body)} to force an answer.
 FORCE = {}
 DELAY = {"seconds": 0}
+LAST_ATTACHMENTS = {}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -70,8 +71,20 @@ class Handler(BaseHTTPRequestHandler):
 			assert msgs[-1]["role"] == "user"
 			last = msgs[-1]["content"]
 			if isinstance(last, list):
-				assert last[1]["type"] == "image_url" and last[1]["image_url"]["url"].startswith("data:image/png;base64,")
-				text = "**Imagem**: um botão azul. (%d mensagens)" % len(msgs)
+				kinds = []
+				for part in last[:-1]:
+					if part["type"] == "image_url":
+						assert part["image_url"]["url"].startswith("data:image/")
+						kinds.append("imagem")
+					elif part["type"] == "file":
+						assert part["file"]["file_data"].startswith("data:application/pdf;base64,") and part["file"]["filename"]
+						kinds.append("pdf")
+					else:
+						assert part["type"] == "text" and part["text"].startswith("<file name=")
+						kinds.append("texto")
+				assert last[-1]["type"] == "text"
+				LAST_ATTACHMENTS["openai"] = kinds
+				text = "**Imagem**: um botão azul. Anexos: %s. (%d mensagens)" % (",".join(kinds), len(msgs))
 			else:
 				text = "# Resposta\n\nOlá! Você perguntou: *%s*. (%d mensagens)" % (last, len(msgs))
 			return self._send(200, {"choices": [{"index": 0, "message": {"role": "assistant", "content": text}, "finish_reason": "stop"}]})
@@ -99,9 +112,16 @@ class Handler(BaseHTTPRequestHandler):
 				assert c["role"] in ("user", "model")
 			assert body["systemInstruction"]["parts"][0]["text"]
 			parts = contents[-1]["parts"]
-			if len(parts) > 1:
-				assert parts[1]["inline_data"]["mime_type"] == "image/png"
-			text = "Resposta do Gemini para: %s (%d mensagens)" % (parts[0]["text"], len(contents))
+			kinds = []
+			for part in parts[:-1]:
+				if "inline_data" in part:
+					assert part["inline_data"]["data"]
+					kinds.append(part["inline_data"]["mime_type"])
+				else:
+					assert part["text"].startswith("<file name=")
+					kinds.append("texto")
+			LAST_ATTACHMENTS["gemini"] = kinds
+			text = "Resposta do Gemini para: %s (%d mensagens)" % (parts[-1]["text"], len(contents))
 			return self._send(200, {"candidates": [{"content": {"role": "model", "parts": [{"text": "pensando...", "thought": True}, {"text": text}]}, "finishReason": "STOP"}]})
 		self._send(404, {"error": {"message": "not found"}})
 
@@ -122,9 +142,18 @@ class Handler(BaseHTTPRequestHandler):
 			for a, b in zip(msgs, msgs[1:]):
 				assert a["role"] != b["role"], "roles must alternate"
 			content = msgs[-1]["content"]
-			if content[0]["type"] == "image":
-				assert content[0]["source"]["media_type"] == "image/png"
-			text = [c["text"] for c in content if c["type"] == "text"][-1]
+			kinds = []
+			for c in content[:-1]:
+				if c["type"] == "image":
+					assert c["source"]["media_type"] in ("image/png", "image/jpeg", "image/gif", "image/webp")
+				elif c["type"] == "document":
+					assert c["source"]["media_type"] == "application/pdf"
+				else:
+					assert c["type"] == "text"
+				kinds.append(c["type"])
+			LAST_ATTACHMENTS["anthropic"] = kinds
+			assert content[-1]["type"] == "text"
+			text = content[-1]["text"]
 			return self._send(200, {"type": "message", "role": "assistant", "content": [{"type": "text", "text": "Claude responde: %s (%d mensagens)" % (text, len(msgs))}], "stop_reason": "end_turn"})
 		self._send(404, {"type": "error", "error": {"type": "not_found_error", "message": "not found"}})
 

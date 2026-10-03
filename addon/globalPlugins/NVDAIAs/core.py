@@ -158,6 +158,10 @@ def errorMessage(err, providerName):
 	elif kind == "blocked":
 		# Translators: error when the AI refused or blocked the answer.
 		msg = _("{name} did not answer this question (blocked by the provider).")
+	elif kind == "attachment":
+		# Translators: error when the AI cannot read an attached file. {name} is the AI, {file} the file name.
+		msg = _("{name} cannot read the attached file {file}. Audio and video only work with Gemini: choose Gemini in the AI box or remove the file.")
+		return msg.format(name=providerName, file=detail)
 	elif kind == "server":
 		# Translators: error when the provider has a temporary problem.
 		msg = _("{name} had a temporary problem. Try again in a few moments.")
@@ -209,6 +213,7 @@ class ChatSession:
 		self.busy = False
 		self._requestId = 0
 		self._pendingEntry = None
+		self.cancelledAttachments = []
 		self._beepTimer = None
 		#: Callbacks: onBusyChanged(busy), onAnswer(entry), onError(message, questionText)
 		self.listeners = []
@@ -235,7 +240,7 @@ class ChatSession:
 			self._beepTimer.Stop()
 		self._emit("onBusyChanged", busy)
 
-	def send(self, text, image=None, imageMime="image/png", providerId=None):
+	def send(self, text, image=None, imageMime="image/png", providerId=None, attachments=None):
 		"""Sends a question. Raises NoTokenError when the provider is not connected."""
 		text = (text or "").strip()
 		if not text or self.busy:
@@ -246,7 +251,7 @@ class ChatSession:
 			raise NoTokenError(providerId)
 		provider = makeProvider(providerId, token)
 		systemPrompt = getSystemPrompt()
-		entry = self.conversation.add(ChatEntry("user", text, image=image, imageMime=imageMime))
+		entry = self.conversation.add(ChatEntry("user", text, image=image, imageMime=imageMime, attachments=attachments))
 		messages = self.conversation.apiMessages()
 		self._pendingEntry = entry
 		self._requestId += 1
@@ -277,7 +282,7 @@ class ChatSession:
 			log.debugWarning("NVDAIAs: %s error: %s" % (providerName, getattr(err, "detail", err)))
 			tones.beep(220, 120)
 			ui.message(message)
-			self._emit("onError", message, text)
+			self._emit("onError", message, text, list(entry.attachments))
 
 		runInBackground(lambda: provider.chat(messages, systemPrompt), ok, fail)
 		return True
@@ -292,6 +297,8 @@ class ChatSession:
 		if entry is not None:
 			self.conversation.remove(entry)
 		self._setBusy(False)
+		#: Files of the cancelled question, so the window can give them back.
+		self.cancelledAttachments = list(entry.attachments) if entry else []
 		return entry.text if entry else None
 
 	def newConversation(self):

@@ -78,6 +78,19 @@ shot(dlg, "chat-foco-pergunta.png")
 dlg.conversationTree.SetFocus()
 shot(dlg, "chat-foco-lista.png")
 
+from NVDAIAs.attachments import Attachment  # noqa: E402
+dlg.pendingAttachments = [
+	Attachment("relatorio-trimestral.pdf", "pdf", "application/pdf", data=b"%PDF" + b"0" * 1200000),
+	Attachment("planilha-vendas.xlsx", "text", "text/plain", text="x" * 38000),
+	Attachment("foto-da-placa.jpg", "image", "image/jpeg", data=b"0" * 830000),
+]
+dlg._refreshAttachments()
+dlg.questionEdit.SetValue("Compare os números do relatório com a planilha")
+dlg.attachButton.SetFocus()
+shot(dlg, "chat-anexos.png")
+dlg.pendingAttachments = []
+dlg._refreshAttachments()
+
 tree = dlg.conversationTree
 tree.Expand(dlg._historyNode)
 first = tree.GetFirstChild(dlg._historyNode)[0]

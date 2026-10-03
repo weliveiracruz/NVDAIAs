@@ -7,7 +7,6 @@
 # This module deliberately depends only on the Python standard library, so it
 # works inside NVDA (no extra packages) and can be unit tested outside NVDA.
 
-import base64
 import json
 import ssl
 import socket
@@ -15,13 +14,16 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+from .attachments import Attachment
+
 USER_AGENT = "NVDAIAs-NVDA-addon/1.0"
 
 
 class ProviderError(Exception):
 	"""Error raised by a provider. ``kind`` lets the user interface choose a friendly message.
 
-	kind is one of: "auth", "quota", "network", "timeout", "model", "blocked", "server", "other".
+	kind is one of: "auth", "quota", "network", "timeout", "model", "blocked", "server",
+	"attachment" (the AI cannot read an attached file; detail is the file name), "other".
 	"""
 
 	def __init__(self, kind, detail="", status=None):
@@ -34,15 +36,13 @@ class ProviderError(Exception):
 class Message:
 	"""One message of a conversation as sent to an API."""
 
-	def __init__(self, role, text, image=None, imageMime="image/png"):
+	def __init__(self, role, text, image=None, imageMime="image/png", attachments=None):
 		# role: "user" or "assistant"
 		self.role = role
 		self.text = text
-		self.image = image  # bytes or None
-		self.imageMime = imageMime
-
-	def imageBase64(self):
-		return base64.b64encode(self.image).decode("ascii") if self.image else None
+		self.attachments = list(attachments or [])
+		if image:
+			self.attachments.insert(0, Attachment.image(image, mime=imageMime))
 
 
 def _extractErrorMessage(data):
@@ -201,11 +201,18 @@ class OpenAIProvider(BaseProvider):
 		if systemPrompt:
 			out.append({"role": "system", "content": systemPrompt})
 		for m in messages:
-			if m.image:
-				content = [
-					{"type": "text", "text": m.text},
-					{"type": "image_url", "image_url": {"url": "data:%s;base64,%s" % (m.imageMime, m.imageBase64())}},
-				]
+			if m.attachments:
+				content = []
+				for a in m.attachments:
+					if a.kind == "image":
+						content.append({"type": "image_url", "image_url": {"url": a.dataUrl()}})
+					elif a.kind == "pdf":
+						content.append({"type": "file", "file": {"filename": a.name, "file_data": a.dataUrl()}})
+					elif a.kind == "text":
+						content.append({"type": "text", "text": a.asPromptText()})
+					else:
+						raise ProviderError("attachment", a.name)
+				content.append({"type": "text", "text": m.text})
 			else:
 				content = m.text
 			out.append({"role": m.role, "content": content})
@@ -258,9 +265,13 @@ class GeminiProvider(BaseProvider):
 	def buildBody(self, messages, systemPrompt=""):
 		contents = []
 		for m in messages:
-			parts = [{"text": m.text}]
-			if m.image:
-				parts.append({"inline_data": {"mime_type": m.imageMime, "data": m.imageBase64()}})
+			parts = []
+			for a in m.attachments:
+				if a.kind == "text":
+					parts.append({"text": a.asPromptText()})
+				else:
+					parts.append({"inline_data": {"mime_type": a.mime, "data": a.base64()}})
+			parts.append({"text": m.text})
 			contents.append({"role": "model" if m.role == "assistant" else "user", "parts": parts})
 		body = {"contents": contents}
 		if systemPrompt:
@@ -328,8 +339,15 @@ class AnthropicProvider(BaseProvider):
 		out = []
 		for m in messages:
 			content = []
-			if m.image:
-				content.append({"type": "image", "source": {"type": "base64", "media_type": m.imageMime, "data": m.imageBase64()}})
+			for a in m.attachments:
+				if a.kind == "image":
+					content.append({"type": "image", "source": {"type": "base64", "media_type": a.mime, "data": a.base64()}})
+				elif a.kind == "pdf":
+					content.append({"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": a.base64()}, "title": a.name})
+				elif a.kind == "text":
+					content.append({"type": "text", "text": a.asPromptText()})
+				else:
+					raise ProviderError("attachment", a.name)
 			content.append({"type": "text", "text": m.text})
 			# The Messages API requires alternating roles: merge consecutive messages of the same role.
 			if out and out[-1]["role"] == m.role:

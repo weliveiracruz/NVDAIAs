@@ -44,12 +44,12 @@ check("theme on by default", theme.isEnabled())
 
 
 def focusOrder(dlg):
-	return [c for c in dlg.GetChildren() if c.AcceptsFocusFromKeyboard() and not isinstance(c, wx.StaticText)]
+	return [c for c in dlg.GetChildren() if c.IsShown() and c.AcceptsFocusFromKeyboard() and not isinstance(c, wx.StaticText)]
 
 
 dlg = chatDialog.ChatDialog.showInstance(plugin.session)
 order = focusOrder(dlg)
-expected = [dlg.providerChoice, dlg.modelCombo, dlg.conversationTree, dlg.questionEdit, dlg.sendButton, dlg.cancelButton, dlg.readButton, dlg.copyButton, dlg.newButton, dlg.saveButton, dlg.connectButton, dlg.settingsButton, dlg.closeButton]
+expected = [dlg.providerChoice, dlg.modelCombo, dlg.conversationTree, dlg.questionEdit, dlg.attachButton, dlg.sendButton, dlg.cancelButton, dlg.readButton, dlg.copyButton, dlg.newButton, dlg.saveButton, dlg.connectButton, dlg.settingsButton, dlg.closeButton]
 check("tab order with theme", order == expected, [type(c).__name__ for c in order])
 check("header present and not focusable", hasattr(dlg, "header") and not dlg.header.AcceptsFocusFromKeyboard())
 check("page colour applied", dlg.GetBackgroundColour() == theme.color("surface.page"))
@@ -64,7 +64,7 @@ dlg.Close()
 core.conf()["visualTheme"] = False
 dlg = chatDialog.ChatDialog.showInstance(plugin.session)
 check("theme off: no header", not hasattr(dlg, "header"))
-check("theme off: same tab order", focusOrder(dlg) == [dlg.providerChoice, dlg.modelCombo, dlg.conversationTree, dlg.questionEdit, dlg.sendButton, dlg.cancelButton, dlg.readButton, dlg.copyButton, dlg.newButton, dlg.saveButton, dlg.connectButton, dlg.settingsButton, dlg.closeButton])
+check("theme off: same tab order", focusOrder(dlg) == [dlg.providerChoice, dlg.modelCombo, dlg.conversationTree, dlg.questionEdit, dlg.attachButton, dlg.sendButton, dlg.cancelButton, dlg.readButton, dlg.copyButton, dlg.newButton, dlg.saveButton, dlg.connectButton, dlg.settingsButton, dlg.closeButton])
 check("theme off: status line still informs", "connected" in dlg.statusLine.GetLabel())
 dlg.Close()
 core.conf()["visualTheme"] = True

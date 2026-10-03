@@ -17,6 +17,7 @@ import ui
 import wx
 from gui import guiHelper
 
+from . import attachments as attachmentsModule
 from . import core, history, textutils, theme
 from .conversation import ChatEntry
 from .connectDialog import ConnectDialog
@@ -31,6 +32,11 @@ LIST_ITEM_LIMIT = 6000
 def showMessageText(entry, title):
 	"""Opens a message in an NVDA browseable window (navigable with the arrows)."""
 	htmlText = textutils.toHtml(entry.text)
+	if entry.attachments:
+		import html as htmlModule
+		names = ", ".join(htmlModule.escape(n) for n in entry.attachmentNames())
+		# Translators: shown above a message that has files attached. {names} is the list of files.
+		htmlText = "<p>%s</p>\n%s" % (_("Attached files: {names}").format(names=names), htmlText)
 	try:
 		ui.browseableMessage(htmlText, title, True, closeButton=True, copyButton=True)
 	except TypeError:  # NVDA older than 2025.1
@@ -133,17 +139,35 @@ class ChatDialog(wx.Dialog):
 		# Translators: label of the field where the user types the question.
 		questionLabel = wx.StaticText(self, label=_("&Question (Enter sends, Shift+Enter adds a new line):"))
 		self.questionEdit = wx.TextCtrl(self, style=wx.TE_MULTILINE, size=(-1, 90))
+		# Next to the question: Attach files (any format) and Send.
+		# Translators: button that attaches files to the next question.
+		self.attachButton = wx.Button(self, label=_("Attac&h files…"), size=(150, -1))
+		self.attachButton.Bind(wx.EVT_BUTTON, self.onAttach)
 		# Translators: button that sends the question.
-		self.sendButton = wx.Button(self, label=_("&Send"), size=(110, -1))
+		self.sendButton = wx.Button(self, label=_("&Send"), size=(150, -1))
 		self.sendButton.Bind(wx.EVT_BUTTON, self.onSend)
+		sideButtons = wx.BoxSizer(wx.VERTICAL)
+		sideButtons.Add(self.attachButton, proportion=1, flag=wx.EXPAND)
+		sideButtons.AddSpacer(gapS)
+		sideButtons.Add(self.sendButton, proportion=1, flag=wx.EXPAND)
 		questionRow = wx.BoxSizer(wx.HORIZONTAL)
 		questionRow.Add(self.questionEdit, proportion=1, flag=wx.EXPAND)
 		questionRow.AddSpacer(gapL)
-		questionRow.Add(self.sendButton, flag=wx.EXPAND)
+		questionRow.Add(sideButtons, flag=wx.EXPAND)
 		questionBox = wx.BoxSizer(wx.VERTICAL)
 		questionBox.Add(questionLabel)
 		questionBox.AddSpacer(gapS)
 		questionBox.Add(questionRow, flag=wx.EXPAND)
+		# Files waiting to be sent with the next question (hidden while empty).
+		self.pendingAttachments = []
+		# Translators: label of the list of files that will be sent with the next question.
+		self.attachmentsLabel = wx.StaticText(self, label=_("Attached &files (Delete removes):"))
+		self.attachmentsList = wx.ListBox(self, style=wx.LB_SINGLE, size=(-1, 88))
+		self.attachmentsList.Bind(wx.EVT_KEY_DOWN, self.onAttachmentsKeyDown)
+		questionBox.AddSpacer(gapS)
+		questionBox.Add(self.attachmentsLabel)
+		questionBox.Add(self.attachmentsList, flag=wx.EXPAND)
+		self._attachmentsBox = questionBox
 		sHelper.addItem(questionBox, flag=wx.EXPAND)
 
 		row1 = guiHelper.ButtonHelper(wx.HORIZONTAL)
@@ -178,8 +202,8 @@ class ChatDialog(wx.Dialog):
 
 		mainSizer.Add(sHelper.sizer, proportion=1, border=guiHelper.BORDER_FOR_DIALOGS + (theme.space("xs") if self.themed else 0), flag=wx.ALL | wx.EXPAND)
 		if self.themed:
-			theme.applyColors(self, bodyControls=(self.conversationTree, self.questionEdit, self.modelCombo))
-			self.focusFrames = theme.FocusFrames(self, (self.providerChoice, self.modelCombo, self.conversationTree, self.questionEdit))
+			theme.applyColors(self, bodyControls=(self.conversationTree, self.questionEdit, self.modelCombo, self.attachmentsList))
+			self.focusFrames = theme.FocusFrames(self, (self.providerChoice, self.modelCombo, self.conversationTree, self.questionEdit, self.attachmentsList))
 		self.SetSizer(mainSizer)
 		mainSizer.Fit(self)
 		width, height = self.GetSize()
@@ -198,6 +222,7 @@ class ChatDialog(wx.Dialog):
 		self.rebuildHistory()
 		self.refreshList()
 		self.onBusyChanged(self.session.busy)
+		self._refreshAttachments()
 
 	# Helpers -----------------------------------------------------------------
 
@@ -229,9 +254,9 @@ class ChatDialog(wx.Dialog):
 		else:
 			who = entry.providerName
 		text = textutils.toPlainText(entry.text) if core.conf()["stripMarkdown"] else entry.text
-		if entry.image:
-			# Translators: shown in a message that carries a screenshot.
-			text = _("[image attached]") + " " + text
+		if entry.attachments:
+			# Translators: shown in a message that has files attached. {names} is the list of files.
+			text = _("[attached: {names}]").format(names=", ".join(entry.attachmentNames())) + " " + text
 		return "%s: %s" % (who, textutils.oneLine(text, LIST_ITEM_LIMIT))
 
 	# Tree ----------------------------------------------------------------------
@@ -370,11 +395,15 @@ class ChatDialog(wx.Dialog):
 			return
 		self.refreshList()
 
-	def onError(self, message, questionText):
+	def onError(self, message, questionText, attachments=()):
 		if not self:
 			return
 		self.refreshList()
 		self.updateStatus(errorText=message)
+		# Give the files back too.
+		if attachments and not self.pendingAttachments:
+			self.pendingAttachments = list(attachments)
+			self._refreshAttachments()
 		# Give the question back so the user can try again.
 		if not self.questionEdit.GetValue().strip():
 			self.questionEdit.SetValue(questionText)
@@ -510,6 +539,9 @@ class ChatDialog(wx.Dialog):
 
 	def onSend(self, evt):
 		text = self.questionEdit.GetValue().strip()
+		if not text and self.pendingAttachments:
+			# Translators: question sent when the user attaches files without typing anything.
+			text = _("Please analyse the attached file(s) and summarise the content.")
 		if not text:
 			# Translators: announced when trying to send an empty question.
 			ui.message(_("Type a question first"))
@@ -526,21 +558,134 @@ class ChatDialog(wx.Dialog):
 				self.questionEdit.SetFocus()
 				return
 			providerId = self.providerId
+		files = list(self.pendingAttachments)
 		try:
-			sent = self.session.send(text, providerId=providerId)
+			sent = self.session.send(text, providerId=providerId, attachments=files)
 		except core.NoTokenError:
 			sent = False
 		if sent:
 			self.questionEdit.SetValue("")
+			self.pendingAttachments = []
+			self._refreshAttachments()
 			name = getProviderClass(providerId).name
-			# Translators: announced after sending. {name} is ChatGPT, Gemini or Claude.
-			ui.message(_("Sent to {name}").format(name=name))
+			if files:
+				# Translators: announced after sending with files. {name} is the AI, {count} the number of files.
+				ui.message(_("Sent to {name} with {count} file(s)").format(name=name, count=len(files)))
+			else:
+				# Translators: announced after sending. {name} is ChatGPT, Gemini or Claude.
+				ui.message(_("Sent to {name}").format(name=name))
 		self.questionEdit.SetFocus()
+
+	# Attachments -----------------------------------------------------------------
+
+	def _attachmentLabel(self, a):
+		kinds = {
+			# Translators: kind of attached file shown in the list.
+			"image": _("image"),
+			# Translators: kind of attached file shown in the list.
+			"pdf": _("PDF"),
+			# Translators: kind of attached file shown in the list.
+			"media": _("audio or video"),
+			# Translators: kind of attached file shown in the list.
+			"text": _("text"),
+		}
+		label = "%s (%s, %s)" % (a.name, kinds.get(a.kind, a.kind), attachmentsModule.humanSize(a.size))
+		if a.truncated:
+			# Translators: appended when a long text file was cut.
+			label += " " + _("[truncated]")
+		return label
+
+	def _refreshAttachments(self):
+		show = bool(self.pendingAttachments)
+		self.attachmentsList.Set([self._attachmentLabel(a) for a in self.pendingAttachments])
+		if show:
+			self.attachmentsList.SetSelection(0)
+		self.attachmentsLabel.Show(show)
+		self.attachmentsList.Show(show)
+		self.Layout()
+
+	def addAttachmentFiles(self, paths):
+		"""Loads the files (any format). Returns the number added."""
+		added = []
+		for path in paths:
+			try:
+				att = attachmentsModule.load(path)
+			except attachmentsModule.AttachmentError as e:
+				gui.messageBox(self._attachmentErrorText(e), "NVDAIAs", wx.OK | wx.ICON_WARNING, self)
+				continue
+			self.pendingAttachments.append(att)
+			added.append(att)
+		self._refreshAttachments()
+		if added:
+			# Translators: announced after attaching. {names} are the files, {count} the total waiting to be sent.
+			msg = _("Attached: {names}. {count} file(s) will be sent with the next question.").format(
+				names=", ".join(a.name for a in added), count=len(self.pendingAttachments)
+			)
+			if any(a.kind == "media" for a in added) and self.providerId != "gemini":
+				# Translators: warning when audio or video is attached and the AI is not Gemini.
+				msg += " " + _("Attention: only Gemini can listen to audio and watch video. Choose Gemini in the AI box.")
+			if any(a.truncated for a in added):
+				# Translators: warning when a text was cut because it is too long.
+				msg += " " + _("A very long text was cut to fit.")
+			ui.message(msg)
+		return len(added)
+
+	@staticmethod
+	def _attachmentErrorText(e):
+		if e.reason == "tooBig":
+			# Translators: error when a file is too big. {name} is the file, {max} the limit.
+			return _("The file {name} is too big. The limit is {max}.").format(name=e.name, max=attachmentsModule.humanSize(attachmentsModule.MAX_FILE_BYTES))
+		if e.reason == "empty":
+			# Translators: error when a file is empty or has no text.
+			return _("The file {name} is empty or has no readable content.").format(name=e.name)
+		if e.reason == "legacyOffice":
+			# Translators: error for .doc, .xls and .ppt files.
+			return _("The file {name} uses an old Office format that cannot be read here. Open it in Office and save it as .docx, .xlsx, .pptx or PDF, then attach it again.").format(name=e.name)
+		if e.reason == "binary":
+			# Translators: error for files without readable content (programs, archives...).
+			return _("The AIs cannot read the content of {name}. Convert it to PDF, text or an image and attach it again.").format(name=e.name)
+		# Translators: error when a file cannot be opened.
+		return _("Could not open the file {name}.").format(name=e.name)
+
+	def onAttach(self, evt):
+		with wx.FileDialog(
+			self,
+			# Translators: title of the dialog to choose files to attach.
+			_("Attach files"),
+			# Translators: file type filter of the attach dialog.
+			wildcard=_("All files (*.*)") + "|*.*",
+			style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST | wx.FD_MULTIPLE,
+		) as fd:
+			if fd.ShowModal() != wx.ID_OK:
+				self.questionEdit.SetFocus()
+				return
+			paths = fd.GetPaths()
+		self.addAttachmentFiles(paths)
+		self.questionEdit.SetFocus()
+
+	def onAttachmentsKeyDown(self, evt):
+		if evt.GetKeyCode() in (wx.WXK_DELETE, wx.WXK_BACK):
+			index = self.attachmentsList.GetSelection()
+			if 0 <= index < len(self.pendingAttachments):
+				removed = self.pendingAttachments.pop(index)
+				self._refreshAttachments()
+				# Translators: announced after removing an attached file. {name} is the file.
+				ui.message(_("{name} removed").format(name=removed.name))
+				if self.pendingAttachments:
+					self.attachmentsList.SetSelection(min(index, len(self.pendingAttachments) - 1))
+					self.attachmentsList.SetFocus()
+				else:
+					self.questionEdit.SetFocus()
+			return
+		evt.Skip()
 
 	def onCancelSend(self, evt):
 		text = self.session.cancel()
 		if text and not self.questionEdit.GetValue().strip():
 			self.questionEdit.SetValue(text)
+		if self.session.cancelledAttachments and not self.pendingAttachments:
+			self.pendingAttachments = list(self.session.cancelledAttachments)
+			self._refreshAttachments()
 		# Translators: announced after cancelling a question.
 		ui.message(_("Sending cancelled"))
 		self.questionEdit.SetFocus()
@@ -594,7 +739,7 @@ class ChatDialog(wx.Dialog):
 				return
 			path = fd.GetPath()
 		# Translators: label of the user in the saved file.
-		text = self.session.conversation.toText(_("You"), _("[image attached]"))
+		text = self.session.conversation.toText(_("You"), _("[attached: {names}]"))
 		try:
 			with open(path, "w", encoding="utf-8") as f:
 				f.write(text)

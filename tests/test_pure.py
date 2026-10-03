@@ -23,7 +23,7 @@ pkg = types.ModuleType("NVDAIAs")
 pkg.__path__ = [PKG_DIR]
 sys.modules["NVDAIAs"] = pkg
 
-from NVDAIAs import providers, textutils, credentials, conversation, history  # noqa: E402
+from NVDAIAs import providers, textutils, credentials, conversation, history, attachments  # noqa: E402
 import mock_server  # noqa: E402
 
 SERVER, BASE = mock_server.start()
@@ -253,7 +253,7 @@ class ConversationTests(unittest.TestCase):
 		self.assertEqual(len(calls), 2)
 		msgs = c.apiMessages()
 		self.assertEqual([m.role for m in msgs], ["user", "assistant"])
-		self.assertEqual(msgs[0].image, PNG)
+		self.assertEqual(msgs[0].attachments[0].data, PNG)
 		self.assertEqual(c.lastAnswer().text, "Olá")
 		text = c.toText("Você", "[imagem]")
 		self.assertIn("Você:\n[imagem]\nOi", text)
@@ -341,6 +341,172 @@ class HistoryTests(unittest.TestCase):
 		c.clear()
 		self.assertNotEqual(c.id, old)
 		self.assertEqual(len(c), 0)
+
+
+def _zip(files):
+	import io
+	import zipfile
+	buf = io.BytesIO()
+	with zipfile.ZipFile(buf, "w") as z:
+		for name, content in files.items():
+			z.writestr(name, content)
+	return buf.getvalue()
+
+
+W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
+DOCX = _zip({
+	"[Content_Types].xml": "<Types/>",
+	"word/document.xml": '<w:document %s><w:body><w:p><w:r><w:t>Relatório anual</w:t></w:r></w:p><w:p><w:r><w:t>Receita</w:t></w:r><w:r><w:tab/><w:t>100</w:t></w:r></w:p></w:body></w:document>' % W,
+})
+S = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'
+XLSX = _zip({
+	"xl/workbook.xml": '<workbook %s><sheets><sheet name="Vendas" sheetId="1" r:id="rId1"/></sheets></workbook>' % S,
+	"xl/_rels/workbook.xml.rels": '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Target="worksheets/sheet1.xml"/></Relationships>',
+	"xl/sharedStrings.xml": '<sst %s><si><t>Produto</t></si><si><t>Total</t></si><si><t>Café</t></si></sst>' % S,
+	"xl/worksheets/sheet1.xml": '<worksheet %s><sheetData><row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c></row><row r="2"><c r="A2" t="s"><v>2</v></c><c r="C2"><v>42.5</v></c></row></sheetData></worksheet>' % S,
+})
+A = 'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"'
+PPTX = _zip({
+	"ppt/presentation.xml": "<p:presentation %s/>" % A,
+	"ppt/slides/slide2.xml": "<p:sld %s><a:p><a:r><a:t>Segundo slide</a:t></a:r></a:p></p:sld>" % A,
+	"ppt/slides/slide1.xml": "<p:sld %s><a:p><a:r><a:t>Título do deck</a:t></a:r></a:p></p:sld>" % A,
+	"ppt/notesSlides/notesSlide1.xml": "<p:notes %s><a:p><a:r><a:t>Falar devagar</a:t></a:r></a:p></p:notes>" % A,
+})
+ODT = _zip({
+	"mimetype": "application/vnd.oasis.opendocument.text",
+	"content.xml": '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:text><text:h>Capítulo 1</text:h><text:p>Era uma vez</text:p></office:text></office:body></office:document-content>',
+})
+EPUB = _zip({
+	"META-INF/container.xml": "<container/>",
+	"OEBPS/cap1.xhtml": "<html><body><h1>Capítulo</h1><p>Texto do livro</p><script>x()</script></body></html>",
+})
+
+
+class AttachmentTests(unittest.TestCase):
+	def load(self, name, data, **kw):
+		return attachments.fromBytes(name, data, **kw)
+
+	def test_images_pdf_media(self):
+		a = self.load("foto.PNG", PNG)
+		self.assertEqual((a.kind, a.mime), ("image", "image/png"))
+		jpg = self.load("x.jpg", b"\xff\xd8\xff\xe0" + b"0" * 20)
+		self.assertEqual(jpg.mime, "image/jpeg")
+		bmp = self.load("scan.bmp", b"BM" + b"0" * 50, convertImage=lambda d: PNG)
+		self.assertEqual((bmp.kind, bmp.mime, bmp.name), ("image", "image/png", "scan.png"))
+		with self.assertRaises(attachments.AttachmentError):
+			self.load("scan.tiff", b"II*\x00garbage", convertImage=lambda d: None)
+		pdf = self.load("contrato.pdf", b"%PDF-1.7 ...")
+		self.assertEqual(pdf.kind, "pdf")
+		self.assertTrue(pdf.dataUrl().startswith("data:application/pdf;base64,"))
+		for name, mime in (("audio.mp3", "audio/mp3"), ("reuniao.m4a", "audio/aac"), ("video.mp4", "video/mp4"), ("aula.mkv", "video/webm")):
+			m = self.load(name, b"\x00\x01binary")
+			self.assertEqual((m.kind, m.mime), ("media", mime))
+
+	def test_text_files(self):
+		t = self.load("notas.txt", "Olá, mundo".encode("utf-8"))
+		self.assertEqual((t.kind, t.text), ("text", "Olá, mundo"))
+		t = self.load("antigo.txt", "Ação".encode("cp1252"))
+		self.assertEqual(t.text, "Ação")
+		t = self.load("dados.csv", b"a;b\n1;2\n")
+		self.assertEqual(t.text, "a;b\n1;2")
+		t = self.load("codigo.py", b"print('oi')\n")
+		self.assertIn("print", t.text)
+		t = self.load("unicode.txt", "Olá".encode("utf-16"))
+		self.assertEqual(t.text, "Olá")
+		t = self.load("pagina.html", b"<html><head><style>p{}</style></head><body><h1>Oi</h1><p>Mundo &amp; mais</p><script>alert(1)</script></body></html>")
+		self.assertEqual(t.text, "Oi\n\nMundo & mais")
+		t = self.load("doc.rtf", b"{\\rtf1\\ansi{\\fonttbl{\\f0 Arial;}}\\f0 Ol\\'e1 mundo\\par Segunda linha}")
+		self.assertIn("Olá mundo", t.text)
+		self.assertIn("Segunda linha", t.text)
+		self.assertIn("<file name=\"doc.rtf\">", t.asPromptText())
+
+	def test_office_documents(self):
+		self.assertEqual(self.load("rel.docx", DOCX).text, "Relatório anual\nReceita\t100")
+		x = self.load("vendas.xlsx", XLSX).text
+		self.assertIn("# Vendas", x)
+		self.assertIn("Produto\tTotal", x)
+		self.assertIn("Café\t\t42.5", x)
+		pptx = self.load("deck.pptx", PPTX).text
+		self.assertLess(pptx.index("Título do deck"), pptx.index("Segundo slide"))
+		self.assertIn("(notes) Falar devagar", pptx)
+		self.assertEqual(self.load("livro.odt", ODT).text, "Capítulo 1\nEra uma vez")
+		e = self.load("livro.epub", EPUB).text
+		self.assertIn("Texto do livro", e)
+		self.assertNotIn("x()", e)
+
+	def test_refused_files(self):
+		cases = {
+			"velho.doc": (b"\xd0\xcf\x11\xe0" + b"\x00" * 50, "legacyOffice"),
+			"programa.exe": (b"MZ\x90\x00\x03\x00\x00\x00" * 10, "binary"),
+			"pacote.zip": (_zip({"a.bin": b"\x00\x01"}), "binary"),
+			"vazio.txt": (b"   \n", "empty"),
+		}
+		for name, (data, reason) in cases.items():
+			with self.subTest(name):
+				with self.assertRaises(attachments.AttachmentError) as cm:
+					self.load(name, data)
+				self.assertEqual(cm.exception.reason, reason)
+
+	def test_load_from_disk_limits(self):
+		folder = tempfile.mkdtemp()
+		path = os.path.join(folder, "grande.txt")
+		with open(path, "wb") as f:
+			f.write(b"a" * 100)
+		old = attachments.MAX_FILE_BYTES
+		attachments.MAX_FILE_BYTES = 50
+		try:
+			with self.assertRaises(attachments.AttachmentError) as cm:
+				attachments.load(path)
+			self.assertEqual(cm.exception.reason, "tooBig")
+		finally:
+			attachments.MAX_FILE_BYTES = old
+		self.assertEqual(attachments.load(path).text, "a" * 100)
+		oldT = attachments.MAX_TEXT_CHARS
+		attachments.MAX_TEXT_CHARS = 10
+		try:
+			t = attachments.load(path)
+			self.assertTrue(t.truncated)
+			self.assertEqual(len(t.text), 10)
+		finally:
+			attachments.MAX_TEXT_CHARS = oldT
+		with self.assertRaises(attachments.AttachmentError):
+			attachments.load(os.path.join(folder, "nao-existe.txt"))
+
+	def test_roundtrip_dict(self):
+		for a in (self.load("a.pdf", b"%PDF-1"), self.load("b.txt", b"oi"), attachments.Attachment.image(PNG)):
+			b = attachments.Attachment.fromDict(a.toDict())
+			self.assertEqual((b.name, b.kind, b.mime, b.data, b.text), (a.name, a.kind, a.mime, a.data, a.text))
+
+	def test_send_attachments_to_each_provider(self):
+		pdf = self.load("contrato.pdf", b"%PDF-1.7 fake")
+		txt = self.load("notas.txt", b"anotacoes")
+		img = attachments.Attachment.image(PNG, name="foto.png")
+		msg = providers.Message("user", "Resuma", attachments=[pdf, txt, img])
+		for pid in providers.PROVIDER_IDS:
+			with self.subTest(pid):
+				self.assertTrue(make(pid).chat([msg], "sys"))
+		self.assertEqual(mock_server.LAST_ATTACHMENTS["openai"], ["pdf", "texto", "imagem"])
+		self.assertEqual(mock_server.LAST_ATTACHMENTS["gemini"], ["application/pdf", "texto", "image/png"])
+		self.assertEqual(mock_server.LAST_ATTACHMENTS["anthropic"], ["document", "text", "image"])
+
+	def test_media_only_gemini(self):
+		audio = self.load("reuniao.mp3", b"ID3\x03binary")
+		msg = providers.Message("user", "Transcreva", attachments=[audio])
+		self.assertTrue(make("gemini").chat([msg], "sys"))
+		self.assertEqual(mock_server.LAST_ATTACHMENTS["gemini"], ["audio/mp3"])
+		for pid in ("openai", "anthropic"):
+			mock_server.REQUESTS.clear()
+			with self.assertRaises(providers.ProviderError) as cm:
+				make(pid).chat([msg], "sys")
+			self.assertEqual((cm.exception.kind, cm.exception.detail), ("attachment", "reuniao.mp3"))
+			self.assertEqual(mock_server.REQUESTS, [], "nothing must be sent")
+
+	def test_entry_keeps_attachments_and_legacy_image(self):
+		e = conversation.ChatEntry("user", "x", attachments=[self.load("a.txt", b"oi")])
+		d = e.toDict()
+		self.assertEqual(conversation.ChatEntry.fromDict(d).attachmentNames(), ["a.txt"])
+		legacy = {"role": "user", "text": "x", "time": 1, "image": base64.b64encode(PNG).decode(), "imageMime": "image/png"}
+		self.assertEqual(conversation.ChatEntry.fromDict(legacy).image, PNG)
 
 
 if __name__ == "__main__":

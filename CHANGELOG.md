@@ -1,5 +1,10 @@
 # Changelog / Histórico de versões
 
+## 1.3.0
+
+* Attach files button next to the question field, accepting any file (several at once). Images and PDF go to the three AIs; Word, Excel, PowerPoint (.docx, .xlsx, .pptx), OpenDocument, EPUB, RTF, HTML, CSV, code and other text files are read on this computer and sent as text; audio and video go to Gemini. Old Office formats (.doc, .xls, .ppt) and binary files get a clear message. Files can be sent without typing a question, are listed under the question (Delete removes), come back after an error or cancel, and stay in the conversation and in the history.
+* Botão Anexar arquivos ao lado do campo de pergunta, aceitando qualquer arquivo (vários de uma vez). Imagens e PDF vão para as três IAs; Word, Excel, PowerPoint (.docx, .xlsx, .pptx), OpenDocument, EPUB, RTF, HTML, CSV, código e outros textos são lidos no computador e enviados como texto; áudio e vídeo vão para o Gemini. Formatos antigos do Office (.doc, .xls, .ppt) e arquivos binários recebem uma mensagem clara. Dá para enviar sem digitar pergunta; os arquivos aparecem abaixo da pergunta (Delete remove), voltam depois de erro ou cancelamento e ficam na conversa e no histórico.
+
 ## 1.2.0
 
 * Previous conversations: the conversation list became a tree whose first item, "Previous conversations", starts collapsed. Each saved conversation is a collapsed branch with its messages; Enter on a conversation or on one of its messages reopens it to be continued (the AI receives the whole history). Conversations are saved automatically after each answer, encrypted with Windows DPAPI, and removed when the add-on is uninstalled. Delete removes one conversation. New options: keep previous conversations, maximum number, delete all.

@@ -116,7 +116,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				ui.message(_("Please wait for the current answer"))
 				return
 			try:
-				self.session.send(question, image=png, providerId=providerId)
+				from .attachments import Attachment
+				# Translators: file name given to screenshots sent to the AI.
+				shot = Attachment.image(png, name=_("screenshot.png"))
+				self.session.send(question, providerId=providerId, attachments=[shot])
 			except core.NoTokenError:
 				return
 			# Translators: announced after sending the screenshot.

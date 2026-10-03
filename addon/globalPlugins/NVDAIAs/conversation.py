@@ -8,22 +8,35 @@ import base64
 import time
 import uuid
 
+from .attachments import Attachment
 from .providers import Message
 
 
 class ChatEntry:
-	def __init__(self, role, text, providerName="", model="", image=None, imageMime="image/png", timestamp=None):
+	def __init__(self, role, text, providerName="", model="", image=None, imageMime="image/png", timestamp=None, attachments=None):
 		self.role = role  # "user" or "assistant"
 		self.text = text
 		self.providerName = providerName
 		self.model = model
-		self.image = image
-		self.imageMime = imageMime
+		self.attachments = list(attachments or [])
+		if image:
+			self.attachments.insert(0, Attachment.image(image, mime=imageMime))
 		self.timestamp = timestamp if timestamp is not None else time.time()
 
 	@property
 	def time(self):
 		return time.localtime(self.timestamp)
+
+	@property
+	def image(self):
+		"""Bytes of the first image attached (screenshots), or None."""
+		for a in self.attachments:
+			if a.kind == "image":
+				return a.data
+		return None
+
+	def attachmentNames(self):
+		return [a.name for a in self.attachments]
 
 	def toDict(self):
 		data = {"role": self.role, "text": self.text, "time": self.timestamp}
@@ -31,22 +44,23 @@ class ChatEntry:
 			data["provider"] = self.providerName
 		if self.model:
 			data["model"] = self.model
-		if self.image:
-			data["image"] = base64.b64encode(self.image).decode("ascii")
-			data["imageMime"] = self.imageMime
+		if self.attachments:
+			data["attachments"] = [a.toDict() for a in self.attachments]
 		return data
 
 	@classmethod
 	def fromDict(cls, data):
-		image = data.get("image")
+		attachments = [Attachment.fromDict(a) for a in data.get("attachments") or []]
+		legacyImage = data.get("image")  # conversations saved by version 1.2.0
+		if legacyImage:
+			attachments.insert(0, Attachment.image(base64.b64decode(legacyImage), mime=data.get("imageMime", "image/png")))
 		return cls(
 			data["role"],
 			data.get("text", ""),
 			providerName=data.get("provider", ""),
 			model=data.get("model", ""),
-			image=base64.b64decode(image) if image else None,
-			imageMime=data.get("imageMime", "image/png"),
 			timestamp=data.get("time"),
+			attachments=attachments,
 		)
 
 
@@ -105,7 +119,7 @@ class Conversation:
 
 	def apiMessages(self):
 		"""Messages to send to the API (the whole conversation, any provider)."""
-		return [Message(e.role, e.text, e.image, e.imageMime) for e in self.entries]
+		return [Message(e.role, e.text, attachments=e.attachments) for e in self.entries]
 
 	def lastAnswer(self):
 		for e in reversed(self.entries):
@@ -113,13 +127,14 @@ class Conversation:
 				return e
 		return None
 
-	def toText(self, userLabel, imageLabel):
+	def toText(self, userLabel, attachmentsLabel):
+		"""Plain text export. attachmentsLabel is a format string with {names}."""
 		parts = []
 		for e in self.entries:
 			who = userLabel if e.role == "user" else ("%s (%s)" % (e.providerName, e.model) if e.model else e.providerName)
 			stamp = time.strftime("%Y-%m-%d %H:%M", e.time)
 			body = e.text
-			if e.image:
-				body = "%s\n%s" % (imageLabel, body)
+			if e.attachments:
+				body = "%s\n%s" % (attachmentsLabel.format(names=", ".join(e.attachmentNames())), body)
 			parts.append("[%s] %s:\n%s" % (stamp, who, body))
 		return "\n\n".join(parts) + "\n"

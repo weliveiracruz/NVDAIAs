@@ -9,7 +9,7 @@
 <ul>
 <li>Author: Wellington Cruz
 </li>
-<li>Version: 1.2.0
+<li>Version: 1.3.0
 </li>
 <li>Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 </li>
@@ -41,7 +41,7 @@
 </ol>
 <h2>The chat window</h2>
 <p>Open it with <strong>NVDA+Alt+I</strong> or NVDA menu &gt; Tools &gt; <strong>NVDAIAs - Chat with AI</strong>. Focus starts in the Question field.</p>
-<p>Tab order: <strong>AI</strong> (combo box), <strong>Model</strong>, <strong>Conversation</strong> (a tree: first the collapsed <strong>Previous conversations</strong> item, then the messages of the current conversation), <strong>Question</strong>, then the buttons Send, Cancel sending, Read message, Copy message, New conversation, Save conversation, Connect account, Settings and Close. <strong>Shift+Tab from the Question field goes straight to the conversation list.</strong></p>
+<p>Tab order: <strong>AI</strong> (combo box), <strong>Model</strong>, <strong>Conversation</strong> (a tree: first the collapsed <strong>Previous conversations</strong> item, then the messages of the current conversation), <strong>Question</strong>, <strong>Attach files</strong>, Send, the <strong>Attached files</strong> list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, New conversation, Save conversation, Connect account, Settings and Close. <strong>Shift+Tab from the Question field goes straight to the conversation list.</strong></p>
 <p>The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a <strong>thick orange frame around the field that has the focus</strong>. A <strong>status line</strong> under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.</p>
 <table border="1">
 <tr><th>Where</th><th>Key</th><th>Action</th></tr>
@@ -56,6 +56,18 @@
 <tr><td>Anywhere</td><td>Escape</td><td>Closes the window; the conversation stays open and is already saved</td></tr>
 </table>
 <p>While waiting, a short beep plays every 1.5 seconds. When the answer arrives NVDA reads it (press Ctrl to stop). On errors, NVDA explains what happened and puts the question back in the field. You can switch AI in the middle of a conversation: the new AI receives the whole history.</p>
+<h3>Attach files</h3>
+<p><strong>Attach files</strong> (next to the Question field, Tab from it) opens the standard Windows file dialog with all formats; several files can be chosen.</p>
+<table border="1">
+<tr><th>File</th><th>What happens</th><th>AIs</th></tr>
+<tr><td>Images (JPG, PNG, GIF, WebP; BMP, TIFF and others are converted to PNG)</td><td>Sent as an image</td><td>ChatGPT, Gemini, Claude</td></tr>
+<tr><td>PDF</td><td>Sent as a document</td><td>ChatGPT, Gemini, Claude</td></tr>
+<tr><td>.docx, .xlsx, .pptx (with notes), .odt, .ods, .odp, EPUB, RTF, HTML</td><td>Text extracted on this computer</td><td>ChatGPT, Gemini, Claude</td></tr>
+<tr><td>Text, CSV, JSON, XML, Markdown, source code and any other text file</td><td>Sent as text</td><td>ChatGPT, Gemini, Claude</td></tr>
+<tr><td>Audio and video</td><td>Sent to be listened to or watched</td><td>Gemini only</td></tr>
+<tr><td>.doc, .xls, .ppt, programs, archives and other binaries</td><td>Not read; a message explains how to convert</td><td>-</td></tr>
+</table>
+<p>Attached files are listed under the question (Delete removes one) and go with the next question; you can send without typing (the AI is asked to analyse and summarise them). On errors or cancel the question and files come back. Files stay in the conversation and in the history. Limits: 20 MB per file; text cut at 300,000 characters.</p>
 <h3>Previous conversations</h3>
 <p>Every conversation is saved automatically. The first item of the Conversation tree, <strong>Previous conversations (N)</strong>, starts collapsed. Expand it with the Right arrow; each previous conversation shows its date, AIs, first question and number of messages, and expands to show its messages. <strong>Enter</strong> on a previous conversation or on any of its messages reopens it as the current conversation, focus goes to the Question field and the AI receives the whole history. The conversation that was open goes to the history. <strong>New conversation</strong> saves the current one and starts a blank one.</p>
 <h2>Commands</h2>
@@ -79,10 +91,15 @@
 </li>
 <li>The add-on does not run on secure screens (logon, UAC).
 </li>
-<li>Conversations are saved automatically after each answer in the <code>NVDAIAs-history</code> folder of the NVDA configuration, <strong>encrypted with DPAPI</strong> like the tokens (screenshots included). Delete one with the Delete key, delete all in the settings or turn the history off. The history is deleted when the add-on is uninstalled. <strong>Save conversation</strong> writes a plain text file.
+<li>Conversations are saved automatically after each answer in the <code>NVDAIAs-history</code> folder of the NVDA configuration, <strong>encrypted with DPAPI</strong> like the tokens (screenshots and attached files included). Delete one with the Delete key, delete all in the settings or turn the history off. The history is deleted when the add-on is uninstalled. <strong>Save conversation</strong> writes a plain text file.
 </li>
 </ul>
 <h2>Changes</h2>
+<h3>1.3.0</h3>
+<ul>
+<li>Attach files button next to the question, any file: images and PDF to the three AIs; Office, OpenDocument, EPUB, RTF, HTML and text files read locally; audio and video to Gemini.
+</li>
+</ul>
 <h3>1.2.0</h3>
 <ul>
 <li>Previous conversations: first item of the conversation tree, collapsed by default; each saved conversation expands to show its messages and Enter on any of them reopens it to be continued. Saved automatically, encrypted with DPAPI. Delete removes one. New options: keep previous conversations, maximum number, delete all.
