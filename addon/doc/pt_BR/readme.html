@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>NVDAIAs – Converse com o ChatGPT, o Gemini e o Claude pelo NVDA</title>
+</head>
+<body>
+<h1>NVDAIAs – Converse com o ChatGPT, o Gemini e o Claude pelo NVDA</h1>
+<ul>
+<li>Autor: Wellington Cruz
+</li>
+<li>Versão: 1.0.0
+</li>
+<li>Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
+</li>
+<li>Licença: GNU General Public License, versão 2
+</li>
+</ul>
+<p>O NVDAIAs abre uma janela acessível, dentro do NVDA, para você fazer perguntas ao <strong>ChatGPT</strong> (OpenAI), ao <strong>Gemini</strong> (Google) ou ao <strong>Claude</strong> (Anthropic) e ler as respostas sem sair do programa em que está trabalhando. Ele também pode <strong>descrever imagens da tela</strong> usando a IA.</p>
+<p>Partes deste complemento foram escritas com auxílio de IA (Claude), com revisão e testes do autor.</p>
+<h2>Antes de começar: o token de acesso</h2>
+<p>Os três serviços só permitem que programas de terceiros se conectem por meio de um <strong>token de acesso</strong>, também chamado de <strong>chave de API</strong>. Não existe uma forma oficial de entrar com o e-mail e a senha da sua conta do ChatGPT, do Gemini ou do Claude em outro programa. Por isso, a "tela de login" do NVDAIAs é a tela <strong>Conectar conta</strong>, onde você cola o token gerado no site de cada IA.</p>
+<p>Você precisa de um token apenas para as IAs que quiser usar. Pode conectar uma, duas ou as três.</p>
+<table border="1">
+<tr><th>IA</th><th>Onde gerar o token</th><th>Custo</th></tr>
+<tr><td>ChatGPT</td><td>platform.openai.com/api-keys</td><td>Pago por uso. É cobrado à parte da assinatura do ChatGPT Plus; a conta da plataforma precisa ter crédito.</td></tr>
+<tr><td>Gemini</td><td>aistudio.google.com/app/apikey</td><td>Tem um nível gratuito, com limites de uso.</td></tr>
+<tr><td>Claude</td><td>console.anthropic.com/settings/keys</td><td>Pago por uso. É cobrado à parte da assinatura do Claude Pro; a conta do Console precisa ter crédito.</td></tr>
+</table>
+<p>A tela Conectar conta tem um botão que abre a página certa no navegador e mostra as instruções passo a passo para cada IA.</p>
+<h2>Instalação</h2>
+<ol>
+<li>Baixe o arquivo <code>NVDAIAs-1.0.0.nvda-addon</code> (ou instale pela Loja de Complementos do NVDA, quando estiver publicado).
+</li>
+<li>Pressione Enter sobre o arquivo e confirme a instalação.
+</li>
+<li>Reinicie o NVDA quando ele pedir.
+</li>
+</ol>
+<h2>Primeiro uso</h2>
+<ol>
+<li>Pressione <strong>NVDA+Alt+I</strong>.
+</li>
+<li>Como ainda não há nenhuma IA conectada, a tela <strong>Conectar conta</strong> abre sozinha.
+</li>
+<li>Na caixa <strong>Inteligência artificial</strong>, escolha ChatGPT, Gemini ou Claude.
+</li>
+<li>Leia as <strong>Instruções</strong> (campo somente leitura; use as setas para ler linha por linha).
+</li>
+<li>Pressione o botão <strong>Abrir página para gerar o token</strong>. A página abre no seu navegador. Entre na sua conta, crie a chave e copie.
+</li>
+<li>Volte ao NVDA (Alt+Tab), cole o token no campo <strong>Token (chave de API)</strong> com Ctrl+V e pressione <strong>Conectar</strong>.
+</li>
+<li>O NVDAIAs testa o token. Se estiver tudo certo, ele informa "Conectado" e guarda o token. A janela de conversa fica pronta para uso.
+</li>
+</ol>
+<p>O teste de conexão apenas consulta a lista de modelos da sua conta. Ele não gasta créditos.</p>
+<h2>A janela de conversa</h2>
+<p>Abra com <strong>NVDA+Alt+I</strong> ou pelo menu do NVDA &gt; Ferramentas &gt; <strong>NVDAIAs - Conversar com IA</strong>. O cursor já começa no campo Pergunta.</p>
+<p>Ordem dos elementos com a tecla Tab:</p>
+<ol>
+<li><strong>IA</strong>: escolhe ChatGPT, Gemini ou Claude. Você pode trocar de IA no meio da conversa: a nova IA recebe todo o histórico.
+</li>
+<li><strong>Modelo</strong>: o modelo da IA escolhida. Você pode escolher da lista ou digitar o nome de outro modelo.
+</li>
+<li><strong>Conversa</strong>: lista com todas as mensagens. Cada item começa com "Você:" ou com o nome da IA.
+</li>
+<li><strong>Pergunta</strong>: campo onde você digita.
+</li>
+<li>Botões: Enviar, Cancelar envio, Ler mensagem, Copiar mensagem, Nova conversa, Salvar conversa, Conectar conta, Configurações e Fechar.
+</li>
+</ol>
+<p>Como o campo Pergunta vem logo depois da lista, <strong>Shift+Tab no campo Pergunta leva direto para a lista da conversa</strong>, e Tab na lista volta para a pergunta.</p>
+<h3>Teclas da janela</h3>
+<table border="1">
+<tr><th>Onde</th><th>Tecla</th><th>O que faz</th></tr>
+<tr><td>Campo Pergunta</td><td>Enter</td><td>Envia a pergunta</td></tr>
+<tr><td>Campo Pergunta</td><td>Shift+Enter</td><td>Cria uma nova linha sem enviar</td></tr>
+<tr><td>Campo Pergunta</td><td>Shift+Tab</td><td>Vai para a lista da conversa</td></tr>
+<tr><td>Lista da conversa</td><td>Setas para cima e para baixo</td><td>Passa pelas mensagens</td></tr>
+<tr><td>Lista da conversa</td><td>Enter</td><td>Abre a mensagem inteira em uma janela de leitura, com títulos, listas e links, onde você navega com as setas e os comandos do modo de navegação. Esc fecha.</td></tr>
+<tr><td>Lista da conversa</td><td>Ctrl+C</td><td>Copia a mensagem selecionada</td></tr>
+<tr><td>Qualquer lugar</td><td>Esc</td><td>Fecha a janela (a conversa continua guardada até você reiniciar o NVDA)</td></tr>
+</table>
+<p>Cada botão também tem uma letra de atalho com Alt, que o NVDA anuncia ao focalizar o botão. Por exemplo, Alt+N envia, Alt+L lê a mensagem e Alt+V vai para a lista da conversa.</p>
+<h3>O que acontece ao enviar</h3>
+<ul>
+<li>O NVDA diz "Enviado para o Claude" (ou a IA escolhida).
+</li>
+<li>Enquanto a IA pensa, o último item da lista diz "Claude está respondendo…" e um bipe curto toca a cada 1,5 segundo.
+</li>
+<li>Quando a resposta chega, toca um bipe agudo e o NVDA lê a resposta. Pressione Ctrl para interromper a leitura.
+</li>
+<li>A resposta entra na lista da conversa. Para ler com calma, vá até a lista e pressione Enter.
+</li>
+<li>Se der erro, um bipe grave toca, o NVDA explica o problema e a sua pergunta volta para o campo, para você tentar de novo.
+</li>
+</ul>
+<p>Os símbolos de formatação que as IAs costumam usar (#, asteriscos, barras de tabela) são retirados na lista e na leitura automática. Na janela de leitura (Enter na lista), a formatação vira títulos, listas e links de verdade.</p>
+<h2>Descrever a tela</h2>
+<table border="1">
+<tr><th>Comando</th><th>O que faz</th></tr>
+<tr><td>NVDA+Alt+D</td><td>Tira uma foto do <strong>objeto de navegação</strong> atual (por exemplo, uma imagem, um botão ou um gráfico) e pede para a IA descrever</td></tr>
+<tr><td>NVDA+Shift+Alt+D</td><td>Tira uma foto da <strong>tela inteira</strong> (monitor em que está a janela ativa) e pede para a IA descrever</td></tr>
+</table>
+<p>A janela de conversa abre com a pergunta e a imagem, e a descrição é lida quando chegar. Você pode fazer perguntas sobre a imagem em seguida, por exemplo "qual é a cor do botão?", porque a imagem fica no histórico da conversa.</p>
+<p>Para descrever só uma parte da tela, mova o objeto de navegação até ela com os comandos de navegação de objetos do NVDA antes de pressionar NVDA+Alt+D.</p>
+<p>Os três serviços aceitam imagens nos modelos atuais. Se o modelo escolhido não aceitar imagens, a IA vai responder com um erro.</p>
+<h2>Comandos globais</h2>
+<table border="1">
+<tr><th>Comando</th><th>Ação</th></tr>
+<tr><td>NVDA+Alt+I</td><td>Abre a janela de conversa</td></tr>
+<tr><td>NVDA+Alt+D</td><td>Descreve o objeto de navegação</td></tr>
+<tr><td>NVDA+Shift+Alt+D</td><td>Descreve a tela inteira</td></tr>
+<tr><td>(sem atalho)</td><td>Abre as configurações do NVDAIAs</td></tr>
+</table>
+<p>Todos os comandos podem ser alterados em menu do NVDA &gt; Preferências &gt; Definir comandos, na categoria <strong>NVDAIAs</strong>.</p>
+<h2>Configurações</h2>
+<p>Menu do NVDA &gt; Preferências &gt; Configurações &gt; categoria <strong>NVDAIAs</strong>. Também pelo botão Configurações da janela de conversa.</p>
+<ul>
+<li><strong>IA padrão</strong>: a IA usada quando a janela abre.
+</li>
+<li>Para <strong>cada IA</strong> (ChatGPT, Gemini e Claude):
+<ul>
+<li><strong>Situação</strong>: diz se há um token salvo e mostra só os 4 últimos caracteres dele.
+</li>
+<li><strong>Novo token</strong>: cole aqui para trocar o token. Vazio mantém o salvo.
+</li>
+<li><strong>Abrir página para gerar o token</strong>.
+</li>
+<li><strong>Testar conexão</strong>: confere o token sem gastar créditos e avisa se o modelo escolhido não existe na sua conta.
+</li>
+<li><strong>Remover token salvo</strong>.
+</li>
+<li><strong>Modelo</strong> e <strong>Atualizar lista de modelos</strong>: baixa da IA a lista de modelos que a sua conta pode usar.
+</li>
+</ul>
+</li>
+<li><strong>Instruções enviadas à IA em todas as perguntas</strong>: o texto que orienta a IA. O padrão pede respostas no idioma da pergunta, em parágrafos curtos, sem tabelas nem emojis, pensando em quem usa leitor de telas. O botão <strong>Restaurar instruções padrão</strong> volta ao texto original.
+</li>
+<li><strong>Ler as respostas automaticamente quando chegarem</strong> (ligado por padrão).
+</li>
+<li><strong>Bipar enquanto aguarda a resposta</strong> (ligado por padrão).
+</li>
+<li><strong>Remover símbolos de formatação ao ler as respostas</strong> (ligado por padrão).
+</li>
+<li><strong>Tamanho máximo da resposta em tokens (Claude)</strong>: o Claude exige esse limite. Padrão 4096.
+</li>
+<li><strong>Tempo limite para aguardar a resposta</strong>: em segundos. Padrão 120.
+</li>
+</ul>
+<p>Os tokens só são gravados quando você pressiona OK ou Aplicar.</p>
+<h2>Privacidade e segurança</h2>
+<ul>
+<li>Os tokens <strong>não</strong> ficam no arquivo de configuração do NVDA (nvda.ini). Eles são guardados no arquivo <code>NVDAIAs-credentials.json</code>, na pasta de configuração do NVDA, <strong>criptografados com a proteção de dados do Windows (DPAPI)</strong>. Só o seu usuário do Windows, neste computador, consegue abrir. Se o arquivo for copiado para outro computador, os tokens não funcionam lá.
+</li>
+<li>Ao desinstalar o complemento, o arquivo com os tokens é apagado.
+</li>
+<li>O que você digita, o histórico da conversa e as imagens de tela que você pedir para descrever são enviados diretamente do seu computador para a IA escolhida (OpenAI, Google ou Anthropic), por conexão segura (HTTPS). Não passam por nenhum outro servidor. Cada empresa trata esses dados conforme a política de privacidade dela.
+</li>
+<li>Cuidado ao descrever a tela: tudo o que estiver visível na área capturada é enviado, inclusive dados pessoais.
+</li>
+<li>O complemento não funciona nas telas seguras do Windows (tela de logon e controle de conta de usuário).
+</li>
+<li>A conversa fica só na memória e é apagada quando o NVDA reinicia. Para guardar, use <strong>Salvar conversa</strong>, que grava um arquivo de texto.
+</li>
+</ul>
+<h2>Mensagens de erro</h2>
+<table border="1">
+<tr><th>Mensagem</th><th>O que fazer</th></tr>
+<tr><td>"não aceitou o token"</td><td>O token foi digitado errado, foi apagado no site ou expirou. Gere outro e cole em Configurações ou em Conectar conta.</td></tr>
+<tr><td>"limite de uso atingido ou conta sem crédito"</td><td>Coloque crédito na conta da plataforma (ChatGPT e Claude) ou aguarde o limite gratuito renovar (Gemini).</td></tr>
+<tr><td>"o modelo escolhido não está disponível"</td><td>Use Atualizar lista de modelos nas configurações e escolha um modelo da lista.</td></tr>
+<tr><td>"Não foi possível conectar"</td><td>Verifique a internet, o proxy ou o firewall.</td></tr>
+<tr><td>"demorou demais para responder"</td><td>Tente de novo ou aumente o tempo limite.</td></tr>
+<tr><td>"problema temporário"</td><td>O serviço está sobrecarregado. Tente em alguns instantes.</td></tr>
+<tr><td>"bloqueada pelo provedor"</td><td>A IA se recusou a responder ou o filtro de segurança dela bloqueou a pergunta.</td></tr>
+</table>
+<h2>Histórico de versões</h2>
+<h3>1.0.0</h3>
+<ul>
+<li>Primeira versão: janela de conversa com ChatGPT, Gemini e Claude; tela de conexão de conta com token; painel de configurações; descrição do objeto de navegação e da tela; tradução para português do Brasil.
+</li>
+</ul>
+</body>
+</html>

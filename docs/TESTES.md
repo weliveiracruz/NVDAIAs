@@ -1,0 +1,48 @@
+# Testes do NVDAIAs
+
+## Testes automáticos (já executados)
+
+Os testes ficam na pasta `tests` e rodam em Linux, com o wxPython de verdade (a mesma biblioteca de interface do NVDA) e um servidor local que imita as APIs do ChatGPT, do Gemini e do Claude, conferindo cabeçalhos de autenticação e o formato de cada requisição. Os módulos do NVDA são substituídos por versões simuladas, exceto o `guiHelper`, que é o arquivo original do NVDA.
+
+Para rodar tudo: `tests/run_all.sh` (precisa de `python3-wxgtk4.0` e `xvfb`). A automação do GitHub roda os mesmos testes a cada envio.
+
+Resultado na versão 1.0.0:
+
+* `tests/test_pure.py`: 25 testes, todos aprovados em Python 3.11, 3.12 e 3.13 (versões usadas pelo NVDA 2024.1 até o 2026.x).
+  * Pergunta e resposta nas três IAs, histórico com várias mensagens, envio de imagem.
+  * Token errado, token vazio, falta de crédito, servidor sobrecarregado, resposta inválida, modelo inexistente, resposta bloqueada, sem internet e tempo esgotado: cada um vira a mensagem de erro certa.
+  * Lista de modelos de cada IA e teste de conexão sem gasto de créditos.
+  * Conversão de Markdown para texto falado e para HTML, incluindo bloqueio de links `javascript:` e de HTML injetado.
+  * Gravação dos tokens: o arquivo não contém o token em texto puro e arquivo corrompido não trava o complemento.
+* `tests/test_gui.py`: 72 verificações, todas aprovadas, incluindo teclas reais (eventos de teclado do sistema):
+  * Primeiro uso abre a tela Conectar conta; token errado é recusado; token certo é salvo e a IA vira a padrão.
+  * Ordem de tabulação: IA, Modelo, Conversa, Pergunta, botões. **Shift+Tab na Pergunta leva à lista da Conversa.**
+  * Enter envia, Shift+Enter cria nova linha, Enter na lista abre a mensagem, Ctrl+C copia, Esc fecha.
+  * Resposta lida automaticamente, item "está respondendo…" durante a espera, troca de IA no meio da conversa com histórico, cancelamento, erro devolve a pergunta ao campo.
+  * Descrição do objeto de navegação com captura de tela real em PNG e redução de imagens grandes.
+  * Painel de configurações: situação do token, testar conexão, atualizar modelos, salvar token, modelo, instruções com várias linhas e opções, remover token.
+  * Conversa mantida ao fechar e reabrir a janela, desativação em telas seguras, remoção limpa ao desligar o complemento.
+* `tests/test_translation.py`: interface em português do Brasil, sem letras de atalho repetidas em nenhuma janela.
+* `build.py` valida o `manifest.ini` (também conferido com a especificação de manifesto do código-fonte do NVDA) e gera o pacote.
+
+## O que só pode ser testado no Windows com o NVDA
+
+Os testes automáticos não substituem estes pontos:
+
+* A criptografia dos tokens com a proteção de dados do Windows (DPAPI).
+* A conexão real com as três empresas, usando os seus tokens.
+* A fala e as teclas no NVDA de verdade, incluindo a janela de leitura.
+* A captura de tela no Windows.
+
+## Teste no Windows com o NVDA (roteiro)
+
+1. Instale `dist\NVDAIAs-1.0.0.nvda-addon` (Enter sobre o arquivo) e reinicie o NVDA.
+2. Pressione NVDA+Alt+I. A tela Conectar conta deve abrir. Escolha Gemini (tem nível gratuito), abra a página, gere a chave, cole e pressione Conectar. Deve aparecer "Conectado ao Gemini".
+3. Na janela de conversa, digite "Qual é a capital do Brasil?" e pressione Enter. Deve ouvir "Enviado para o Gemini", bipes curtos e depois a resposta.
+4. Pressione Shift+Tab: o foco deve ir para a lista Conversa. Use as setas, pressione Enter numa resposta (abre a janela de leitura; Esc fecha) e Ctrl+C (copia).
+5. Pressione Tab para voltar à pergunta. Pergunte "E a da Argentina?" para conferir que a IA lembra da conversa.
+6. Pressione Esc, abra o Bloco de Notas, pressione NVDA+Alt+D. A descrição do objeto deve ser lida.
+7. Repita os passos 2 e 3 com o ChatGPT e o Claude, se tiver os tokens.
+8. Abra menu do NVDA > Preferências > Configurações > NVDAIAs. Use Testar conexão e Atualizar lista de modelos em cada IA.
+9. Confira a criptografia: abra a pasta `%APPDATA%\nvda` (pressione Windows+R, digite `%APPDATA%\nvda` e Enter) e abra `NVDAIAs-credentials.json` no Bloco de Notas. Cada token deve aparecer como um texto longo que começa com `AQAAANCMnd8BFdERjHoAwE`, que é a assinatura da criptografia do Windows (DPAPI).
+10. Se algo falhar, abra o log do NVDA (NVDA+F1) e procure por "NVDAIAs".

@@ -1,0 +1,41 @@
+# Runs the tests on every push. When a tag like v1.0.0 is pushed, builds the
+# .nvda-addon and publishes it as a GitHub release (the download URL used in the
+# NVDA Add-on Store submission).
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install wxPython and a virtual display
+        run: sudo apt-get update && sudo apt-get install -y python3-wxgtk4.0 xvfb
+      - name: Unit tests (API clients, text, credentials)
+        run: python3 -m unittest tests/test_pure.py -v
+      - name: Interface tests (chat window, login screen, settings)
+        run: xvfb-run -a /usr/bin/python3 tests/test_gui.py
+      - name: Translation tests (pt_BR)
+        run: NVDAIAS_LANG=pt_BR xvfb-run -a /usr/bin/python3 tests/test_translation.py
+      - name: Build add-on
+        run: python3 build.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NVDAIAs
+          path: dist/*
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.nvda-addon
+            dist/*.sha256
+          body_path: CHANGELOG.md
