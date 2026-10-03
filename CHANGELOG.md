@@ -1,5 +1,16 @@
 # Changelog / Histórico de versões
 
+## 1.4.0
+
+* Message actions: Enter (or the Applications key / Shift+F10) on a message of the current conversation, or the new "Actions for this message" button, opens a menu with Read message, Copy, Delete, Translate to (12 languages), Describe this image in more detail (messages with images) and Improve this answer (answers). Messages of previous conversations get Read, Copy and Open this conversation.
+* Security fixes found by the new test plan: zip bombs and XML with DTD/entities in attached documents are refused; API keys are never re-sent by HTTP redirects; answers limited to 32 MB; only HTTPS addresses (P-04 to P-08 in reports/PROBLEMAS-1.4.0.md).
+* Accessibility fixes: settings buttons have unique names with the AI name; complete Portuguese translation; translator comments for every text.
+* Test plan (docs/SDD-TESTES.md) with 375 functional, accessibility and security tests, run by tests/run_all.py before every release (reports/RELATORIO-TESTES-1.4.0.md).
+* Ações da mensagem: Enter (ou a tecla Aplicações / Shift+F10) numa mensagem da conversa atual, ou o novo botão "Ações da mensagem", abre um menu com Ler mensagem, Copiar, Excluir, Traduzir para (12 idiomas), Descrever esta imagem com mais detalhes (mensagens com imagem) e Melhorar esta resposta (respostas). Mensagens de conversas anteriores têm Ler, Copiar e Abrir esta conversa.
+* Correções de segurança encontradas pelo novo plano de testes: bombas zip e XML com DTD/entidades em documentos anexados são recusados; a chave de API nunca é reenviada por redirecionamento; respostas limitadas a 32 MB; só endereços HTTPS.
+* Correções de acessibilidade: botões das configurações com nomes únicos, com o nome da IA; tradução completa; comentário para tradutores em todos os textos.
+* Plano de testes (docs/SDD-TESTES.md) com 375 testes funcionais, de acessibilidade e de segurança, rodados por tests/run_all.py antes de cada versão.
+
 ## 1.3.0
 
 * Attach files button next to the question field, accepting any file (several at once). Images and PDF go to the three AIs; Word, Excel, PowerPoint (.docx, .xlsx, .pptx), OpenDocument, EPUB, RTF, HTML, CSV, code and other text files are read on this computer and sent as text; audio and video go to Gemini. Old Office formats (.doc, .xls, .ppt) and binary files get a clear message. Files can be sent without typing a question, are listed under the question (Delete removes), come back after an error or cancel, and stay in the conversation and in the history.

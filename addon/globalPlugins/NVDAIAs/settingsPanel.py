@@ -46,14 +46,14 @@ class _ProviderGroup:
 		)
 
 		buttons = guiHelper.ButtonHelper(wx.HORIZONTAL)
-		# Translators: button that opens the provider site to create a token.
-		openButton = buttons.addButton(boxParent, label=_("Open page to generate token"))
+		# Translators: button that opens the provider site to create a token. {name} is ChatGPT, Gemini or Claude.
+		openButton = buttons.addButton(boxParent, label=_("Open {name} token page").format(name=cls.name))
 		openButton.Bind(wx.EVT_BUTTON, lambda evt: openTokenPage(providerId))
-		# Translators: button that tests the token.
-		self.testButton = buttons.addButton(boxParent, label=_("Test connection"))
+		# Translators: button that tests the token. {name} is ChatGPT, Gemini or Claude.
+		self.testButton = buttons.addButton(boxParent, label=_("Test connection to {name}").format(name=cls.name))
 		self.testButton.Bind(wx.EVT_BUTTON, self.onTest)
-		# Translators: button that deletes the saved token.
-		self.removeButton = buttons.addButton(boxParent, label=_("Remove saved token"))
+		# Translators: button that deletes the saved token. {name} is ChatGPT, Gemini or Claude.
+		self.removeButton = buttons.addButton(boxParent, label=_("Remove saved {name} token").format(name=cls.name))
 		self.removeButton.Bind(wx.EVT_BUTTON, self.onRemove)
 		group.addItem(buttons)
 
@@ -65,8 +65,8 @@ class _ProviderGroup:
 			choices.insert(0, current)
 		self.modelCombo.Set(choices)
 		self.modelCombo.SetValue(current)
-		# Translators: button that downloads the list of models available for the account.
-		self.updateModelsButton = group.addItem(wx.Button(boxParent, label=_("Update model list")))
+		# Translators: button that downloads the list of models available for the account. {name} is ChatGPT, Gemini or Claude.
+		self.updateModelsButton = group.addItem(wx.Button(boxParent, label=_("Update {name} model list").format(name=cls.name)))
 		self.updateModelsButton.Bind(wx.EVT_BUTTON, self.onUpdateModels)
 		self.updateStatus()
 

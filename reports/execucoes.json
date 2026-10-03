@@ -1,0 +1,413 @@
+[
+ {
+  "number": 1,
+  "date": "2026-10-03T19:59:45-03:00",
+  "version": "1.4.0",
+  "note": "Execução 1: primeira rodada com as suítes novas de acessibilidade e segurança",
+  "total": 350,
+  "passed": 343,
+  "failed": 7,
+  "corrected": [],
+  "suites": [
+   {
+    "suite": "unit (python 3.11)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.12)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.13)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "interface (test_gui)",
+    "total": 141,
+    "passed": 141,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "visual theme (test_theme)",
+    "total": 27,
+    "passed": 25,
+    "failed": 2,
+    "failures": [
+     "tab order with theme",
+     "theme off: same tab order"
+    ]
+   },
+   {
+    "suite": "translation (test_translation)",
+    "total": 7,
+    "passed": 6,
+    "failed": 1,
+    "failures": [
+     "unique Alt shortcuts: chat"
+    ]
+   },
+   {
+    "suite": "accessibility (test_accessibility)",
+    "total": 22,
+    "passed": 20,
+    "failed": 2,
+    "failures": [
+     "ACE-02 every button has an Alt shortcut: settings",
+     "suite ran to the end"
+    ]
+   },
+   {
+    "suite": "security (test_security)",
+    "total": 34,
+    "passed": 32,
+    "failed": 2,
+    "failures": [
+     "SEG-13 bandit: no medium or high severity issue",
+     "SEG-18 there is a limit for the size of an answer"
+    ]
+   },
+   {
+    "suite": "package (build.py)",
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "failures": []
+   }
+  ]
+ },
+ {
+  "number": 2,
+  "date": "2026-10-03T20:00:50-03:00",
+  "version": "1.4.0",
+  "note": "Execução 2: suítes corrigidas (expectativa de tabulação, falha do próprio teste de acessibilidade, SEG-09 e SEG-19 mais rigorosos); produto ainda sem correção",
+  "total": 374,
+  "passed": 366,
+  "failed": 8,
+  "corrected": [
+   "visual theme (test_theme) :: tab order with theme",
+   "visual theme (test_theme) :: theme off: same tab order"
+  ],
+  "suites": [
+   {
+    "suite": "unit (python 3.11)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.12)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.13)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "interface (test_gui)",
+    "total": 141,
+    "passed": 141,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "visual theme (test_theme)",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "translation (test_translation)",
+    "total": 7,
+    "passed": 6,
+    "failed": 1,
+    "failures": [
+     "unique Alt shortcuts: chat"
+    ]
+   },
+   {
+    "suite": "accessibility (test_accessibility)",
+    "total": 46,
+    "passed": 43,
+    "failed": 3,
+    "failures": [
+     "ACE-02 every button has an Alt shortcut: settings",
+     "ACE-15 every translatable text has a Translators comment",
+     "ACE-16 interface fully translated to pt_BR"
+    ]
+   },
+   {
+    "suite": "security (test_security)",
+    "total": 34,
+    "passed": 30,
+    "failed": 4,
+    "failures": [
+     "SEG-09 compressed document that expands to 80 MB is refused (file has 79 KB)",
+     "SEG-13 bandit: no medium or high severity issue",
+     "SEG-18 there is a limit for the size of an answer",
+     "SEG-19 API key is never re-sent to another address by a redirect"
+    ]
+   },
+   {
+    "suite": "package (build.py)",
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "failures": []
+   }
+  ]
+ },
+ {
+  "number": 3,
+  "date": "2026-10-03T20:03:18-03:00",
+  "version": "1.4.0",
+  "note": "Execução 3: depois das correções P-01 a P-08",
+  "total": 375,
+  "passed": 374,
+  "failed": 1,
+  "corrected": [
+   "accessibility (test_accessibility) :: ACE-16 interface fully translated to pt_BR",
+   "security (test_security) :: SEG-09 compressed document that expands to 80 MB is refused (file has 79 KB)",
+   "security (test_security) :: SEG-13 bandit: no medium or high severity issue",
+   "security (test_security) :: SEG-18 there is a limit for the size of an answer",
+   "security (test_security) :: SEG-19 API key is never re-sent to another address by a redirect",
+   "translation (test_translation) :: unique Alt shortcuts: chat"
+  ],
+  "suites": [
+   {
+    "suite": "unit (python 3.11)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.12)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.13)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "interface (test_gui)",
+    "total": 141,
+    "passed": 141,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "visual theme (test_theme)",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "translation (test_translation)",
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "accessibility (test_accessibility)",
+    "total": 46,
+    "passed": 45,
+    "failed": 1,
+    "failures": [
+     "ACE-15 every translatable text has a Translators comment"
+    ]
+   },
+   {
+    "suite": "security (test_security)",
+    "total": 35,
+    "passed": 35,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "package (build.py)",
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "failures": []
+   }
+  ]
+ },
+ {
+  "number": 4,
+  "date": "2026-10-03T20:03:49-03:00",
+  "version": "1.4.0",
+  "note": "Execução 4: comentário para tradutores do subtítulo da tela Conectar conta (P-02)",
+  "total": 375,
+  "passed": 375,
+  "failed": 0,
+  "corrected": [
+   "accessibility (test_accessibility) :: ACE-15 every translatable text has a Translators comment"
+  ],
+  "suites": [
+   {
+    "suite": "unit (python 3.11)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.12)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.13)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "interface (test_gui)",
+    "total": 141,
+    "passed": 141,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "visual theme (test_theme)",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "translation (test_translation)",
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "accessibility (test_accessibility)",
+    "total": 46,
+    "passed": 46,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "security (test_security)",
+    "total": 35,
+    "passed": 35,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "package (build.py)",
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "failures": []
+   }
+  ]
+ },
+ {
+  "number": 5,
+  "date": "2026-10-03T20:06:03-03:00",
+  "version": "1.4.0",
+  "note": "Execução 5: verificação final depois da documentação, do CLAUDE.md e da automação do GitHub",
+  "total": 375,
+  "passed": 375,
+  "failed": 0,
+  "corrected": [],
+  "suites": [
+   {
+    "suite": "unit (python 3.11)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.12)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.13)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "interface (test_gui)",
+    "total": 141,
+    "passed": 141,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "visual theme (test_theme)",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "translation (test_translation)",
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "accessibility (test_accessibility)",
+    "total": 46,
+    "passed": 46,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "security (test_security)",
+    "total": 35,
+    "passed": 35,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "package (build.py)",
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "failures": []
+   }
+  ]
+ }
+]

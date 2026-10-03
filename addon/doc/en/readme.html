@@ -9,7 +9,7 @@
 <ul>
 <li>Author: Wellington Cruz
 </li>
-<li>Version: 1.3.0
+<li>Version: 1.4.0
 </li>
 <li>Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 </li>
@@ -41,7 +41,7 @@
 </ol>
 <h2>The chat window</h2>
 <p>Open it with <strong>NVDA+Alt+I</strong> or NVDA menu &gt; Tools &gt; <strong>NVDAIAs - Chat with AI</strong>. Focus starts in the Question field.</p>
-<p>Tab order: <strong>AI</strong> (combo box), <strong>Model</strong>, <strong>Conversation</strong> (a tree: first the collapsed <strong>Previous conversations</strong> item, then the messages of the current conversation), <strong>Question</strong>, <strong>Attach files</strong>, Send, the <strong>Attached files</strong> list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, New conversation, Save conversation, Connect account, Settings and Close. <strong>Shift+Tab from the Question field goes straight to the conversation list.</strong></p>
+<p>Tab order: <strong>AI</strong> (combo box), <strong>Model</strong>, <strong>Conversation</strong> (a tree: first the collapsed <strong>Previous conversations</strong> item, then the messages of the current conversation), <strong>Question</strong>, <strong>Attach files</strong>, Send, the <strong>Attached files</strong> list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings and Close. <strong>Shift+Tab from the Question field goes straight to the conversation list.</strong></p>
 <p>The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a <strong>thick orange frame around the field that has the focus</strong>. A <strong>status line</strong> under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.</p>
 <table border="1">
 <tr><th>Where</th><th>Key</th><th>Action</th></tr>
@@ -49,13 +49,15 @@
 <tr><td>Question</td><td>Shift+Enter</td><td>New line</td></tr>
 <tr><td>Question</td><td>Shift+Tab</td><td>Goes to the conversation list</td></tr>
 <tr><td>Conversation</td><td>Right / Left arrow</td><td>Expands / collapses "Previous conversations" or a previous conversation</td></tr>
-<tr><td>Conversation, current message</td><td>Enter</td><td>Opens the full message in a browse mode window (headings, lists, links)</td></tr>
+<tr><td>Conversation, current message</td><td>Enter, Applications key or Shift+F10</td><td>Opens the <strong>message actions</strong> menu</td></tr>
 <tr><td>Conversation, previous conversation or one of its messages</td><td>Enter</td><td>Reopens that conversation to be continued</td></tr>
 <tr><td>Conversation</td><td>Ctrl+C</td><td>Copies the selected message</td></tr>
 <tr><td>Conversation, previous conversation</td><td>Delete</td><td>Deletes it from the history (asks first)</td></tr>
 <tr><td>Anywhere</td><td>Escape</td><td>Closes the window; the conversation stays open and is already saved</td></tr>
 </table>
 <p>While waiting, a short beep plays every 1.5 seconds. When the answer arrives NVDA reads it (press Ctrl to stop). On errors, NVDA explains what happened and puts the question back in the field. You can switch AI in the middle of a conversation: the new AI receives the whole history.</p>
+<h3>Message actions</h3>
+<p>Enter (or the Applications key, Shift+F10 or the <strong>Actions for this message</strong> button) on a message of the current conversation opens a menu: <strong>Read message</strong> (browse mode window), <strong>Copy</strong>, <strong>Delete</strong> (asks first; also updates the history), <strong>Translate to</strong> (12 languages), <strong>Describe this image in more detail</strong> (messages with images and their answers) and <strong>Improve this answer</strong> (AI answers). Messages of previous conversations offer Read, Copy and Open this conversation. Actions that ask the AI something appear in the conversation as a new question with its answer.</p>
 <h3>Attach files</h3>
 <p><strong>Attach files</strong> (next to the Question field, Tab from it) opens the standard Windows file dialog with all formats; several files can be chosen.</p>
 <table border="1">
@@ -95,6 +97,13 @@
 </li>
 </ul>
 <h2>Changes</h2>
+<h3>1.4.0</h3>
+<ul>
+<li>Message actions (Enter, Applications key or button): read, copy, delete, translate to 12 languages, describe image in more detail, improve answer.
+</li>
+<li>Security and accessibility fixes found by the new test plan (docs/SDD-TESTES.md).
+</li>
+</ul>
 <h3>1.3.0</h3>
 <ul>
 <li>Attach files button next to the question, any file: images and PDF to the three AIs; Office, OpenDocument, EPUB, RTF, HTML and text files read locally; audio and video to Gemini.

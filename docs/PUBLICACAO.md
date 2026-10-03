@@ -2,7 +2,10 @@
 
 A Loja de Complementos do NVDA é alimentada pelo repositório público `nvaccess/addon-datastore`, no GitHub. A publicação é feita por um formulário (issue) nesse repositório, que aponta para o arquivo `.nvda-addon` hospedado em algum endereço https. O caminho mais simples é usar o próprio GitHub para hospedar o código e o arquivo.
 
-## 1. Teste no seu NVDA antes de publicar
+## 1. Rode os testes automáticos e teste no seu NVDA
+
+**Toda nova versão passa pelo processo do SDD de testes** (`docs/SDD-TESTES.md`, seção 9, e `CLAUDE.md`). Rode `python3 tests/run_all.py` e corrija até chegar a 0 falhas. Registre os problemas em `reports/PROBLEMAS-<versão>.md` e o resultado em `reports/RELATORIO-TESTES-<versão>.md`. Mesmo que você esqueça, a automação do GitHub roda todos os testes antes de publicar e bloqueia a versão se algum falhar.
+
 
 Siga o roteiro de `docs/TESTES.md`, na parte "Teste no Windows com o NVDA". Os testes automáticos rodam fora do Windows; só o teste no seu computador confirma a criptografia dos tokens (DPAPI), a captura de tela e as teclas no Windows de verdade.
 
@@ -50,8 +53,9 @@ Alternativa sem automação: rode `python build.py` (precisa do Python instalado
 ## 5. Próximas versões
 
 1. Atualize o número em `version` no `addon/manifest.ini` (por exemplo `1.0.1`), o `changelog` do manifesto e o `CHANGELOG.md`.
-2. Quando sair uma nova versão do NVDA, teste e atualize `lastTestedNVDAVersion`. A primeira versão de cada ano do NVDA (2027.1, por exemplo) costuma quebrar a compatibilidade dos complementos: o NVDAIAs só será aceito nela depois de testado e com `lastTestedNVDAVersion` atualizado.
-3. Faça commit, crie a tag (`git tag v1.0.1` e `git push origin v1.0.1`) e envie o novo endereço de download pelo mesmo formulário **Add-on registration**. Atualizações de um publicador já aprovado normalmente não passam por nova aprovação manual.
+2. Siga o processo de testes do passo 1, até 0 falhas, e gere os relatórios da versão.
+3. Quando sair uma nova versão do NVDA, teste e atualize `lastTestedNVDAVersion`. A primeira versão de cada ano do NVDA (2027.1, por exemplo) costuma quebrar a compatibilidade dos complementos: o NVDAIAs só será aceito nela depois de testado e com `lastTestedNVDAVersion` atualizado.
+4. Faça commit, crie a tag (`git tag v1.0.1` e `git push origin v1.0.1`) e envie o novo endereço de download pelo mesmo formulário **Add-on registration**. Atualizações de um publicador já aprovado normalmente não passam por nova aprovação manual.
 
 ## Observações para a revisão
 

@@ -25,6 +25,11 @@ from xml.etree import ElementTree
 MAX_FILE_BYTES = 20 * 1024 * 1024
 #: Extracted text is cut after this many characters.
 MAX_TEXT_CHARS = 300000
+#: Documents inside zip files (Office, OpenDocument, EPUB) may not expand to more than this
+#: (protection against "zip bombs" that would fill NVDA's memory).
+MAX_UNZIPPED_BYTES = 40 * 1024 * 1024
+#: Expansion ratio above which a big member of a zip file is considered a bomb.
+MAX_COMPRESSION_RATIO = 200
 
 NATIVE_IMAGE_TYPES = {"image/png", "image/jpeg", "image/gif", "image/webp"}
 CONVERTIBLE_IMAGE_EXT = {".bmp", ".tif", ".tiff", ".ico", ".pcx", ".tga", ".pnm", ".ppm", ".pgm", ".xpm", ".cur", ".iff"}
@@ -39,7 +44,7 @@ OFFICE_LEGACY = {".doc", ".xls", ".ppt", ".pps", ".wps", ".xlsb"}
 
 
 class AttachmentError(Exception):
-	"""reason: "empty", "tooBig", "unreadable", "legacyOffice", "binary"."""
+	"""reason: "empty", "tooBig", "unreadable", "legacyOffice", "binary", "suspicious"."""
 
 	def __init__(self, reason, name):
 		super().__init__("%s: %s" % (reason, name))
@@ -150,7 +155,10 @@ def fromBytes(name, data, convertImage=None):
 		raise AttachmentError("legacyOffice", name)
 
 	if data[:2] == b"PK":
-		text = _extractZipDocument(data, ext)
+		try:
+			text = _extractZipDocument(data, ext)
+		except _UnsafeDocument:
+			raise AttachmentError("suspicious", name)
 		if text is not None:
 			return _textAttachment(name, text)
 		raise AttachmentError("binary", name)
@@ -244,12 +252,27 @@ _S = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
 _R = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
 
 
+class _UnsafeDocument(Exception):
+	"""Zip bomb, or XML with DTD/entities (billion laughs, XXE)."""
+
+
+def _checkZipSizes(z):
+	total = 0
+	for info in z.infolist():
+		total += info.file_size
+		if info.file_size > MAX_UNZIPPED_BYTES or total > MAX_UNZIPPED_BYTES:
+			raise _UnsafeDocument("expands too much")
+		if info.file_size > 1024 * 1024 and info.compress_size and info.file_size / info.compress_size > MAX_COMPRESSION_RATIO:
+			raise _UnsafeDocument("compression ratio")
+
+
 def _extractZipDocument(data, ext):
 	import io
 	try:
 		z = zipfile.ZipFile(io.BytesIO(data))
 	except zipfile.BadZipFile:
 		return None
+	_checkZipSizes(z)
 	names = set(z.namelist())
 	try:
 		if "word/document.xml" in names:
@@ -267,8 +290,18 @@ def _extractZipDocument(data, ext):
 	return None
 
 
+_DTD_RE = re.compile(rb"<!\s*(DOCTYPE|ENTITY)", re.I)
+
+
 def _xml(z, name):
-	return ElementTree.fromstring(z.read(name))
+	data = z.read(name)
+	# Office, OpenDocument and EPUB content never needs a DTD. Refusing DTDs blocks
+	# entity expansion ("billion laughs") and external entities (XXE) whatever the
+	# version of expat bundled with NVDA.
+	if _DTD_RE.search(data):
+		raise _UnsafeDocument("DTD")
+	# DTD and entities were refused above.
+	return ElementTree.fromstring(data)  # nosec B314
 
 
 def _docx(z):

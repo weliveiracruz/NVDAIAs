@@ -21,7 +21,23 @@ class Handler(BaseHTTPRequestHandler):
 	def log_message(self, *a):
 		pass
 
+	def _redirect(self, url):
+		self.send_response(307)
+		self.send_header("Location", url)
+		self.send_header("Content-Length", "0")
+		self.end_headers()
+
 	def _send(self, status, body):
+		if status == "redirect":
+			return self._redirect(body)
+		if status == "raw":
+			data = body if isinstance(body, bytes) else body.encode("utf-8")
+			self.send_response(200)
+			self.send_header("Content-Type", "application/json")
+			self.send_header("Content-Length", str(len(data)))
+			self.end_headers()
+			self.wfile.write(data)
+			return
 		data = json.dumps(body).encode("utf-8")
 		self.send_response(status)
 		self.send_header("Content-Type", "application/json")

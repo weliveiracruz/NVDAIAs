@@ -2,6 +2,10 @@
 
 ## Testes automáticos (já executados)
 
+A partir da versão 1.4.0, o plano completo de testes está no **SDD de testes** (`docs/SDD-TESTES.md`), com os casos funcionais (FUN), de acessibilidade (ACE) e de vulnerabilidade (SEG). Para rodar todas as suítes e gerar o relatório: `python3 tests/run_all.py`. O resultado da última execução fica em `reports/ULTIMA-EXECUCAO.md`, o histórico de execuções em `reports/execucoes.json` e o relatório de cada versão em `reports/RELATORIO-TESTES-<versão>.md`.
+
+O resumo abaixo é das versões anteriores.
+
 Os testes ficam na pasta `tests` e rodam em Linux, com o wxPython de verdade (a mesma biblioteca de interface do NVDA) e um servidor local que imita as APIs do ChatGPT, do Gemini e do Claude, conferindo cabeçalhos de autenticação e o formato de cada requisição. Os módulos do NVDA são substituídos por versões simuladas, exceto o `guiHelper`, que é o arquivo original do NVDA.
 
 Para rodar tudo: `tests/run_all.sh` (precisa de `python3-wxgtk4.0` e `xvfb`). A automação do GitHub roda os mesmos testes a cada envio.
@@ -44,7 +48,7 @@ Os testes automáticos não substituem estes pontos:
 1. Instale o pacote mais recente da pasta `dist` (Enter sobre o arquivo) e reinicie o NVDA.
 2. Pressione NVDA+Alt+I. A tela Conectar conta deve abrir. Escolha Gemini (tem nível gratuito), abra a página, gere a chave, cole e pressione Conectar. Deve aparecer "Conectado ao Gemini".
 3. Na janela de conversa, digite "Qual é a capital do Brasil?" e pressione Enter. Deve ouvir "Enviado para o Gemini", bipes curtos e depois a resposta.
-4. Pressione Shift+Tab: o foco deve ir para a árvore Conversa. Use as setas, pressione Enter numa resposta (abre a janela de leitura; Esc fecha) e Ctrl+C (copia).
+4. Pressione Shift+Tab: o foco deve ir para a árvore Conversa. Use as setas e pressione Enter numa resposta: o menu Ações da mensagem deve abrir. Teste Ler mensagem (abre a janela de leitura; Esc fecha), Traduzir para > inglês e Melhorar esta resposta. Teste também a tecla Aplicações e Ctrl+C.
 5. Feche a janela com Esc, reinicie o NVDA e abra de novo com NVDA+Alt+I. Pressione Shift+Tab, Home e Seta para a direita: "Conversas anteriores" deve mostrar a conversa do passo 3. Expanda, desça até uma mensagem e pressione Enter: a conversa volta a ser a atual e o foco vai para a Pergunta.
 6. Pressione Tab para voltar à pergunta. Pergunte "E a da Argentina?" para conferir que a IA lembra da conversa.
 7. Pressione Tab no campo Pergunta até Anexar arquivos, escolha um PDF e um .docx e pergunte "Resuma estes arquivos". Teste também um MP3 com o Gemini.

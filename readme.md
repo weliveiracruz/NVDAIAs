@@ -1,7 +1,7 @@
 # NVDAIAs – Chat with ChatGPT, Gemini and Claude from NVDA
 
 * Author: Wellington Cruz
-* Version: 1.3.0
+* Version: 1.4.0
 * Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 * License: GNU General Public License, version 2
 * Documentation in Portuguese (Brazil): docs/pt_BR/readme.md
@@ -31,7 +31,7 @@ The three services only let third-party programs connect through an **access tok
 
 Open it with **NVDA+Alt+I** or NVDA menu > Tools > **NVDAIAs - Chat with AI**. Focus starts in the Question field.
 
-Tab order: **AI** (combo box), **Model**, **Conversation** (a tree: first the collapsed **Previous conversations** item, then the messages of the current conversation), **Question**, **Attach files**, Send, the **Attached files** list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, New conversation, Save conversation, Connect account, Settings and Close. **Shift+Tab from the Question field goes straight to the conversation list.**
+Tab order: **AI** (combo box), **Model**, **Conversation** (a tree: first the collapsed **Previous conversations** item, then the messages of the current conversation), **Question**, **Attach files**, Send, the **Attached files** list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings and Close. **Shift+Tab from the Question field goes straight to the conversation list.**
 
 The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a **thick orange frame around the field that has the focus**. A **status line** under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.
 
@@ -41,13 +41,17 @@ The window has a visual theme that also helps people with low vision: navy heade
 | Question | Shift+Enter | New line |
 | Question | Shift+Tab | Goes to the conversation list |
 | Conversation | Right / Left arrow | Expands / collapses "Previous conversations" or a previous conversation |
-| Conversation, current message | Enter | Opens the full message in a browse mode window (headings, lists, links) |
+| Conversation, current message | Enter, Applications key or Shift+F10 | Opens the **message actions** menu |
 | Conversation, previous conversation or one of its messages | Enter | Reopens that conversation to be continued |
 | Conversation | Ctrl+C | Copies the selected message |
 | Conversation, previous conversation | Delete | Deletes it from the history (asks first) |
 | Anywhere | Escape | Closes the window; the conversation stays open and is already saved |
 
 While waiting, a short beep plays every 1.5 seconds. When the answer arrives NVDA reads it (press Ctrl to stop). On errors, NVDA explains what happened and puts the question back in the field. You can switch AI in the middle of a conversation: the new AI receives the whole history.
+
+### Message actions
+
+Enter (or the Applications key, Shift+F10 or the **Actions for this message** button) on a message of the current conversation opens a menu: **Read message** (browse mode window), **Copy**, **Delete** (asks first; also updates the history), **Translate to** (12 languages), **Describe this image in more detail** (messages with images and their answers) and **Improve this answer** (AI answers). Messages of previous conversations offer Read, Copy and Open this conversation. Actions that ask the AI something appear in the conversation as a new question with its answer.
 
 ### Attach files
 
@@ -92,6 +96,11 @@ NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for each AI the to
 * Conversations are saved automatically after each answer in the `NVDAIAs-history` folder of the NVDA configuration, **encrypted with DPAPI** like the tokens (screenshots and attached files included). Delete one with the Delete key, delete all in the settings or turn the history off. The history is deleted when the add-on is uninstalled. **Save conversation** writes a plain text file.
 
 ## Changes
+
+### 1.4.0
+
+* Message actions (Enter, Applications key or button): read, copy, delete, translate to 12 languages, describe image in more detail, improve answer.
+* Security and accessibility fixes found by the new test plan (docs/SDD-TESTES.md).
 
 ### 1.3.0
 

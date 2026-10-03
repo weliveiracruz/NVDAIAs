@@ -25,7 +25,7 @@ results = []
 
 
 def check(name, ok, info=""):
-	results.append(ok)
+	results.append((name, bool(ok)))
 	print(("PASS " if ok else "FAIL ") + name + ("" if ok else "  -> %s" % (info,)))
 
 
@@ -49,7 +49,7 @@ def focusOrder(dlg):
 
 dlg = chatDialog.ChatDialog.showInstance(plugin.session)
 order = focusOrder(dlg)
-expected = [dlg.providerChoice, dlg.modelCombo, dlg.conversationTree, dlg.questionEdit, dlg.attachButton, dlg.sendButton, dlg.cancelButton, dlg.readButton, dlg.copyButton, dlg.newButton, dlg.saveButton, dlg.connectButton, dlg.settingsButton, dlg.closeButton]
+expected = [dlg.providerChoice, dlg.modelCombo, dlg.conversationTree, dlg.questionEdit, dlg.attachButton, dlg.sendButton, dlg.cancelButton, dlg.readButton, dlg.copyButton, dlg.actionsButton, dlg.newButton, dlg.saveButton, dlg.connectButton, dlg.settingsButton, dlg.closeButton]
 check("tab order with theme", order == expected, [type(c).__name__ for c in order])
 check("header present and not focusable", hasattr(dlg, "header") and not dlg.header.AcceptsFocusFromKeyboard())
 check("page colour applied", dlg.GetBackgroundColour() == theme.color("surface.page"))
@@ -64,7 +64,7 @@ dlg.Close()
 core.conf()["visualTheme"] = False
 dlg = chatDialog.ChatDialog.showInstance(plugin.session)
 check("theme off: no header", not hasattr(dlg, "header"))
-check("theme off: same tab order", focusOrder(dlg) == [dlg.providerChoice, dlg.modelCombo, dlg.conversationTree, dlg.questionEdit, dlg.attachButton, dlg.sendButton, dlg.cancelButton, dlg.readButton, dlg.copyButton, dlg.newButton, dlg.saveButton, dlg.connectButton, dlg.settingsButton, dlg.closeButton])
+check("theme off: same tab order", focusOrder(dlg) == [dlg.providerChoice, dlg.modelCombo, dlg.conversationTree, dlg.questionEdit, dlg.attachButton, dlg.sendButton, dlg.cancelButton, dlg.readButton, dlg.copyButton, dlg.actionsButton, dlg.newButton, dlg.saveButton, dlg.connectButton, dlg.settingsButton, dlg.closeButton])
 check("theme off: status line still informs", "connected" in dlg.statusLine.GetLabel())
 dlg.Close()
 core.conf()["visualTheme"] = True
@@ -77,6 +77,8 @@ theme.isHighContrast = original
 core.conf()["largeText"] = True
 check("larger text scale", theme.fontScale() == 1.25 and theme.font("size.body", scale=theme.fontScale()).GetPointSize() == 14)
 plugin.terminate()
-failed = results.count(False)
-print("\n%d checks, %d failed" % (len(results), failed))
-sys.exit(1 if failed else 0)
+failedNames = [n for n, ok in results if not ok]
+print("\n%d checks, %d failed" % (len(results), len(failedNames)))
+from _results import emit  # noqa: E402
+emit("visual theme (test_theme)", [n for n, ok in results], failedNames)
+sys.exit(1 if failedNames else 0)

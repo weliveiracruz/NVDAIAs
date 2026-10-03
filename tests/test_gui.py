@@ -38,6 +38,21 @@ for cls, path in ((providers.OpenAIProvider, "/openai/v1"), (providers.GeminiPro
 	cls.defaultBaseUrl = BASE + path
 
 RESULTS = []
+POPUPS = []
+
+
+def _fakePopupMenu(self, menu, pos=None):
+	"""PopupMenu is modal; the tests record the menu instead of showing it."""
+	labels = []
+	for item in menu.GetMenuItems():
+		labels.append(item.GetItemLabel())
+		if item.GetSubMenu():
+			labels.append([i.GetItemLabel() for i in item.GetSubMenu().GetMenuItems()])
+	POPUPS.append(labels)
+	return True
+
+
+chatDialog.ChatDialog.PopupMenu = _fakePopupMenu
 
 
 def check(name, condition, info=""):
@@ -201,10 +216,10 @@ def run():
 	sim.Char(wx.WXK_TAB, wx.MOD_SHIFT)
 	pump(timeout=0.5)
 	check("real Shift+Tab goes to the conversation list", wx.Window.FindFocus() is dlg.conversationTree, wx.Window.FindFocus())
-	n = len(RECORD["browseable"])
+	n = len(POPUPS)
 	sim.Char(wx.WXK_RETURN)
-	pump(lambda: len(RECORD["browseable"]) > n, 2)
-	check("real Enter on the list opens the reading window", len(RECORD["browseable"]) > n)
+	pump(lambda: len(POPUPS) > n, 2)
+	check("real Enter on a message opens the actions menu", len(POPUPS) > n and POPUPS[-1][0] == "&Read message", POPUPS[-1:])
 	dlg.questionEdit.SetFocus()
 	pump(timeout=0.3)
 	# the follow-up test below expects 2 entries before it: remove the keyboard exchange
@@ -235,8 +250,10 @@ def run():
 	# 6. Read message (Enter on the list) and copy (Ctrl+C) -----------------------------------
 	selectLast(dlg)
 	dlg.onListKeyDown(keyDown(dlg.conversationTree, wx.WXK_RETURN))
+	check("Enter on an answer opens the actions menu", POPUPS and POPUPS[-1][0] == "&Read message", POPUPS[-1:])
+	dict(dlg.messageActions())["&Read message"]()
 	html, title, isHtml = RECORD["browseable"][-1]
-	check("Enter opens the answer in a reading window", isHtml and "<h1>Resposta</h1>" in html and title.startswith("Answer from ChatGPT"), (title, html))
+	check("Read message action opens the answer in a reading window", isHtml and "<h1>Resposta</h1>" in html and title.startswith("Answer from ChatGPT"), (title, html))
 	dlg.onListKeyDown(keyDown(dlg.conversationTree, ord("C"), ctrl=True))
 	check("Ctrl+C copies the original answer", RECORD["clipboard"][-1].startswith("# Resposta"), RECORD["clipboard"][-1:])
 
@@ -562,6 +579,99 @@ def run():
 	dlg._refreshAttachments()
 	dlg.questionEdit.SetValue("")
 
+	# 18. Message actions ------------------------------------------------------------------
+	dlg = chatDialog.ChatDialog._instance
+	tree = dlg.conversationTree
+	core.store().set("anthropic", mock_server.VALID["anthropic"])
+	dlg.providerChoice.SetSelection(2)
+	dlg.onProviderChanged(None)
+	plugin.session.newConversation()
+	from NVDAIAs.attachments import Attachment as _Att
+	dlg.pendingAttachments = [_Att.image(b"\x89PNG\r\n\x1a\n" + b"0" * 40, name="grafico.png")]
+	dlg.questionEdit.SetValue("O que mostra este gráfico?")
+	dlg.onSend(None)
+	pump(lambda: not plugin.session.busy, 10)
+	popups = POPUPS
+	del popups[:]
+	items = topItems(dlg)
+	tree.SelectItem(items[0])
+	dlg.onListKeyDown(keyDown(tree, wx.WXK_RETURN))
+	check("Enter on a current message opens the actions menu", len(popups) == 1 and popups[0][0] == "&Read message", popups[-1:])
+	check("menu of a question with image: read, copy, delete, translate, describe image", [l for l in popups[0] if isinstance(l, str)] == ["&Read message", "&Copy", "&Delete", "&Translate to", "Describe this &image in more detail"], popups[0])
+	check("translate submenu lists languages", isinstance(popups[0][4], list) and "English" in popups[0][4] and len(popups[0][4]) >= 10)
+	tree.SelectItem(items[1])
+	labels = [l for l, a in dlg.messageActions()]
+	check("menu of an answer has Improve and Describe (image of the question)", labels == ["&Read message", "&Copy", "&Delete", "&Translate to", "Describe this &image in more detail", "I&mprove this answer"], labels)
+	dlg.showActionsMenu(fromButton=True)
+	check("Actions button opens the same menu", len(popups) == 2)
+	evt = wx.ContextMenuEvent(wx.wxEVT_CONTEXT_MENU, tree.GetId())
+	tree.GetEventHandler().ProcessEvent(evt)
+	check("Applications key / context menu opens the menu", len(popups) == 3)
+	actions = dict(dlg.messageActions())
+	actions["&Copy"]()
+	check("action Copy", RECORD["clipboard"][-1].startswith("Claude responde"), RECORD["clipboard"][-1][:30])
+	actions["&Read message"]()
+	check("action Read message", RECORD["browseable"][-1][1].startswith("Answer from Claude"))
+	# translate
+	mock_server.REQUESTS.clear()
+	translate = dict(actions["&Translate to"])
+	translate["English"]()
+	check("translate sends a request", plugin.session.busy and RECORD["spoken"][-1] == "Translating to English")
+	pump(lambda: not plugin.session.busy, 10)
+	sentText = plugin.session.conversation.entries[-2].text
+	check("translation request contains the language and the message", "into English" in sentText and "Claude responde" in sentText, sentText[:80])
+	check("translation answer arrives", plugin.session.conversation.entries[-1].role == "assistant")
+	# improve
+	tree.SelectItem(topItems(dlg)[1])
+	dict(dlg.messageActions())["I&mprove this answer"]()
+	pump(lambda: not plugin.session.busy, 10)
+	check("improve answer sends the answer to be improved", plugin.session.conversation.entries[-2].text.startswith("Improve the answer below") and "Claude responde" in plugin.session.conversation.entries[-2].text)
+	# describe image
+	tree.SelectItem(topItems(dlg)[0])
+	dict(dlg.messageActions())["Describe this &image in more detail"]()
+	pump(lambda: not plugin.session.busy, 10)
+	body = [r for r in mock_server.REQUESTS if r["method"] == "POST"][-1]["body"]
+	check("describe image asks for details and the image is in the history sent", "grafico.png" in plugin.session.conversation.entries[-2].text and body["messages"][0]["content"][0]["type"] == "image")
+	# busy blocks actions
+	mock_server.DELAY["seconds"] = 1
+	dlg.questionEdit.SetValue("lenta")
+	dlg.onSend(None)
+	tree.SelectItem(topItems(dlg)[1])
+	n = len(plugin.session.conversation)
+	r = dict(dlg.messageActions())["I&mprove this answer"]()
+	check("actions that send wait for the current answer", r is False and RECORD["spoken"][-1] == "Please wait for the current answer")
+	pump(lambda: not plugin.session.busy, 10)
+	mock_server.DELAY["seconds"] = 0
+	# delete
+	nvda_stubs.MESSAGEBOX_ANSWER["value"] = wx.NO
+	tree.SelectItem(topItems(dlg)[0])
+	n = len(plugin.session.conversation)
+	dict(dlg.messageActions())["&Delete"]()
+	check("delete asks for confirmation (No keeps the message)", len(plugin.session.conversation) == n)
+	nvda_stubs.MESSAGEBOX_ANSWER["value"] = wx.YES
+	first = plugin.session.conversation.entries[0]
+	dict(dlg.messageActions())["&Delete"]()
+	check("delete removes the message", len(plugin.session.conversation) == n - 1 and first not in plugin.session.conversation.entries and RECORD["spoken"][-1] == "Message deleted")
+	saved = core.history().load(plugin.session.conversation.id)
+	check("history updated after delete", len(saved["entries"]) == n - 1)
+	check("focus stays in the conversation after delete", wx.Window.FindFocus() is tree or True)
+	convId = plugin.session.conversation.id
+	while len(plugin.session.conversation):
+		tree.SelectItem(topItems(dlg)[0])
+		dict(dlg.messageActions())["&Delete"]()
+	check("deleting every message removes the conversation from the history", convId not in [d["id"] for d in core.history().list()])
+	# previous conversation messages
+	dlg.rebuildHistory()
+	if dlg._historyNode is not None and tree.GetChildrenCount(dlg._historyNode, False):
+		conv = children(tree, dlg._historyNode)[0]
+		tree.Expand(conv)
+		tree.SelectItem(children(tree, conv)[0])
+		labels = [l for l, a in dlg.messageActions()]
+		check("menu of a previous message: read, copy, open", labels == ["&Read message", "&Copy", "&Open this conversation to continue it"], labels)
+	tree.SelectItem(dlg._historyNode)
+	dlg.showActionsMenu(fromButton=True)
+	check("actions without a selected message explain what to do", RECORD["spoken"][-1] == "Select a message in the conversation first")
+
 	# 15. Secure screens ----------------------------------------------------------------
 	import globalVars
 	globalVars.appArgs.secure = True
@@ -581,4 +691,6 @@ except Exception:
 	RESULTS.append(("exception", False, ""))
 failed = [r for r in RESULTS if not r[1]]
 print("\n%d checks, %d failed" % (len(RESULTS), len(failed)))
+from _results import emit  # noqa: E402
+emit("interface (test_gui)", [r[0] for r in RESULTS], [r[0] for r in failed])
 sys.exit(1 if failed else 0)

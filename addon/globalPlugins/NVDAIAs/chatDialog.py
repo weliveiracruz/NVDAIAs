@@ -129,6 +129,8 @@ class ChatDialog(wx.Dialog):
 		self._historyData = {}
 		self.conversationTree.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.onTreeExpanding)
 		self.conversationTree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, lambda evt: self.onTreeActivate())
+		# Applications key, Shift+F10 or right click: actions menu.
+		self.conversationTree.Bind(wx.EVT_CONTEXT_MENU, lambda evt: self.showActionsMenu())
 		conversationBox = wx.BoxSizer(wx.VERTICAL)
 		conversationBox.Add(conversationLabel)
 		conversationBox.AddSpacer(gapS)
@@ -180,6 +182,9 @@ class ChatDialog(wx.Dialog):
 		# Translators: button that copies the selected message.
 		self.copyButton = row1.addButton(self, label=_("C&opy message"))
 		self.copyButton.Bind(wx.EVT_BUTTON, self.onCopyMessage)
+		# Translators: button that opens the menu of actions for the selected message.
+		self.actionsButton = row1.addButton(self, label=_("Act&ions for this message…"))
+		self.actionsButton.Bind(wx.EVT_BUTTON, lambda evt: self.showActionsMenu(fromButton=True))
 		sHelper.addItem(row1)
 
 		row2 = guiHelper.ButtonHelper(wx.HORIZONTAL)
@@ -484,8 +489,8 @@ class ChatDialog(wx.Dialog):
 		evt.Skip()
 
 	def onTreeActivate(self):
-		"""Enter: reads a message of the current conversation; on a previous
-		conversation (or one of its messages) opens it to be continued."""
+		"""Enter: opens the actions menu of a message of the current conversation;
+		on a previous conversation (or one of its messages) opens it to be continued."""
 		data = self.selectedData()
 		if not data:
 			return
@@ -500,9 +505,175 @@ class ChatDialog(wx.Dialog):
 			self.openPreviousConversation(data[1])
 		elif kind == "msg":
 			if data[1] is None:
-				self.onReadMessage(None)
+				self.showActionsMenu()
 			else:
 				self.openPreviousConversation(data[1])
+
+	# Message actions ---------------------------------------------------------------
+
+	def translationLanguages(self):
+		return [
+			# Translators: a target language of the "Translate to" submenu.
+			_("Portuguese (Brazil)"),
+			# Translators: a target language of the "Translate to" submenu.
+			_("English"),
+			# Translators: a target language of the "Translate to" submenu.
+			_("Spanish"),
+			# Translators: a target language of the "Translate to" submenu.
+			_("French"),
+			# Translators: a target language of the "Translate to" submenu.
+			_("German"),
+			# Translators: a target language of the "Translate to" submenu.
+			_("Italian"),
+			# Translators: a target language of the "Translate to" submenu.
+			_("Japanese"),
+			# Translators: a target language of the "Translate to" submenu.
+			_("Chinese (simplified)"),
+			# Translators: a target language of the "Translate to" submenu.
+			_("Korean"),
+			# Translators: a target language of the "Translate to" submenu.
+			_("Arabic"),
+			# Translators: a target language of the "Translate to" submenu.
+			_("Russian"),
+			# Translators: a target language of the "Translate to" submenu.
+			_("Hindi"),
+		]
+
+	def imagesForEntry(self, entry):
+		"""Images of the message, or of the question it answers (for answers)."""
+		entries = self.session.conversation.entries
+		images = [a for a in entry.attachments if a.kind == "image"]
+		if not images and entry.role == "assistant" and entry in entries:
+			index = entries.index(entry)
+			for previous in reversed(entries[:index]):
+				if previous.role == "user":
+					images = [a for a in previous.attachments if a.kind == "image"]
+					break
+		return images
+
+	def messageActions(self, data=None):
+		"""List of (label, callback) for the selected item; also used by the tests."""
+		data = data or self.selectedData()
+		if not data or data[0] != "msg":
+			return []
+		entry = self.selectedEntry()
+		if entry is None:
+			return []
+		actions = [
+			# Translators: item of the message actions menu.
+			(_("&Read message"), lambda: self.onReadMessage(None)),
+			# Translators: item of the message actions menu.
+			(_("&Copy"), lambda: copyText(entry.text)),
+		]
+		if data[1] is not None:
+			# Translators: item of the actions menu of a message from a previous conversation.
+			actions.append((_("&Open this conversation to continue it"), lambda: self.openPreviousConversation(data[1])))
+			return actions
+		# Translators: item of the message actions menu.
+		actions.append((_("&Delete"), lambda: self.deleteMessage(entry)))
+		languages = [(lang, (lambda l=lang: self.translateMessage(entry, l))) for lang in self.translationLanguages()]
+		# Translators: submenu of the message actions menu.
+		actions.append((_("&Translate to"), languages))
+		if self.imagesForEntry(entry):
+			# Translators: item of the message actions menu, for messages with images.
+			actions.append((_("Describe this &image in more detail"), lambda: self.describeImageInDetail(entry)))
+		if entry.role == "assistant":
+			# Translators: item of the message actions menu, for answers.
+			actions.append((_("I&mprove this answer"), lambda: self.improveAnswer(entry)))
+		return actions
+
+	def showActionsMenu(self, fromButton=False):
+		actions = self.messageActions()
+		if not actions:
+			# Translators: announced when there is no message selected for the actions menu.
+			ui.message(_("Select a message in the conversation first"))
+			if fromButton:
+				self.conversationTree.SetFocus()
+			return
+		menu = wx.Menu()
+		handlers = {}
+
+		def fill(target, items):
+			for label, action in items:
+				if isinstance(action, list):
+					sub = wx.Menu()
+					fill(sub, action)
+					target.AppendSubMenu(sub, label)
+				else:
+					item = target.Append(wx.ID_ANY, label)
+					handlers[item.GetId()] = action
+
+		fill(menu, actions)
+		menu.Bind(wx.EVT_MENU, lambda evt: wx.CallAfter(handlers[evt.GetId()]) if evt.GetId() in handlers else None)
+		tree = self.conversationTree
+		item = tree.GetSelection()
+		position = wx.DefaultPosition
+		if item.IsOk():
+			rect = tree.GetBoundingRect(item)
+			if rect:
+				position = tree.ClientToScreen(rect.GetBottomLeft())
+				position = self.ScreenToClient(position)
+		self.PopupMenu(menu, position)
+		menu.Destroy()
+
+	def _sendAction(self, text, announce):
+		"""Sends a question created by a message action."""
+		if self.session.busy:
+			# Translators: announced when a question is already being answered.
+			ui.message(_("Please wait for the current answer"))
+			return False
+		providerId = self.providerId
+		if not core.store().has(providerId):
+			if not self._runConnect(providerId):
+				return False
+			providerId = self.providerId
+		try:
+			sent = self.session.send(text, providerId=providerId)
+		except core.NoTokenError:
+			sent = False
+		if sent:
+			ui.message(announce)
+			self.questionEdit.SetFocus()
+		return sent
+
+	def deleteMessage(self, entry):
+		label = self._entryLabel(entry)
+		if gui.messageBox(
+			# Translators: confirmation before deleting a message. {message} is the start of the message.
+			_("Delete this message from the conversation?\n{message}").format(message=textutils.oneLine(label, 200)),
+			"NVDAIAs",
+			wx.YES_NO | wx.ICON_QUESTION,
+			self,
+		) != wx.YES:
+			return False
+		if not self.session.deleteEntry(entry):
+			ui.message(_("Please wait for the current answer"))
+			return False
+		# Translators: announced after deleting a message.
+		ui.message(_("Message deleted"))
+		self.conversationTree.SetFocus()
+		return True
+
+	def translateMessage(self, entry, language):
+		# Translators: request sent to the AI to translate a message. {language} is the target language, {text} the message.
+		text = _("Translate the message below into {language}. Answer only with the translation, keeping the formatting.\n\n{text}").format(language=language, text=entry.text)
+		# Translators: announced after asking for a translation. {language} is the target language.
+		return self._sendAction(text, _("Translating to {language}").format(language=language))
+
+	def describeImageInDetail(self, entry):
+		names = ", ".join(a.name for a in self.imagesForEntry(entry))
+		# Translators: request sent to the AI to describe images in detail. {names} are the image file names.
+		text = _("Describe in much more detail the image(s) {names} sent earlier in this conversation: every element, "
+			"all visible text, colours, positions and anything else a blind person would want to know."
+		).format(names=names)
+		# Translators: announced after asking for a detailed description.
+		return self._sendAction(text, _("Asking for a detailed description of the image"))
+
+	def improveAnswer(self, entry):
+		# Translators: request sent to the AI to improve an answer. {text} is the answer.
+		text = _("Improve the answer below: make it clearer, more complete, correct and well organised, in the same language. Answer only with the improved version.\n\n{text}").format(text=entry.text)
+		# Translators: announced after asking for an improved answer.
+		return self._sendAction(text, _("Asking for an improved answer"))
 
 	def openPreviousConversation(self, convId):
 		if self.session.busy:
@@ -641,6 +812,9 @@ class ChatDialog(wx.Dialog):
 		if e.reason == "legacyOffice":
 			# Translators: error for .doc, .xls and .ppt files.
 			return _("The file {name} uses an old Office format that cannot be read here. Open it in Office and save it as .docx, .xlsx, .pptx or PDF, then attach it again.").format(name=e.name)
+		if e.reason == "suspicious":
+			# Translators: error for documents that look malicious (zip bomb, XML entities).
+			return _("The file {name} was not opened because it looks damaged or unsafe (it expands too much or has unsafe content).").format(name=e.name)
 		if e.reason == "binary":
 			# Translators: error for files without readable content (programs, archives...).
 			return _("The AIs cannot read the content of {name}. Convert it to PDF, text or an image and attach it again.").format(name=e.name)

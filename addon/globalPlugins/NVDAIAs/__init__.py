@@ -100,8 +100,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			ui.message(_("Could not capture the screen"))
 			return
 		# Translators: question sent with a screenshot. {what} describes what was captured.
-		question = _(
-			"Describe this image for a blind person ({what}). Start with a short overview, then describe "
+		question = _("Describe this image for a blind person ({what}). Start with a short overview, then describe "
 			"the important elements, any visible text and how they are arranged."
 		).format(what=what)
 

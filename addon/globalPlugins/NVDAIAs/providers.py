@@ -130,7 +130,7 @@ class BaseProvider:
 			kind = "quota"
 		elif status == 404 or "model" in low and ("not found" in low or "does not exist" in low or "not supported" in low):
 			kind = "model"
-		elif status >= 500:
+		elif status >= 500 or 300 <= status < 400:
 			kind = "server"
 		else:
 			kind = "other"
@@ -176,9 +176,48 @@ def _getSslContext():
 	return _sslContext
 
 
+#: Biggest answer accepted from an API (protects NVDA's memory).
+MAX_RESPONSE_BYTES = 32 * 1024 * 1024
+_LOCAL_HOSTS = ("127.0.0.1", "localhost", "::1")
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+	"""The APIs never redirect. Following a redirect would send the API key
+	(Authorization / x-api-key headers) to another address, so it is refused."""
+
+	def redirect_request(self, req, fp, code, msg, headers, newurl):
+		return None
+
+
+_opener = None
+
+
+def _getOpener():
+	global _opener
+	if _opener is None:
+		_opener = urllib.request.build_opener(
+			urllib.request.HTTPSHandler(context=_getSslContext()),
+			_NoRedirect(),
+		)
+	return _opener
+
+
+def _checkUrl(url):
+	"""Only HTTPS is allowed (plain HTTP only to this computer, used by the tests)."""
+	parts = urllib.parse.urlsplit(url)
+	if parts.scheme == "https" or (parts.scheme == "http" and parts.hostname in _LOCAL_HOSTS):
+		return
+	raise ProviderError("network", "refused address: %s://%s" % (parts.scheme, parts.hostname or ""))
+
+
 def _urlopen(req, timeout):
-	with urllib.request.urlopen(req, timeout=timeout, context=_getSslContext()) as resp:
-		return resp.read()
+	_checkUrl(req.full_url)
+	# The scheme was checked above: only https (or http to this computer).
+	with _getOpener().open(req, timeout=timeout) as resp:  # nosec B310
+		data = resp.read(MAX_RESPONSE_BYTES + 1)
+	if len(data) > MAX_RESPONSE_BYTES:
+		raise ProviderError("server", "answer too large")
+	return data
 
 
 # ---------------------------------------------------------------------------

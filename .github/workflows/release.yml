@@ -1,6 +1,7 @@
-# Runs the tests on every push. When a tag like v1.0.0 is pushed, builds the
-# .nvda-addon and publishes it as a GitHub release (the download URL used in the
-# NVDA Add-on Store submission).
+# Runs every test suite of docs/SDD-TESTES.md (functional, accessibility and
+# security) on each push. When a tag like v1.4.0 is pushed and every test passes,
+# builds the .nvda-addon and publishes it as a GitHub release (the download URL
+# used in the NVDA Add-on Store submission). If any test fails, nothing is published.
 name: build
 
 on:
@@ -13,22 +14,24 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  test-and-build:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install wxPython and a virtual display
-        run: sudo apt-get update && sudo apt-get install -y python3-wxgtk4.0 xvfb
-      - name: Unit tests (API clients, text, credentials)
-        run: python3 -m unittest tests/test_pure.py -v
-      - name: Interface tests (chat window, login screen, settings)
-        run: xvfb-run -a /usr/bin/python3 tests/test_gui.py
-      - name: Visual theme tests (contrast, high contrast, tab order)
-        run: xvfb-run -a /usr/bin/python3 tests/test_theme.py
-      - name: Translation tests (pt_BR)
-        run: NVDAIAS_LANG=pt_BR xvfb-run -a /usr/bin/python3 tests/test_translation.py
-      - name: Build add-on
-        run: python3 build.py
+      - name: Install wxPython, virtual display, gettext and bandit
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-wxgtk4.0 xvfb gettext imagemagick
+          /usr/bin/python3 -m pip install --user --break-system-packages bandit
+      - name: Run every test suite (functional, accessibility, security) and build
+        run: /usr/bin/python3 tests/run_all.py --note "GitHub Actions ${{ github.ref_name }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: NVDAIAs-test-reports
+          path: |
+            reports/ULTIMA-EXECUCAO.md
+            reports/execucoes.json
       - uses: actions/upload-artifact@v4
         with:
           name: NVDAIAs

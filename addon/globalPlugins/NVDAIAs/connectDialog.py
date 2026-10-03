@@ -35,24 +35,21 @@ def instructions(providerId):
 	cls = getProviderClass(providerId)
 	steps = {
 		# Translators: steps to create an OpenAI API key.
-		"openai": _(
-			"1. Press the button \"Open page to generate token\". The OpenAI platform (platform.openai.com) opens in your browser.\n"
+		"openai": _("1. Press the button \"Open page to generate token\". The OpenAI platform (platform.openai.com) opens in your browser.\n"
 			"2. Sign in with your OpenAI account.\n"
 			"3. Choose \"Create new secret key\", give it a name such as NVDAIAs and confirm.\n"
 			"4. Copy the key (it starts with sk-) and paste it in the Token field below.\n"
 			"Note: API usage is billed separately from the ChatGPT Plus subscription; the account needs credit."
 		),
 		# Translators: steps to create a Gemini API key.
-		"gemini": _(
-			"1. Press the button \"Open page to generate token\". Google AI Studio (aistudio.google.com) opens in your browser.\n"
+		"gemini": _("1. Press the button \"Open page to generate token\". Google AI Studio (aistudio.google.com) opens in your browser.\n"
 			"2. Sign in with your Google account.\n"
 			"3. Choose \"Create API key\" and confirm.\n"
 			"4. Copy the key and paste it in the Token field below.\n"
 			"Note: Gemini offers a free usage tier with limits."
 		),
 		# Translators: steps to create an Anthropic API key.
-		"anthropic": _(
-			"1. Press the button \"Open page to generate token\". The Claude Console (console.anthropic.com) opens in your browser.\n"
+		"anthropic": _("1. Press the button \"Open page to generate token\". The Claude Console (console.anthropic.com) opens in your browser.\n"
 			"2. Sign in with your Anthropic account.\n"
 			"3. Choose \"Create Key\", give it a name such as NVDAIAs and confirm.\n"
 			"4. Copy the key (it starts with sk-ant-) and paste it in the Token field below.\n"
@@ -76,8 +73,11 @@ class ConnectDialog(wx.Dialog):
 		themed = theme.isEnabled()
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 		if themed:
-			# Translators: title and subtitle of the coloured header of the connect dialog.
-			mainSizer.Add(theme.HeaderPanel(self, _("Connect account"), _("Paste the token generated on the AI's site")), flag=wx.EXPAND)
+			# Translators: title of the coloured header of the connect dialog.
+			headerTitle = _("Connect account")
+			# Translators: subtitle of the coloured header of the connect dialog.
+			headerSubtitle = _("Paste the token generated on the AI's site")
+			mainSizer.Add(theme.HeaderPanel(self, headerTitle, headerSubtitle), flag=wx.EXPAND)
 		sHelper = guiHelper.BoxSizerHelper(self, orientation=wx.VERTICAL)
 
 		# Translators: label of the combo box to choose the AI in the connect dialog.

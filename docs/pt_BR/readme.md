@@ -1,7 +1,7 @@
 # NVDAIAs – Converse com o ChatGPT, o Gemini e o Claude pelo NVDA
 
 * Autor: Wellington Cruz
-* Versão: 1.3.0
+* Versão: 1.4.0
 * Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 * Licença: GNU General Public License, versão 2
 
@@ -53,9 +53,26 @@ Ordem dos elementos com a tecla Tab:
 4. **Pergunta**: campo onde você digita.
 5. **Anexar arquivos** e **Enviar**, ao lado do campo Pergunta.
 6. **Arquivos anexados**: lista que só aparece quando há arquivos esperando para ir com a próxima pergunta.
-7. Botões: Cancelar envio, Ler mensagem, Copiar mensagem, Nova conversa, Salvar conversa, Conectar conta, Configurações e Fechar.
+7. Botões: Cancelar envio, Ler mensagem, Copiar mensagem, **Ações da mensagem**, Nova conversa, Salvar conversa, Conectar conta, Configurações e Fechar.
 
 Como o campo Pergunta vem logo depois da lista, **Shift+Tab no campo Pergunta leva direto para a lista da conversa**, e Tab na lista volta para a pergunta.
+
+### Ações da mensagem
+
+Na árvore Conversa, **Enter** sobre uma mensagem da conversa atual abre o menu de ações. A tecla **Aplicações**, **Shift+F10** e o botão **Ações da mensagem** (Alt+E) abrem o mesmo menu. Use as setas e Enter, ou a letra de cada opção:
+
+| Opção | O que faz | Aparece em |
+|---|---|---|
+| **Ler mensagem** (L) | Abre a mensagem inteira na janela de leitura, com títulos, listas e links. Esc fecha. | Todas as mensagens |
+| **Copiar** (C) | Copia o texto da mensagem | Todas as mensagens |
+| **Excluir** (E) | Apaga a mensagem da conversa e do histórico, depois de confirmar | Mensagens da conversa atual |
+| **Traduzir para** (T) | Submenu com 12 idiomas; pede à IA a tradução da mensagem, que chega como nova resposta | Mensagens da conversa atual |
+| **Descrever esta imagem com mais detalhes** (I) | Pede à IA uma descrição muito mais completa da imagem | Mensagens com imagem e as respostas a elas |
+| **Melhorar esta resposta** (M) | Pede à IA uma versão mais clara, completa e organizada da resposta | Respostas da IA |
+
+Nas mensagens de conversas anteriores, o menu (Aplicações ou Shift+F10) tem Ler mensagem, Copiar e Abrir esta conversa para continuar. O Enter nelas continua reabrindo a conversa.
+
+As ações que pedem algo à IA (traduzir, descrever, melhorar) aparecem na conversa como uma pergunta nova, com resposta. Enquanto uma resposta está sendo esperada, essas ações pedem para você aguardar.
 
 ### Anexar arquivos
 
@@ -105,7 +122,7 @@ O tema se desliga sozinho quando o alto contraste do Windows está ativo. També
 | Campo Pergunta | Shift+Tab | Vai para a lista da conversa |
 | Conversa | Setas para cima e para baixo | Passa pelos itens |
 | Conversa | Seta para a direita / para a esquerda | Expande / recolhe "Conversas anteriores" ou uma conversa anterior |
-| Conversa, mensagem da conversa atual | Enter | Abre a mensagem inteira em uma janela de leitura, com títulos, listas e links, onde você navega com as setas e os comandos do modo de navegação. Esc fecha. |
+| Conversa, mensagem da conversa atual | Enter, tecla Aplicações ou Shift+F10 | Abre o menu **Ações da mensagem** (veja abaixo) |
 | Conversa, conversa anterior ou mensagem dela | Enter | Reabre aquela conversa para continuar |
 | Conversa | Ctrl+C | Copia a mensagem selecionada (atual ou anterior) |
 | Conversa, conversa anterior | Delete | Apaga a conversa do histórico (pede confirmação) |
@@ -155,10 +172,11 @@ Menu do NVDA > Preferências > Configurações > categoria **NVDAIAs**. Também 
 * Para **cada IA** (ChatGPT, Gemini e Claude):
   * **Situação**: diz se há um token salvo e mostra só os 4 últimos caracteres dele.
   * **Novo token**: cole aqui para trocar o token. Vazio mantém o salvo.
-  * **Abrir página para gerar o token**.
-  * **Testar conexão**: confere o token sem gastar créditos e avisa se o modelo escolhido não existe na sua conta.
-  * **Remover token salvo**.
+  * **Abrir página do token** (da IA do grupo).
+  * **Testar conexão com** a IA: confere o token sem gastar créditos e avisa se o modelo escolhido não existe na sua conta.
+  * **Remover token salvo** da IA.
   * **Modelo** e **Atualizar lista de modelos**: baixa da IA a lista de modelos que a sua conta pode usar.
+  * Cada botão leva o nome da IA, por exemplo "Testar conexão com o Gemini", para o leitor de telas dizer de qual IA ele é.
 * **Instruções enviadas à IA em todas as perguntas**: o texto que orienta a IA. O padrão pede respostas no idioma da pergunta, em parágrafos curtos, sem tabelas nem emojis, pensando em quem usa leitor de telas. O botão **Restaurar instruções padrão** volta ao texto original.
 * **Ler as respostas automaticamente quando chegarem** (ligado por padrão).
 * **Bipar enquanto aguarda a resposta** (ligado por padrão).
@@ -194,6 +212,11 @@ Os tokens só são gravados quando você pressiona OK ou Aplicar.
 | "bloqueada pelo provedor" | A IA se recusou a responder ou o filtro de segurança dela bloqueou a pergunta. |
 
 ## Histórico de versões
+
+### 1.4.0
+
+* Ações da mensagem (Enter, tecla Aplicações ou botão): ler, copiar, excluir, traduzir para 12 idiomas, descrever imagem com mais detalhes e melhorar resposta.
+* Correções de segurança e de acessibilidade encontradas pelo novo plano de testes.
 
 ### 1.3.0
 

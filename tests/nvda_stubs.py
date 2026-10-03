@@ -101,6 +101,7 @@ def install(configPath=None):
 	class Log:
 		def __getattr__(self, name):
 			def f(msg, *a, **k):
+				RECORD.setdefault("log", []).append("%s: %s" % (name, msg))
 				if name in ("error", "exception"):
 					RECORD.setdefault("logErrors", []).append(msg)
 			return f

@@ -1,9 +1,3 @@
 #!/bin/sh
-# Runs every test. Needs Linux with python3-wxgtk4.0 and xvfb installed.
-set -e
-cd "$(dirname "$0")/.."
-python3 -m unittest tests/test_pure.py
-xvfb-run -a python3 tests/test_gui.py
-xvfb-run -a python3 tests/test_theme.py
-NVDAIAS_LANG=pt_BR xvfb-run -a python3 tests/test_translation.py
-python3 build.py
+# Same as: python3 tests/run_all.py  (kept for convenience)
+cd "$(dirname "$0")/.." && exec python3 tests/run_all.py "$@"

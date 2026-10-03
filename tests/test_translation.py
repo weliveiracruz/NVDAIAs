@@ -76,4 +76,16 @@ frame.Destroy()
 print("\nFAILURES:" if failures else "\nall translation checks passed")
 for f in failures:
 	print(" -", f)
+CHECKS = {
+	"pt_BR chat window title": "chat title",
+	"pt_BR connection instructions": "connect instructions",
+	"unique Alt shortcuts: chat": "chat: duplicated",
+	"unique Alt shortcuts: connect": "connect: duplicated",
+	"unique Alt shortcuts: settings": "settings (top level): duplicated",
+	"pt_BR error messages without placeholders": "placeholder left",
+	"pt_BR default instructions": "default instructions",
+}
+failedChecks = [name for name, key in CHECKS.items() if any(key in f for f in failures)]
+from _results import emit  # noqa: E402
+emit("translation (test_translation)", list(CHECKS), failedChecks)
 sys.exit(1 if failures else 0)

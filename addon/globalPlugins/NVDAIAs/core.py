@@ -66,8 +66,7 @@ def providerLabel(providerId):
 
 def defaultSystemPrompt():
 	# Translators: default instructions sent to the AI with every question.
-	return _(
-		"You are a helpful assistant. The user is blind and reads your answers with the NVDA screen reader. "
+	return _("You are a helpful assistant. The user is blind and reads your answers with the NVDA screen reader. "
 		"Always answer in the same language as the user's question. Be clear and direct, prefer short "
 		"paragraphs and simple lists, and avoid tables, emojis and decorative symbols."
 	)
@@ -338,6 +337,22 @@ class ChatSession:
 		self.conversation.load(data)
 		self._emit("onHistoryChanged")
 		return self.conversation
+
+	def deleteEntry(self, entry):
+		"""Removes one message of the current conversation and updates the history."""
+		if self.busy and entry is self._pendingEntry:
+			return False
+		self.conversation.remove(entry)
+		if not conf()["saveHistory"]:
+			return True
+		try:
+			if len(self.conversation):
+				history().save(self.conversation.toDict())
+			else:
+				history().delete(self.conversation.id)
+		except Exception:
+			log.error("NVDAIAs: could not update the conversation history", exc_info=True)
+		return True
 
 	def deleteFromHistory(self, convId):
 		history().delete(convId)
