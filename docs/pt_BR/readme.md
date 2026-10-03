@@ -1,7 +1,7 @@
 # NVDAIAs – Converse com o ChatGPT, o Gemini e o Claude pelo NVDA
 
 * Autor: Wellington Cruz
-* Versão: 1.0.0
+* Versão: 1.1.0
 * Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 * Licença: GNU General Public License, versão 2
 
@@ -54,6 +54,12 @@ Ordem dos elementos com a tecla Tab:
 5. Botões: Enviar, Cancelar envio, Ler mensagem, Copiar mensagem, Nova conversa, Salvar conversa, Conectar conta, Configurações e Fechar.
 
 Como o campo Pergunta vem logo depois da lista, **Shift+Tab no campo Pergunta leva direto para a lista da conversa**, e Tab na lista volta para a pergunta.
+
+### Aparência
+
+A janela tem um tema visual pensado também para quem tem baixa visão: cabeçalho azul-marinho com o nome do complemento, fundo claro, destaques em laranja, fontes maiores e uma **moldura laranja grossa em volta do campo que está com o foco**. Logo abaixo do cabeçalho, uma **linha de situação** mostra a IA, o modelo e o estado: conectado, respondendo, ou que a última pergunta falhou. As cores só repetem o que o texto já diz.
+
+O tema se desliga sozinho quando o alto contraste do Windows está ativo. Também pode ser desligado nas configurações, onde há ainda a opção de texto maior. Os botões continuam sendo os botões padrão do Windows, para o NVDA apresentá-los como sempre.
 
 ### Teclas da janela
 
@@ -119,6 +125,8 @@ Menu do NVDA > Preferências > Configurações > categoria **NVDAIAs**. Também 
 * **Ler as respostas automaticamente quando chegarem** (ligado por padrão).
 * **Bipar enquanto aguarda a resposta** (ligado por padrão).
 * **Remover símbolos de formatação ao ler as respostas** (ligado por padrão).
+* **Usar o tema visual nas janelas do NVDAIAs** (ligado por padrão): cores, cabeçalho e moldura de foco.
+* **Texto maior nas janelas do NVDAIAs** (desligado por padrão): aumenta as fontes em 25%.
 * **Tamanho máximo da resposta em tokens (Claude)**: o Claude exige esse limite. Padrão 4096.
 * **Tempo limite para aguardar a resposta**: em segundos. Padrão 120.
 
@@ -146,6 +154,12 @@ Os tokens só são gravados quando você pressiona OK ou Aplicar.
 | "bloqueada pelo provedor" | A IA se recusou a responder ou o filtro de segurança dela bloqueou a pergunta. |
 
 ## Histórico de versões
+
+### 1.1.0
+
+* Tema visual nas janelas do NVDAIAs, construído com design tokens: cabeçalho azul-marinho, destaques em laranja, fontes maiores, linha de situação e moldura de foco grossa. Todas as cores atendem à WCAG 2.2 AA e o tema se desliga sozinho no alto contraste do Windows.
+* Novas opções: usar o tema visual e texto maior.
+* Janela de conversa: IA e Modelo lado a lado e botão Enviar ao lado da pergunta.
 
 ### 1.0.0
 

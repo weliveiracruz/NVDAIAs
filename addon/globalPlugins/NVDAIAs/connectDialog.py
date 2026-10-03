@@ -14,7 +14,7 @@ import wx
 from gui import guiHelper
 from logHandler import log
 
-from . import core
+from . import core, theme
 from .providers import PROVIDER_IDS, getProviderClass
 
 addonHandler.initTranslation()
@@ -73,7 +73,11 @@ class ConnectDialog(wx.Dialog):
 		self.connectedProvider = None
 		self._testing = False
 		providerId = providerId or core.conf()["provider"]
+		themed = theme.isEnabled()
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
+		if themed:
+			# Translators: title and subtitle of the coloured header of the connect dialog.
+			mainSizer.Add(theme.HeaderPanel(self, _("Connect account"), _("Paste the token generated on the AI's site")), flag=wx.EXPAND)
 		sHelper = guiHelper.BoxSizerHelper(self, orientation=wx.VERTICAL)
 
 		# Translators: label of the combo box to choose the AI in the connect dialog.
@@ -82,14 +86,20 @@ class ConnectDialog(wx.Dialog):
 		self.providerChoice.Bind(wx.EVT_CHOICE, self.onProviderChanged)
 
 		# Translators: label of the read-only field with the connection instructions.
-		self.instructionsText = sHelper.addLabeledControl(_("&Instructions:"), wx.TextCtrl, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2, size=(520, 170))
+		instructionsLabel = wx.StaticText(self, label=_("&Instructions:"))
+		self.instructionsText = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2, size=(560, 180))
+		instructionsBox = wx.BoxSizer(wx.VERTICAL)
+		instructionsBox.Add(instructionsLabel)
+		instructionsBox.AddSpacer(theme.space("sm"))
+		instructionsBox.Add(self.instructionsText, proportion=1, flag=wx.EXPAND)
+		sHelper.addItem(instructionsBox, flag=wx.EXPAND)
 
 		# Translators: button that opens the provider site where the token is generated.
 		self.openPageButton = sHelper.addItem(wx.Button(self, label=_("&Open page to generate token")))
 		self.openPageButton.Bind(wx.EVT_BUTTON, lambda evt: openTokenPage(self.providerId))
 
 		# Translators: label of the password field where the token is pasted.
-		self.tokenEdit = sHelper.addLabeledControl(_("&Token (API key):"), wx.TextCtrl, style=wx.TE_PASSWORD)
+		self.tokenEdit = sHelper.addLabeledControl(_("&Token (API key):"), wx.TextCtrl, style=wx.TE_PASSWORD, size=(400, -1))
 
 		self.statusLabel = sHelper.addItem(wx.StaticText(self, label=""))
 
@@ -101,7 +111,10 @@ class ConnectDialog(wx.Dialog):
 		# Translators: cancel button.
 		bHelper.addButton(self, id=wx.ID_CANCEL, label=_("Cancel"))
 		sHelper.addDialogDismissButtons(bHelper)
-		mainSizer.Add(sHelper.sizer, border=guiHelper.BORDER_FOR_DIALOGS, flag=wx.ALL | wx.EXPAND)
+		mainSizer.Add(sHelper.sizer, border=guiHelper.BORDER_FOR_DIALOGS + (theme.space("xs") if themed else 0), flag=wx.ALL | wx.EXPAND)
+		if themed:
+			theme.applyColors(self, bodyControls=(self.instructionsText, self.tokenEdit))
+			self.focusFrames = theme.FocusFrames(self, (self.providerChoice, self.instructionsText, self.tokenEdit))
 		self.SetSizer(mainSizer)
 		mainSizer.Fit(self)
 		self._updateInstructions()

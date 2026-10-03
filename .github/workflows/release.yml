@@ -23,6 +23,8 @@ jobs:
         run: python3 -m unittest tests/test_pure.py -v
       - name: Interface tests (chat window, login screen, settings)
         run: xvfb-run -a /usr/bin/python3 tests/test_gui.py
+      - name: Visual theme tests (contrast, high contrast, tab order)
+        run: xvfb-run -a /usr/bin/python3 tests/test_theme.py
       - name: Translation tests (pt_BR)
         run: NVDAIAS_LANG=pt_BR xvfb-run -a /usr/bin/python3 tests/test_translation.py
       - name: Build add-on

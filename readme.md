@@ -1,7 +1,7 @@
 # NVDAIAs – Chat with ChatGPT, Gemini and Claude from NVDA
 
 * Author: Wellington Cruz
-* Version: 1.0.0
+* Version: 1.1.0
 * Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 * License: GNU General Public License, version 2
 * Documentation in Portuguese (Brazil): docs/pt_BR/readme.md
@@ -33,6 +33,8 @@ Open it with **NVDA+Alt+I** or NVDA menu > Tools > **NVDAIAs - Chat with AI**. F
 
 Tab order: **AI** (combo box), **Model**, **Conversation** (list of messages), **Question**, then the buttons Send, Cancel sending, Read message, Copy message, New conversation, Save conversation, Connect account, Settings and Close. **Shift+Tab from the Question field goes straight to the conversation list.**
 
+The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a **thick orange frame around the field that has the focus**. A **status line** under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.
+
 | Where | Key | Action |
 |---|---|---|
 | Question | Enter | Sends the question |
@@ -57,7 +59,7 @@ All commands can be changed in NVDA menu > Preferences > Input gestures, categor
 
 ## Settings
 
-NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; maximum answer size for Claude; time limit.
+NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; use the visual theme; larger text; maximum answer size for Claude; time limit.
 
 ## Privacy and security
 
@@ -68,6 +70,10 @@ NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for each AI the to
 * The conversation lives only in memory; use **Save conversation** to keep it in a text file.
 
 ## Changes
+
+### 1.1.0
+
+* Visual theme built from design tokens: navy header, orange accents, larger fonts, status line and thick focus frame. All colours meet WCAG 2.2 AA; off in Windows high contrast. New options: use the visual theme, larger text. AI and Model side by side, Send next to the question.
 
 ### 1.0.0
 

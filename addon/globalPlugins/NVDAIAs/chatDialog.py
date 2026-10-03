@@ -17,7 +17,7 @@ import ui
 import wx
 from gui import guiHelper
 
-from . import core, textutils
+from . import core, textutils, theme
 from .connectDialog import ConnectDialog
 from .providers import PROVIDER_IDS, getProviderClass
 
@@ -77,30 +77,64 @@ class ChatDialog(wx.Dialog):
 		# Translators: title of the chat window.
 		super().__init__(parent, title=_("NVDAIAs - Chat with AI"), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
 		self.session = session
+		self.themed = theme.isEnabled()
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
+		if self.themed:
+			# Translators: subtitle shown in the coloured header of the chat window.
+			self.header = theme.HeaderPanel(self, "NVDAIAs", _("Chat with ChatGPT, Gemini and Claude"))
+			mainSizer.Add(self.header, flag=wx.EXPAND)
 		sHelper = guiHelper.BoxSizerHelper(self, orientation=wx.VERTICAL)
 
+		self.statusLine = sHelper.addItem(theme.StatusLine(self), flag=wx.EXPAND)
+		gapS = theme.space("sm")
+		gapL = theme.space("lg")
+
+		# AI and model side by side. Creation order = tab order: AI, Model.
+		selectors = wx.BoxSizer(wx.HORIZONTAL)
 		# Translators: label of the combo box to choose the AI (ChatGPT, Gemini or Claude).
-		self.providerChoice = sHelper.addLabeledControl(_("&AI:"), wx.Choice, choices=[core.providerLabel(p) for p in PROVIDER_IDS])
+		aiHelper = guiHelper.LabeledControlHelper(self, _("&AI:"), wx.Choice, choices=[core.providerLabel(p) for p in PROVIDER_IDS])
+		self.providerChoice = aiHelper.control
 		self.providerChoice.SetSelection(PROVIDER_IDS.index(core.conf()["provider"]))
 		self.providerChoice.Bind(wx.EVT_CHOICE, self.onProviderChanged)
-
+		selectors.Add(aiHelper.sizer, flag=wx.ALIGN_CENTER_VERTICAL)
+		selectors.AddSpacer(gapL * 2)
 		# Translators: label of the editable combo box with the AI model.
-		self.modelCombo = sHelper.addLabeledControl(_("&Model:"), wx.ComboBox, style=wx.CB_DROPDOWN)
+		modelHelper = guiHelper.LabeledControlHelper(self, _("&Model:"), wx.ComboBox, style=wx.CB_DROPDOWN, size=(260, -1))
+		self.modelCombo = modelHelper.control
 		self.modelCombo.Bind(wx.EVT_KILL_FOCUS, self.onModelKillFocus)
 		self.modelCombo.Bind(wx.EVT_COMBOBOX, lambda evt: self._saveModel())
+		selectors.Add(modelHelper.sizer, flag=wx.ALIGN_CENTER_VERTICAL)
+		sHelper.addItem(selectors)
 
+		# Conversation: label above, list fills the window.
 		# Translators: label of the list with the messages of the conversation.
-		self.conversationList = sHelper.addLabeledControl(_("Con&versation:"), wx.ListBox, style=wx.LB_SINGLE, size=(640, 260))
+		conversationLabel = wx.StaticText(self, label=_("Con&versation:"))
+		self.conversationList = wx.ListBox(self, style=wx.LB_SINGLE, size=(720, 280))
 		self.conversationList.Bind(wx.EVT_LISTBOX_DCLICK, lambda evt: self.onReadMessage(None))
+		conversationBox = wx.BoxSizer(wx.VERTICAL)
+		conversationBox.Add(conversationLabel)
+		conversationBox.AddSpacer(gapS)
+		conversationBox.Add(self.conversationList, proportion=1, flag=wx.EXPAND)
+		sHelper.addItem(conversationBox, proportion=1, flag=wx.EXPAND)
 
+		# Question: label above, field and Send button on the same row (chat layout).
 		# Translators: label of the field where the user types the question.
-		self.questionEdit = sHelper.addLabeledControl(_("&Question (Enter sends, Shift+Enter adds a new line):"), wx.TextCtrl, style=wx.TE_MULTILINE, size=(640, 90))
+		questionLabel = wx.StaticText(self, label=_("&Question (Enter sends, Shift+Enter adds a new line):"))
+		self.questionEdit = wx.TextCtrl(self, style=wx.TE_MULTILINE, size=(-1, 90))
+		# Translators: button that sends the question.
+		self.sendButton = wx.Button(self, label=_("&Send"), size=(110, -1))
+		self.sendButton.Bind(wx.EVT_BUTTON, self.onSend)
+		questionRow = wx.BoxSizer(wx.HORIZONTAL)
+		questionRow.Add(self.questionEdit, proportion=1, flag=wx.EXPAND)
+		questionRow.AddSpacer(gapL)
+		questionRow.Add(self.sendButton, flag=wx.EXPAND)
+		questionBox = wx.BoxSizer(wx.VERTICAL)
+		questionBox.Add(questionLabel)
+		questionBox.AddSpacer(gapS)
+		questionBox.Add(questionRow, flag=wx.EXPAND)
+		sHelper.addItem(questionBox, flag=wx.EXPAND)
 
 		row1 = guiHelper.ButtonHelper(wx.HORIZONTAL)
-		# Translators: button that sends the question.
-		self.sendButton = row1.addButton(self, label=_("&Send"))
-		self.sendButton.Bind(wx.EVT_BUTTON, self.onSend)
 		# Translators: button that cancels the question being sent.
 		self.cancelButton = row1.addButton(self, label=_("Cance&l sending"))
 		self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancelSend)
@@ -130,9 +164,15 @@ class ChatDialog(wx.Dialog):
 		self.closeButton.Bind(wx.EVT_BUTTON, lambda evt: self.Close())
 		sHelper.addItem(row2)
 
-		mainSizer.Add(sHelper.sizer, proportion=1, border=guiHelper.BORDER_FOR_DIALOGS, flag=wx.ALL | wx.EXPAND)
+		mainSizer.Add(sHelper.sizer, proportion=1, border=guiHelper.BORDER_FOR_DIALOGS + (theme.space("xs") if self.themed else 0), flag=wx.ALL | wx.EXPAND)
+		if self.themed:
+			theme.applyColors(self, bodyControls=(self.conversationList, self.questionEdit, self.modelCombo))
+			self.focusFrames = theme.FocusFrames(self, (self.providerChoice, self.modelCombo, self.conversationList, self.questionEdit))
 		self.SetSizer(mainSizer)
 		mainSizer.Fit(self)
+		width, height = self.GetSize()
+		self.SetMinSize((min(width, 640), min(height, 520)))
+		self.SetSize((max(width, 860), max(height, 700)))
 		self.SetEscapeId(wx.ID_CLOSE)
 		# EVT_CHAR_HOOK sees the keys before Windows dialog navigation, so Enter
 		# reaches the question field and the list reliably.
@@ -166,6 +206,8 @@ class ChatDialog(wx.Dialog):
 		value = self.modelCombo.GetValue().strip()
 		if value:
 			core.setModel(self.providerId, value)
+			if hasattr(self, "statusLine"):
+				self.updateStatus()
 
 	def _entryLabel(self, entry):
 		if entry.role == "user":
@@ -216,10 +258,29 @@ class ChatDialog(wx.Dialog):
 		if not self:
 			return
 		self.refreshList()
+		self.updateStatus(errorText=message)
 		# Give the question back so the user can try again.
 		if not self.questionEdit.GetValue().strip():
 			self.questionEdit.SetValue(questionText)
 			self.questionEdit.SetInsertionPointEnd()
+
+	def updateStatus(self, errorText=None):
+		providerId = self.providerId
+		name = getProviderClass(providerId).name
+		model = core.getModel(providerId)
+		if errorText:
+			# Translators: status line after an error. {name} is the AI.
+			self.statusLine.setStatus(_("{name} · the last question failed, it is back in the Question field").format(name=name), "error")
+		elif self.session.busy:
+			# Translators: status line while waiting. {name} is the AI, {model} the model.
+			self.statusLine.setStatus(_("{name} · {model} · answering…").format(name=name, model=model), "busy")
+		elif core.store().has(providerId):
+			# Translators: status line when the AI is connected. {name} is the AI, {model} the model.
+			self.statusLine.setStatus(_("{name} · {model} · connected").format(name=name, model=model), "ok")
+		else:
+			# Translators: status line when the AI has no token. {name} is the AI.
+			self.statusLine.setStatus(_("{name} · not connected, sending a question opens the connection screen").format(name=name), "idle")
+		self.Layout()
 
 	def _updateButtons(self):
 		busy = self.session.busy
@@ -229,6 +290,7 @@ class ChatDialog(wx.Dialog):
 		self.readButton.Enable(hasEntries)
 		self.copyButton.Enable(hasEntries)
 		self.saveButton.Enable(hasEntries)
+		self.updateStatus()
 
 	# Events ------------------------------------------------------------------
 
@@ -236,6 +298,7 @@ class ChatDialog(wx.Dialog):
 		providerId = self.providerId
 		core.conf()["provider"] = providerId
 		self._fillModels()
+		self.updateStatus()
 		if not core.store().has(providerId):
 			# Translators: announced when the chosen AI has no token yet.
 			ui.message(_("This AI is not connected yet. A connection screen will open when you send a question."))

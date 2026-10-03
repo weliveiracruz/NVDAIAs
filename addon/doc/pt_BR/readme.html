@@ -9,7 +9,7 @@
 <ul>
 <li>Autor: Wellington Cruz
 </li>
-<li>Versão: 1.0.0
+<li>Versão: 1.1.0
 </li>
 <li>Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 </li>
@@ -71,6 +71,9 @@
 </li>
 </ol>
 <p>Como o campo Pergunta vem logo depois da lista, <strong>Shift+Tab no campo Pergunta leva direto para a lista da conversa</strong>, e Tab na lista volta para a pergunta.</p>
+<h3>Aparência</h3>
+<p>A janela tem um tema visual pensado também para quem tem baixa visão: cabeçalho azul-marinho com o nome do complemento, fundo claro, destaques em laranja, fontes maiores e uma <strong>moldura laranja grossa em volta do campo que está com o foco</strong>. Logo abaixo do cabeçalho, uma <strong>linha de situação</strong> mostra a IA, o modelo e o estado: conectado, respondendo, ou que a última pergunta falhou. As cores só repetem o que o texto já diz.</p>
+<p>O tema se desliga sozinho quando o alto contraste do Windows está ativo. Também pode ser desligado nas configurações, onde há ainda a opção de texto maior. Os botões continuam sendo os botões padrão do Windows, para o NVDA apresentá-los como sempre.</p>
 <h3>Teclas da janela</h3>
 <table border="1">
 <tr><th>Onde</th><th>Tecla</th><th>O que faz</th></tr>
@@ -144,6 +147,10 @@
 </li>
 <li><strong>Remover símbolos de formatação ao ler as respostas</strong> (ligado por padrão).
 </li>
+<li><strong>Usar o tema visual nas janelas do NVDAIAs</strong> (ligado por padrão): cores, cabeçalho e moldura de foco.
+</li>
+<li><strong>Texto maior nas janelas do NVDAIAs</strong> (desligado por padrão): aumenta as fontes em 25%.
+</li>
 <li><strong>Tamanho máximo da resposta em tokens (Claude)</strong>: o Claude exige esse limite. Padrão 4096.
 </li>
 <li><strong>Tempo limite para aguardar a resposta</strong>: em segundos. Padrão 120.
@@ -177,6 +184,15 @@
 <tr><td>"bloqueada pelo provedor"</td><td>A IA se recusou a responder ou o filtro de segurança dela bloqueou a pergunta.</td></tr>
 </table>
 <h2>Histórico de versões</h2>
+<h3>1.1.0</h3>
+<ul>
+<li>Tema visual nas janelas do NVDAIAs, construído com design tokens: cabeçalho azul-marinho, destaques em laranja, fontes maiores, linha de situação e moldura de foco grossa. Todas as cores atendem à WCAG 2.2 AA e o tema se desliga sozinho no alto contraste do Windows.
+</li>
+<li>Novas opções: usar o tema visual e texto maior.
+</li>
+<li>Janela de conversa: IA e Modelo lado a lado e botão Enviar ao lado da pergunta.
+</li>
+</ul>
 <h3>1.0.0</h3>
 <ul>
 <li>Primeira versão: janela de conversa com ChatGPT, Gemini e Claude; tela de conexão de conta com token; painel de configurações; descrição do objeto de navegação e da tela; tradução para português do Brasil.

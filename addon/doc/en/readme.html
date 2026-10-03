@@ -9,7 +9,7 @@
 <ul>
 <li>Author: Wellington Cruz
 </li>
-<li>Version: 1.0.0
+<li>Version: 1.1.0
 </li>
 <li>Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 </li>
@@ -42,6 +42,7 @@
 <h2>The chat window</h2>
 <p>Open it with <strong>NVDA+Alt+I</strong> or NVDA menu &gt; Tools &gt; <strong>NVDAIAs - Chat with AI</strong>. Focus starts in the Question field.</p>
 <p>Tab order: <strong>AI</strong> (combo box), <strong>Model</strong>, <strong>Conversation</strong> (list of messages), <strong>Question</strong>, then the buttons Send, Cancel sending, Read message, Copy message, New conversation, Save conversation, Connect account, Settings and Close. <strong>Shift+Tab from the Question field goes straight to the conversation list.</strong></p>
+<p>The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a <strong>thick orange frame around the field that has the focus</strong>. A <strong>status line</strong> under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.</p>
 <table border="1">
 <tr><th>Where</th><th>Key</th><th>Action</th></tr>
 <tr><td>Question</td><td>Enter</td><td>Sends the question</td></tr>
@@ -62,7 +63,7 @@
 </table>
 <p>All commands can be changed in NVDA menu &gt; Preferences &gt; Input gestures, category <strong>NVDAIAs</strong>.</p>
 <h2>Settings</h2>
-<p>NVDA menu &gt; Preferences &gt; Settings &gt; <strong>NVDAIAs</strong>: default AI; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; maximum answer size for Claude; time limit.</p>
+<p>NVDA menu &gt; Preferences &gt; Settings &gt; <strong>NVDAIAs</strong>: default AI; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; use the visual theme; larger text; maximum answer size for Claude; time limit.</p>
 <h2>Privacy and security</h2>
 <ul>
 <li>Tokens are not stored in nvda.ini. They are kept in <code>NVDAIAs-credentials.json</code> in the NVDA configuration folder, <strong>encrypted with the Windows Data Protection API (DPAPI)</strong> for the current Windows user. The file is deleted when the add-on is uninstalled.
@@ -77,6 +78,11 @@
 </li>
 </ul>
 <h2>Changes</h2>
+<h3>1.1.0</h3>
+<ul>
+<li>Visual theme built from design tokens: navy header, orange accents, larger fonts, status line and thick focus frame. All colours meet WCAG 2.2 AA; off in Windows high contrast. New options: use the visual theme, larger text. AI and Model side by side, Send next to the question.
+</li>
+</ul>
 <h3>1.0.0</h3>
 <ul>
 <li>First release: chat window with ChatGPT, Gemini and Claude; account connection screen with token; settings panel; description of the navigator object and of the screen; Portuguese (Brazil) translation.

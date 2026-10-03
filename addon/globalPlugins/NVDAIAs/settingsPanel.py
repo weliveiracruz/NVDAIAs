@@ -206,7 +206,7 @@ class NVDAIAsSettingsPanel(SettingsPanel):
 		)
 		self.systemPromptEdit.SetValue(core.getSystemPrompt(effective=True))
 		# Translators: button that restores the default instructions.
-		restore = sHelper.addItem(wx.Button(self, label=_("&Restore default instructions")))
+		restore = sHelper.addItem(wx.Button(self, label=_("Res&tore default instructions")))
 		restore.Bind(wx.EVT_BUTTON, lambda evt: self.systemPromptEdit.SetValue(core.defaultSystemPrompt()))
 
 		# Translators: checkbox to read answers automatically.
@@ -218,6 +218,13 @@ class NVDAIAsSettingsPanel(SettingsPanel):
 		# Translators: checkbox to remove Markdown symbols when reading.
 		self.stripCheck = sHelper.addItem(wx.CheckBox(self, label=_("Remove &formatting symbols (#, *, |) when reading answers")))
 		self.stripCheck.SetValue(c["stripMarkdown"])
+
+		# Translators: checkbox that turns the visual theme on or off.
+		self.themeCheck = sHelper.addItem(wx.CheckBox(self, label=_("Use the &visual theme in NVDAIAs windows (colours, header and focus frame)")))
+		self.themeCheck.SetValue(c["visualTheme"])
+		# Translators: checkbox that makes the text of the NVDAIAs windows bigger.
+		self.largeTextCheck = sHelper.addItem(wx.CheckBox(self, label=_("&Larger text in NVDAIAs windows")))
+		self.largeTextCheck.SetValue(c["largeText"])
 
 		self.maxTokensSpin = sHelper.addLabeledControl(
 			# Translators: label of the maximum answer size (used by Claude).
@@ -246,5 +253,7 @@ class NVDAIAsSettingsPanel(SettingsPanel):
 		c["speakResponses"] = self.speakCheck.GetValue()
 		c["waitingBeeps"] = self.beepCheck.GetValue()
 		c["stripMarkdown"] = self.stripCheck.GetValue()
+		c["visualTheme"] = self.themeCheck.GetValue()
+		c["largeText"] = self.largeTextCheck.GetValue()
 		c["maxTokens"] = self.maxTokensSpin.GetValue()
 		c["timeout"] = self.timeoutSpin.GetValue()

@@ -36,6 +36,8 @@ confspec = {
 	"stripMarkdown": "boolean(default=True)",
 	"maxTokens": "integer(default=4096, min=256, max=64000)",
 	"timeout": "integer(default=120, min=10, max=600)",
+	"visualTheme": "boolean(default=True)",
+	"largeText": "boolean(default=False)",
 }
 
 
