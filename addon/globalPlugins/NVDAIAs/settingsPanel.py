@@ -226,6 +226,21 @@ class NVDAIAsSettingsPanel(SettingsPanel):
 		self.largeTextCheck = sHelper.addItem(wx.CheckBox(self, label=_("&Larger text in NVDAIAs windows")))
 		self.largeTextCheck.SetValue(c["largeText"])
 
+		# Translators: checkbox to keep previous conversations.
+		self.historyCheck = sHelper.addItem(wx.CheckBox(self, label=_("Keep &previous conversations (saved encrypted on this computer)")))
+		self.historyCheck.SetValue(c["saveHistory"])
+		self.maxHistorySpin = sHelper.addLabeledControl(
+			# Translators: label of the maximum number of saved conversations.
+			_("Maximum number of previous conversations:"),
+			nvdaControls.SelectOnFocusSpinCtrl,
+			min=5,
+			max=1000,
+			initial=c["maxHistory"],
+		)
+		# Translators: button that deletes all previous conversations.
+		clearHistory = sHelper.addItem(wx.Button(self, label=_("&Delete all previous conversations…")))
+		clearHistory.Bind(wx.EVT_BUTTON, self.onClearHistory)
+
 		self.maxTokensSpin = sHelper.addLabeledControl(
 			# Translators: label of the maximum answer size (used by Claude).
 			_("Maximum answer size in tokens (Claude):"),
@@ -243,6 +258,19 @@ class NVDAIAsSettingsPanel(SettingsPanel):
 			initial=c["timeout"],
 		)
 
+	def onClearHistory(self, evt):
+		if gui.messageBox(
+			# Translators: confirmation before deleting all previous conversations.
+			_("Delete all previous conversations from this computer? This cannot be undone."),
+			"NVDAIAs",
+			wx.YES_NO | wx.ICON_WARNING,
+			self,
+		) != wx.YES:
+			return
+		core.history().deleteAll()
+		# Translators: announced after deleting all previous conversations.
+		ui.message(_("All previous conversations were deleted"))
+
 	def onSave(self):
 		c = core.conf()
 		c["provider"] = PROVIDER_IDS[self.providerChoice.GetSelection()]
@@ -255,5 +283,7 @@ class NVDAIAsSettingsPanel(SettingsPanel):
 		c["stripMarkdown"] = self.stripCheck.GetValue()
 		c["visualTheme"] = self.themeCheck.GetValue()
 		c["largeText"] = self.largeTextCheck.GetValue()
+		c["saveHistory"] = self.historyCheck.GetValue()
+		c["maxHistory"] = self.maxHistorySpin.GetValue()
 		c["maxTokens"] = self.maxTokensSpin.GetValue()
 		c["timeout"] = self.timeoutSpin.GetValue()

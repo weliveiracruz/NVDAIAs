@@ -23,7 +23,7 @@ pkg = types.ModuleType("NVDAIAs")
 pkg.__path__ = [PKG_DIR]
 sys.modules["NVDAIAs"] = pkg
 
-from NVDAIAs import providers, textutils, credentials, conversation  # noqa: E402
+from NVDAIAs import providers, textutils, credentials, conversation, history  # noqa: E402
 import mock_server  # noqa: E402
 
 SERVER, BASE = mock_server.start()
@@ -261,6 +261,85 @@ class ConversationTests(unittest.TestCase):
 		c.remove(u)
 		self.assertEqual(len(c), 1)
 		c.clear()
+		self.assertEqual(len(c), 0)
+
+
+class XorCodec:
+	def protect(self, data):
+		return bytes(b ^ 0x5A for b in data)
+
+	def unprotect(self, data):
+		return bytes(b ^ 0x5A for b in data)
+
+
+class HistoryTests(unittest.TestCase):
+	def make(self, n=2, question="Pergunta secreta"):
+		c = conversation.Conversation()
+		c.add(conversation.ChatEntry("user", question, image=PNG if n > 2 else None))
+		c.add(conversation.ChatEntry("assistant", "Resposta", providerName="Gemini", model="gemini-2.5-flash"))
+		return c
+
+	def test_save_list_load_encrypted(self):
+		folder = tempfile.mkdtemp()
+		store = history.HistoryStore(folder, codec=XorCodec())
+		c = self.make(3)
+		self.assertTrue(store.save(c.toDict()))
+		files = os.listdir(store.folder)
+		self.assertEqual(files, [c.id + history.EXTENSION])
+		with open(os.path.join(store.folder, files[0]), "rb") as f:
+			raw = f.read()
+		self.assertNotIn(b"Pergunta", raw)
+		self.assertNotIn(base64.b64encode(b"Pergunta"), raw)
+		store2 = history.HistoryStore(folder, codec=XorCodec())
+		data = store2.load(c.id)
+		c2 = conversation.Conversation()
+		c2.load(data)
+		self.assertEqual(c2.id, c.id)
+		self.assertEqual([e.text for e in c2.entries], ["Pergunta secreta", "Resposta"])
+		self.assertEqual(c2.entries[0].image, PNG)
+		self.assertEqual(c2.entries[1].model, "gemini-2.5-flash")
+		self.assertEqual(store2.list(excludeId=c.id), [])
+		title, providers_, count, updated = history.summary(data)
+		self.assertEqual((title, providers_, count), ("Pergunta secreta", ["Gemini"], 2))
+
+	def test_empty_not_saved_and_order_and_prune(self):
+		folder = tempfile.mkdtemp()
+		store = history.HistoryStore(folder, codec=XorCodec(), maxConversations=3)
+		self.assertFalse(store.save(conversation.Conversation().toDict()))
+		ids = []
+		for i in range(5):
+			c = self.make(question="q%d" % i)
+			for e in c.entries:
+				e.timestamp = 1000 + i
+			store.save(c.toDict())
+			ids.append(c.id)
+		listed = [d["id"] for d in store.list()]
+		self.assertEqual(listed, list(reversed(ids))[:3])
+		store.delete(ids[4])
+		self.assertEqual(len(store.list()), 2)
+		store.deleteAll()
+		self.assertEqual(store.list(), [])
+
+	def test_damaged_or_foreign_file_is_ignored(self):
+		folder = tempfile.mkdtemp()
+		store = history.HistoryStore(folder, codec=XorCodec())
+		store.save(self.make().toDict())
+		with open(os.path.join(store.folder, "lixo" + history.EXTENSION), "wb") as f:
+			f.write(b"nao e base64 @@@")
+		self.assertEqual(len(store.list()), 1)
+
+	def test_invalid_id_rejected(self):
+		store = history.HistoryStore(tempfile.mkdtemp(), codec=XorCodec())
+		data = self.make().toDict()
+		data["id"] = "../../fora"
+		with self.assertRaises(ValueError):
+			store.save(data)
+
+	def test_clear_gives_new_id(self):
+		c = self.make()
+		old = c.id
+		c.clear()
+		self.assertNotEqual(c.id, old)
 		self.assertEqual(len(c), 0)
 
 

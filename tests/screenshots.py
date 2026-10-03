@@ -52,6 +52,17 @@ def shot(win, name):
 plugin = NVDAIAs.GlobalPlugin()
 core.store().set("anthropic", "sk-ant-demo-123456")
 core.conf()["provider"] = "anthropic"
+from NVDAIAs.conversation import Conversation  # noqa: E402
+
+core.history().deleteAll()
+for question, answer, ai, model, ts in (
+	("Como faço um bolo de cenoura?", "Bata no liquidificador 3 cenouras, 3 ovos e 1 xícara de óleo...", "ChatGPT", "gpt-5-mini", 1790950000),
+	("Resuma a reunião de ontem sobre o orçamento", "Principais pontos: corte de 10% em viagens...", "Gemini", "gemini-2.5-flash", 1791030000),
+):
+	old = Conversation()
+	old.add(core.ChatEntry("user", question, timestamp=ts))
+	old.add(core.ChatEntry("assistant", answer, providerName=ai, model=model, timestamp=ts + 30))
+	core.history().save(old.toDict())
 conv = plugin.session.conversation
 conv.add(core.ChatEntry("user", "Qual é a capital do Brasil?"))
 conv.add(core.ChatEntry("assistant", "A capital do Brasil é **Brasília**, inaugurada em 1960 e planejada por Lúcio Costa e Oscar Niemeyer.", providerName="Claude", model="claude-sonnet-5-5"))
@@ -64,9 +75,18 @@ dlg.questionEdit.SetValue("Quais são os principais pontos turísticos?")
 dlg.questionEdit.SetFocus()
 shot(dlg, "chat-foco-pergunta.png")
 
-dlg.conversationList.SetFocus()
-dlg.conversationList.SetSelection(1)
+dlg.conversationTree.SetFocus()
 shot(dlg, "chat-foco-lista.png")
+
+tree = dlg.conversationTree
+tree.Expand(dlg._historyNode)
+first = tree.GetFirstChild(dlg._historyNode)[0]
+tree.Expand(first)
+tree.SelectItem(tree.GetFirstChild(first)[0])
+tree.SetFocus()
+shot(dlg, "chat-historico.png")
+tree.Collapse(dlg._historyNode)
+tree.SelectItem(dlg._historyNode)
 
 plugin.session.busy = True
 dlg.refreshList()

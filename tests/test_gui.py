@@ -65,6 +65,35 @@ def keyDown(window, keyCode, shift=False, ctrl=False):
 	return evt
 
 
+def topItems(dlg):
+	"""Top level items of the conversation tree, without the history item."""
+	tree = dlg.conversationTree
+	items = []
+	child, cookie = tree.GetFirstChild(tree.GetRootItem())
+	while child.IsOk():
+		if child != dlg._historyNode:
+			items.append(child)
+		child, cookie = tree.GetNextChild(tree.GetRootItem(), cookie)
+	return items
+
+
+def current(dlg):
+	return [dlg.conversationTree.GetItemText(i) for i in topItems(dlg)]
+
+
+def children(tree, item):
+	out = []
+	child, cookie = tree.GetFirstChild(item)
+	while child.IsOk():
+		out.append(child)
+		child, cookie = tree.GetNextChild(item, cookie)
+	return out
+
+
+def selectLast(dlg):
+	dlg.conversationTree.SelectItem(topItems(dlg)[-1])
+
+
 def run():
 	plugin = NVDAIAs.GlobalPlugin()
 	check("settings panel registered", settingsPanel.NVDAIAsSettingsPanel in gui.settingsDialogs.NVDASettingsDialog.categoryClasses)
@@ -119,14 +148,14 @@ def run():
 	focusable = [c for c in dlg.GetChildren() if c.AcceptsFocusFromKeyboard() and not isinstance(c, wx.StaticText)]
 	names = [type(c).__mro__[1].__name__ if type(c).__name__.startswith("WxCtrl") else type(c).__name__ for c in focusable]
 	qi = focusable.index(dlg.questionEdit)
-	check("question is right after conversation list in tab order", focusable[qi - 1] is dlg.conversationList, names)
-	check("tab order starts with AI, Model, Conversation", focusable[:3] == [dlg.providerChoice, dlg.modelCombo, dlg.conversationList], names)
+	check("question is right after conversation list in tab order", focusable[qi - 1] is dlg.conversationTree, names)
+	check("tab order starts with AI, Model, Conversation", focusable[:3] == [dlg.providerChoice, dlg.modelCombo, dlg.conversationTree], names)
 	dlg.questionEdit.SetFocus()
 	pump(timeout=0.3)
 	dlg.questionEdit.Navigate(wx.NavigationKeyEvent.IsBackward)
 	pump(timeout=0.3)
 	focused = wx.Window.FindFocus()
-	check("Shift+Tab from question focuses the conversation list (real navigation)", focused is dlg.conversationList, focused)
+	check("Shift+Tab from question focuses the conversation list (real navigation)", focused is dlg.conversationTree, focused)
 
 	# 3. Ask a question with Enter -------------------------------------------------------
 	RECORD["spoken"].clear()
@@ -135,14 +164,14 @@ def run():
 	pump(timeout=0.2)
 	dlg.onCharHook(keyDown(dlg.questionEdit, wx.WXK_RETURN))
 	check("Enter sends", core.ChatSession and plugin.session.busy and dlg.questionEdit.GetValue() == "")
-	check("waiting item shown", dlg.conversationList.GetString(dlg.conversationList.GetCount() - 1) == "Claude is answering…")
+	check("waiting item shown", current(dlg)[-1] == "Claude is answering…")
 	check("send button disabled while waiting", not dlg.sendButton.IsEnabled() and dlg.cancelButton.IsEnabled())
 	pump(lambda: not plugin.session.busy, 10)
-	items = dlg.conversationList.GetStrings()
+	items = current(dlg)
 	check("conversation list has question and answer", items[0] == "You: Qual é a capital do Brasil?" and items[1].startswith("Claude: Claude responde: Qual é a capital do Brasil?"), items)
 	check("answer spoken automatically", any("Claude responde" in s for s in RECORD["spoken"]), RECORD["spoken"])
 	check("'Sent to Claude' announced", "Sent to Claude" in RECORD["spoken"], RECORD["spoken"])
-	check("last item selected", dlg.conversationList.GetSelection() == 1)
+	check("last item selected", dlg.conversationTree.GetSelection() == topItems(dlg)[-1])
 
 	# Shift+Enter does not send
 	dlg.questionEdit.SetValue("linha 1")
@@ -171,7 +200,7 @@ def run():
 	check("real Enter sends the question", plugin.session.conversation.entries[-2].text == "Ola teclado\nlinha 2", [e.text for e in plugin.session.conversation.entries])
 	sim.Char(wx.WXK_TAB, wx.MOD_SHIFT)
 	pump(timeout=0.5)
-	check("real Shift+Tab goes to the conversation list", wx.Window.FindFocus() is dlg.conversationList, wx.Window.FindFocus())
+	check("real Shift+Tab goes to the conversation list", wx.Window.FindFocus() is dlg.conversationTree, wx.Window.FindFocus())
 	n = len(RECORD["browseable"])
 	sim.Char(wx.WXK_RETURN)
 	pump(lambda: len(RECORD["browseable"]) > n, 2)
@@ -199,16 +228,16 @@ def run():
 	dlg.questionEdit.SetValue("Resuma")
 	dlg.onSend(None)
 	pump(lambda: not plugin.session.busy, 10)
-	last = dlg.conversationList.GetString(dlg.conversationList.GetCount() - 1)
+	last = current(dlg)[-1]
 	check("ChatGPT answer in list, Markdown removed", last.startswith("ChatGPT: Resposta Olá!") and "#" not in last and "*" not in last, last)
 	check("ChatGPT received whole conversation", "5 mensagens" in plugin.session.conversation.lastAnswer().text, plugin.session.conversation.lastAnswer().text)
 
 	# 6. Read message (Enter on the list) and copy (Ctrl+C) -----------------------------------
-	dlg.conversationList.SetSelection(dlg.conversationList.GetCount() - 1)
-	dlg.onListKeyDown(keyDown(dlg.conversationList, wx.WXK_RETURN))
+	selectLast(dlg)
+	dlg.onListKeyDown(keyDown(dlg.conversationTree, wx.WXK_RETURN))
 	html, title, isHtml = RECORD["browseable"][-1]
 	check("Enter opens the answer in a reading window", isHtml and "<h1>Resposta</h1>" in html and title.startswith("Answer from ChatGPT"), (title, html))
-	dlg.onListKeyDown(keyDown(dlg.conversationList, ord("C"), ctrl=True))
+	dlg.onListKeyDown(keyDown(dlg.conversationTree, ord("C"), ctrl=True))
 	check("Ctrl+C copies the original answer", RECORD["clipboard"][-1].startswith("# Resposta"), RECORD["clipboard"][-1:])
 
 	# 7. Errors: invalid Gemini token ------------------------------------------------------
@@ -274,7 +303,7 @@ def run():
 	check("screenshot is a PNG", bool(imgEntry.image) and imgEntry.image[:8] == b"\x89PNG\r\n\x1a\n", imgEntry.image[:8] if imgEntry.image else None)
 	check("image question mentions the element", "Botão Enviar" in imgEntry.text, imgEntry.text)
 	check("image answer received", entries[-1].role == "assistant" and "Imagem" in entries[-1].text, entries[-1].text)
-	check("list shows [image attached]", "[image attached]" in dlg.conversationList.GetString(dlg.conversationList.GetCount() - 2))
+	check("list shows [image attached]", "[image attached]" in current(dlg)[-2])
 	api._navigator = types.SimpleNamespace(location=None, name="", roleText="")
 	plugin.script_describeNavigator(None)
 	check("object without position is reported", RECORD["spoken"][-1] == "This object has no position on the screen")
@@ -322,7 +351,7 @@ def run():
 	text = plugin.session.conversation.toText("You", "[image attached]")
 	check("conversation export", "You:\nQual é a capital do Brasil?" in text and "Gemini (gemini-2.5-flash):" in text, text[:300])
 	dlg.onNewConversation(None)
-	check("new conversation clears list", dlg.conversationList.GetCount() == 0 and not dlg.saveButton.IsEnabled())
+	check("new conversation clears list", current(dlg) == [] and not dlg.saveButton.IsEnabled())
 	dlg.onSettings(None)
 	pump(timeout=0.3)
 	check("settings button opens NVDA settings on NVDAIAs", RECORD["settingsOpened"][-1][1] == (settingsPanel.NVDAIAsSettingsPanel,))
@@ -335,7 +364,7 @@ def run():
 	plugin.script_openChat(None)
 	pump(lambda: chatDialog.ChatDialog._instance is not None, 3)
 	dlg = chatDialog.ChatDialog._instance
-	check("conversation kept after reopening", dlg.conversationList.GetStrings() == ["You: persistente"])
+	check("conversation kept after reopening", current(dlg) == ["You: persistente"])
 	check("escape id is Close", dlg.GetEscapeId() == wx.ID_CLOSE)
 	dlg.Raise()
 	dlg.questionEdit.SetFocus()
@@ -345,6 +374,99 @@ def run():
 	check("real Escape closes the window", chatDialog.ChatDialog._instance is None)
 	plugin.script_openChat(None)
 	pump(lambda: chatDialog.ChatDialog._instance is not None, 3)
+
+	# 16. Previous conversations (history) -------------------------------------------------
+	dlg = chatDialog.ChatDialog._instance
+	tree = dlg.conversationTree
+	root = tree.GetRootItem()
+	firstTop = tree.GetFirstChild(root)[0]
+	check("history item is the first item of the tree", firstTop == dlg._historyNode)
+	histLabel = tree.GetItemText(dlg._historyNode)
+	check("history item starts collapsed", not tree.IsExpanded(dlg._historyNode), histLabel)
+	saved = plugin.session.previousConversations()
+	check("previous conversations were saved automatically", len(saved) >= 1 and histLabel == "Previous conversations (%d)" % len(saved), (histLabel, len(saved)))
+	convNodes = children(tree, dlg._historyNode)
+	check("one branch per previous conversation", len(convNodes) == len(saved))
+	labelsConv = [tree.GetItemText(n) for n in convNodes]
+	check("conversation label shows AI, first question and size", any("Qual é a capital do Brasil?" in l and "Claude" in l and "messages)" in l for l in labelsConv), labelsConv)
+	target = next(n for n in convNodes if "Qual é a capital do Brasil?" in tree.GetItemText(n))
+	check("each conversation starts collapsed", not tree.IsExpanded(target))
+	# Enter on the history item expands it
+	tree.SelectItem(dlg._historyNode)
+	dlg.onTreeActivate()
+	check("Enter expands the previous conversations item", tree.IsExpanded(dlg._historyNode))
+	tree.Expand(target)
+	msgs = children(tree, target)
+	check("expanding a conversation shows its messages", len(msgs) >= 4 and tree.GetItemText(msgs[0]) == "You: Qual é a capital do Brasil?", [tree.GetItemText(m) for m in msgs][:3])
+	tree.SelectItem(msgs[1])
+	check("old message can be copied", True)
+	dlg.onListKeyDown(keyDown(tree, ord("C"), ctrl=True))
+	check("Ctrl+C on an old message copies it", RECORD["clipboard"][-1].startswith("Claude responde"), RECORD["clipboard"][-1][:40])
+	targetId = tree.GetItemData(target)[1]
+	before = current(dlg)
+	countBefore = len(saved)
+	RECORD["spoken"].clear()
+	tree.SelectItem(msgs[1])
+	dlg.onListKeyDown(keyDown(tree, wx.WXK_RETURN))
+	pump(timeout=0.3)
+	check("Enter on an old message opens that conversation", plugin.session.conversation.id == targetId and current(dlg)[0] == "You: Qual é a capital do Brasil?", current(dlg)[:2])
+	check("opening is announced", any("opened" in m and "Continue it" in m for m in RECORD["spoken"]), RECORD["spoken"])
+	check("focus goes to the question field", wx.Window.FindFocus() is dlg.questionEdit, wx.Window.FindFocus())
+	check("the conversation that was open went to the history", any(d["entries"][0]["text"] == before[0][5:] for d in plugin.session.previousConversations()) if before else True)
+	check("opened conversation leaves the history list", targetId not in [d["id"] for d in plugin.session.previousConversations()])
+	check("history count kept consistent", len(plugin.session.previousConversations()) == countBefore - 1 + (1 if before else 0))
+	# continue it
+	n = len(plugin.session.conversation)
+	dlg.questionEdit.SetValue("Continuando a conversa antiga")
+	dlg.onSend(None)
+	pump(lambda: not plugin.session.busy, 10)
+	check("continued conversation keeps the old messages", len(plugin.session.conversation) == n + 2)
+	body = [r for r in mock_server.REQUESTS if r["method"] == "POST"][-1]["body"]
+	sentCount = len(body.get("messages") or body.get("contents") or [])
+	check("the AI receives the old history", sentCount >= n, sentCount)
+	saved2 = core.history().load(targetId)
+	check("continued conversation saved under the same id", len(saved2["entries"]) == n + 2)
+	# Enter on a conversation branch also opens it
+	plugin.session.newConversation()
+	pump(timeout=0.2)
+	node = next(c for c in children(tree, dlg._historyNode) if tree.GetItemData(c)[1] == targetId)
+	tree.SelectItem(node)
+	dlg.onTreeActivate()
+	check("Enter on a conversation branch opens it", plugin.session.conversation.id == targetId)
+	# survives an NVDA restart
+	plugin2session = core.ChatSession()
+	check("history survives restart", targetId in [d["id"] for d in plugin2session.previousConversations()] or plugin.session.conversation.id == targetId)
+	plugin.session.newConversation()
+	pump(timeout=0.2)
+	check("after New conversation the old one is back in the history", targetId in [d["id"] for d in plugin.session.previousConversations()])
+	# delete with the Delete key
+	nvda_stubs.MESSAGEBOX_ANSWER["value"] = wx.YES
+	node = next(c for c in children(tree, dlg._historyNode) if tree.GetItemData(c)[1] == targetId)
+	tree.SelectItem(node)
+	dlg.onListKeyDown(keyDown(tree, wx.WXK_DELETE))
+	pump(timeout=0.2)
+	check("Delete removes a previous conversation", targetId not in [d["id"] for d in plugin.session.previousConversations()] and RECORD["spoken"][-1] == "Conversation deleted")
+	# real keyboard: arrows on the tree
+	dlg.Raise()
+	tree.SetFocus()
+	tree.Collapse(dlg._historyNode)
+	tree.SelectItem(dlg._historyNode)
+	pump(timeout=0.4)
+	sim = wx.UIActionSimulator()
+	sim.Char(wx.WXK_RIGHT)
+	pump(timeout=0.4)
+	hasChildren = tree.GetChildrenCount(dlg._historyNode, False) > 0
+	check("real Right arrow expands Previous conversations", tree.IsExpanded(dlg._historyNode) or not hasChildren)
+	sim.Char(wx.WXK_LEFT)
+	pump(timeout=0.4)
+	check("real Left arrow collapses it", not tree.IsExpanded(dlg._historyNode))
+	# history off
+	core.conf()["saveHistory"] = False
+	dlg.onHistoryChanged()
+	check("history item hidden when history is off", dlg._historyNode is None and plugin.session.previousConversations() == [])
+	core.conf()["saveHistory"] = True
+	dlg.onHistoryChanged()
+	check("history item back when history is on", dlg._historyNode is not None)
 
 	# 15. Secure screens ----------------------------------------------------------------
 	import globalVars

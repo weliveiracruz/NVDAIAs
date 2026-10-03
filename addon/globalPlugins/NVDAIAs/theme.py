@@ -172,7 +172,7 @@ def applyColors(window, bodyControls=()):
 			elif isinstance(child, wx.StaticText):
 				child.SetForegroundColour(color("text.secondary"))
 				child.SetFont(labelFont)
-			elif isinstance(child, (wx.TextCtrl, wx.ListBox, wx.ComboBox)):
+			elif isinstance(child, (wx.TextCtrl, wx.ListBox, wx.ComboBox, wx.TreeCtrl)):
 				child.SetBackgroundColour(color("surface.card"))
 				child.SetForegroundColour(color("text.primary"))
 				if child in bodyControls:

@@ -1,7 +1,7 @@
 # NVDAIAs – Converse com o ChatGPT, o Gemini e o Claude pelo NVDA
 
 * Autor: Wellington Cruz
-* Versão: 1.1.0
+* Versão: 1.2.0
 * Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 * Licença: GNU General Public License, versão 2
 
@@ -49,11 +49,22 @@ Ordem dos elementos com a tecla Tab:
 
 1. **IA**: escolhe ChatGPT, Gemini ou Claude. Você pode trocar de IA no meio da conversa: a nova IA recebe todo o histórico.
 2. **Modelo**: o modelo da IA escolhida. Você pode escolher da lista ou digitar o nome de outro modelo.
-3. **Conversa**: lista com todas as mensagens. Cada item começa com "Você:" ou com o nome da IA.
+3. **Conversa**: árvore com as mensagens. O primeiro item é **Conversas anteriores**, que começa recolhido. Depois dele vêm as mensagens da conversa atual; cada item começa com "Você:" ou com o nome da IA.
 4. **Pergunta**: campo onde você digita.
 5. Botões: Enviar, Cancelar envio, Ler mensagem, Copiar mensagem, Nova conversa, Salvar conversa, Conectar conta, Configurações e Fechar.
 
 Como o campo Pergunta vem logo depois da lista, **Shift+Tab no campo Pergunta leva direto para a lista da conversa**, e Tab na lista volta para a pergunta.
+
+### Conversas anteriores
+
+Toda conversa é guardada automaticamente. O primeiro item da árvore **Conversa** é **Conversas anteriores (N)**, que começa recolhido:
+
+1. Na árvore, pressione Home para ir até esse item e Seta para a direita para expandir.
+2. Cada conversa anterior aparece com a data, as IAs usadas, a primeira pergunta e o número de mensagens, também recolhida. Expanda com Seta para a direita para ler as mensagens com as setas. Ctrl+C copia uma mensagem.
+3. **Enter** em uma conversa anterior, ou em qualquer mensagem dela, reabre essa conversa como a conversa atual. O foco vai para o campo Pergunta e você continua de onde parou: a IA recebe todas as mensagens anteriores.
+4. A conversa que estava aberta antes vai para a lista de conversas anteriores, então nada se perde.
+5. **Nova conversa** guarda a conversa atual no histórico e começa outra em branco.
+6. **Delete** sobre uma conversa anterior apaga essa conversa, depois de confirmar.
 
 ### Aparência
 
@@ -68,10 +79,13 @@ O tema se desliga sozinho quando o alto contraste do Windows está ativo. També
 | Campo Pergunta | Enter | Envia a pergunta |
 | Campo Pergunta | Shift+Enter | Cria uma nova linha sem enviar |
 | Campo Pergunta | Shift+Tab | Vai para a lista da conversa |
-| Lista da conversa | Setas para cima e para baixo | Passa pelas mensagens |
-| Lista da conversa | Enter | Abre a mensagem inteira em uma janela de leitura, com títulos, listas e links, onde você navega com as setas e os comandos do modo de navegação. Esc fecha. |
-| Lista da conversa | Ctrl+C | Copia a mensagem selecionada |
-| Qualquer lugar | Esc | Fecha a janela (a conversa continua guardada até você reiniciar o NVDA) |
+| Conversa | Setas para cima e para baixo | Passa pelos itens |
+| Conversa | Seta para a direita / para a esquerda | Expande / recolhe "Conversas anteriores" ou uma conversa anterior |
+| Conversa, mensagem da conversa atual | Enter | Abre a mensagem inteira em uma janela de leitura, com títulos, listas e links, onde você navega com as setas e os comandos do modo de navegação. Esc fecha. |
+| Conversa, conversa anterior ou mensagem dela | Enter | Reabre aquela conversa para continuar |
+| Conversa | Ctrl+C | Copia a mensagem selecionada (atual ou anterior) |
+| Conversa, conversa anterior | Delete | Apaga a conversa do histórico (pede confirmação) |
+| Qualquer lugar | Esc | Fecha a janela (a conversa atual continua aberta e já está salva no histórico) |
 
 Cada botão também tem uma letra de atalho com Alt, que o NVDA anuncia ao focalizar o botão. Por exemplo, Alt+N envia, Alt+L lê a mensagem e Alt+V vai para a lista da conversa.
 
@@ -125,6 +139,7 @@ Menu do NVDA > Preferências > Configurações > categoria **NVDAIAs**. Também 
 * **Ler as respostas automaticamente quando chegarem** (ligado por padrão).
 * **Bipar enquanto aguarda a resposta** (ligado por padrão).
 * **Remover símbolos de formatação ao ler as respostas** (ligado por padrão).
+* **Guardar as conversas anteriores** (ligado por padrão), **Número máximo de conversas anteriores** (padrão 100; as mais antigas são apagadas) e o botão **Apagar todas as conversas anteriores**.
 * **Usar o tema visual nas janelas do NVDAIAs** (ligado por padrão): cores, cabeçalho e moldura de foco.
 * **Texto maior nas janelas do NVDAIAs** (desligado por padrão): aumenta as fontes em 25%.
 * **Tamanho máximo da resposta em tokens (Claude)**: o Claude exige esse limite. Padrão 4096.
@@ -139,7 +154,7 @@ Os tokens só são gravados quando você pressiona OK ou Aplicar.
 * O que você digita, o histórico da conversa e as imagens de tela que você pedir para descrever são enviados diretamente do seu computador para a IA escolhida (OpenAI, Google ou Anthropic), por conexão segura (HTTPS). Não passam por nenhum outro servidor. Cada empresa trata esses dados conforme a política de privacidade dela.
 * Cuidado ao descrever a tela: tudo o que estiver visível na área capturada é enviado, inclusive dados pessoais.
 * O complemento não funciona nas telas seguras do Windows (tela de logon e controle de conta de usuário).
-* A conversa fica só na memória e é apagada quando o NVDA reinicia. Para guardar, use **Salvar conversa**, que grava um arquivo de texto.
+* As conversas são salvas automaticamente depois de cada resposta, na pasta `NVDAIAs-history` da configuração do NVDA, **criptografadas com a proteção de dados do Windows**, como os tokens. As imagens de tela descritas também ficam guardadas na conversa. Você pode apagar uma conversa com Delete, apagar todas nas configurações ou desligar o histórico. Ao desinstalar o complemento, o histórico é apagado. **Salvar conversa** continua gravando um arquivo de texto comum, sem criptografia.
 
 ## Mensagens de erro
 
@@ -154,6 +169,12 @@ Os tokens só são gravados quando você pressiona OK ou Aplicar.
 | "bloqueada pelo provedor" | A IA se recusou a responder ou o filtro de segurança dela bloqueou a pergunta. |
 
 ## Histórico de versões
+
+### 1.2.0
+
+* Conversas anteriores: o primeiro item da árvore da conversa, recolhido por padrão, traz as conversas salvas. Cada uma se expande para mostrar as mensagens, e Enter em qualquer uma delas reabre a conversa para continuar.
+* As conversas são salvas automaticamente, com criptografia do Windows. Delete apaga uma conversa.
+* Novas opções: guardar conversas anteriores, número máximo e apagar todas.
 
 ### 1.1.0
 

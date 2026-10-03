@@ -1,5 +1,10 @@
 # Changelog / Histórico de versões
 
+## 1.2.0
+
+* Previous conversations: the conversation list became a tree whose first item, "Previous conversations", starts collapsed. Each saved conversation is a collapsed branch with its messages; Enter on a conversation or on one of its messages reopens it to be continued (the AI receives the whole history). Conversations are saved automatically after each answer, encrypted with Windows DPAPI, and removed when the add-on is uninstalled. Delete removes one conversation. New options: keep previous conversations, maximum number, delete all.
+* Conversas anteriores: a lista da conversa virou uma árvore cujo primeiro item, "Conversas anteriores", começa recolhido. Cada conversa salva é um ramo recolhido com as mensagens; Enter numa conversa ou numa mensagem dela reabre a conversa para continuar (a IA recebe todo o histórico). As conversas são salvas automaticamente após cada resposta, com criptografia do Windows (DPAPI), e apagadas ao desinstalar o complemento. Delete apaga uma conversa. Novas opções: guardar conversas anteriores, número máximo e apagar todas.
+
 ## 1.1.0
 
 * Visual theme for the NVDAIAs windows built from design tokens (`addon/globalPlugins/NVDAIAs/design/tokens.json`): navy header, warm orange accents, larger fonts, status line and a thick focus frame. All colours meet WCAG 2.2 AA; the theme turns itself off in Windows high contrast. New options: use the visual theme, larger text. Chat window layout: AI and Model side by side, Send button next to the question.

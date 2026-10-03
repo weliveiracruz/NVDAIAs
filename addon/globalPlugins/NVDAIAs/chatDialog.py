@@ -17,7 +17,8 @@ import ui
 import wx
 from gui import guiHelper
 
-from . import core, textutils, theme
+from . import core, history, textutils, theme
+from .conversation import ChatEntry
 from .connectDialog import ConnectDialog
 from .providers import PROVIDER_IDS, getProviderClass
 
@@ -109,12 +110,23 @@ class ChatDialog(wx.Dialog):
 		# Conversation: label above, list fills the window.
 		# Translators: label of the list with the messages of the conversation.
 		conversationLabel = wx.StaticText(self, label=_("Con&versation:"))
-		self.conversationList = wx.ListBox(self, style=wx.LB_SINGLE, size=(720, 280))
-		self.conversationList.Bind(wx.EVT_LISTBOX_DCLICK, lambda evt: self.onReadMessage(None))
+		# A tree: the first item, "Previous conversations", starts collapsed; each
+		# previous conversation is a collapsed branch with its messages; the
+		# messages of the current conversation follow at the top level.
+		self.conversationTree = wx.TreeCtrl(
+			self,
+			style=wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS | wx.TR_LINES_AT_ROOT | wx.TR_SINGLE,
+			size=(720, 280),
+		)
+		self._root = self.conversationTree.AddRoot("root")
+		self._historyNode = None
+		self._historyData = {}
+		self.conversationTree.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.onTreeExpanding)
+		self.conversationTree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, lambda evt: self.onTreeActivate())
 		conversationBox = wx.BoxSizer(wx.VERTICAL)
 		conversationBox.Add(conversationLabel)
 		conversationBox.AddSpacer(gapS)
-		conversationBox.Add(self.conversationList, proportion=1, flag=wx.EXPAND)
+		conversationBox.Add(self.conversationTree, proportion=1, flag=wx.EXPAND)
 		sHelper.addItem(conversationBox, proportion=1, flag=wx.EXPAND)
 
 		# Question: label above, field and Send button on the same row (chat layout).
@@ -166,8 +178,8 @@ class ChatDialog(wx.Dialog):
 
 		mainSizer.Add(sHelper.sizer, proportion=1, border=guiHelper.BORDER_FOR_DIALOGS + (theme.space("xs") if self.themed else 0), flag=wx.ALL | wx.EXPAND)
 		if self.themed:
-			theme.applyColors(self, bodyControls=(self.conversationList, self.questionEdit, self.modelCombo))
-			self.focusFrames = theme.FocusFrames(self, (self.providerChoice, self.modelCombo, self.conversationList, self.questionEdit))
+			theme.applyColors(self, bodyControls=(self.conversationTree, self.questionEdit, self.modelCombo))
+			self.focusFrames = theme.FocusFrames(self, (self.providerChoice, self.modelCombo, self.conversationTree, self.questionEdit))
 		self.SetSizer(mainSizer)
 		mainSizer.Fit(self)
 		width, height = self.GetSize()
@@ -183,6 +195,7 @@ class ChatDialog(wx.Dialog):
 		self._fillModels()
 		self.session.listeners.append(self)
 		self.session.conversation.listeners.append(self.refreshList)
+		self.rebuildHistory()
 		self.refreshList()
 		self.onBusyChanged(self.session.busy)
 
@@ -221,28 +234,131 @@ class ChatDialog(wx.Dialog):
 			text = _("[image attached]") + " " + text
 		return "%s: %s" % (who, textutils.oneLine(text, LIST_ITEM_LIMIT))
 
+	# Tree ----------------------------------------------------------------------
+
+	def selectedData(self):
+		item = self.conversationTree.GetSelection()
+		if not item.IsOk() or item == self._root:
+			return None
+		return self.conversationTree.GetItemData(item)
+
 	def selectedEntry(self):
-		index = self.conversationList.GetSelection()
-		entries = self.session.conversation.entries
-		if 0 <= index < len(entries):
-			return entries[index]
-		return None
+		"""ChatEntry of the selected message (current or previous conversation)."""
+		data = self.selectedData()
+		if not data or data[0] != "msg":
+			return None
+		convId, index = data[1], data[2]
+		if convId is None:
+			entries = self.session.conversation.entries
+			return entries[index] if 0 <= index < len(entries) else None
+		saved = self._historyData.get(convId)
+		if not saved:
+			return None
+		entries = saved.get("entries") or []
+		return ChatEntry.fromDict(entries[index]) if 0 <= index < len(entries) else None
+
+	def _conversationLabel(self, data):
+		title, providers, count, updated = history.summary(data)
+		# Translators: date format of the previous conversations (Python strftime).
+		stamp = time.strftime(_("%Y-%m-%d %H:%M"), time.localtime(updated))
+		# Translators: one previous conversation in the tree. {date}, {ais} (e.g. Claude, Gemini), {title} (first question) and {count} (messages).
+		return _("{date} · {ais} · {title} ({count} messages)").format(date=stamp, ais=", ".join(providers) or "-", title=title, count=count)
+
+	def rebuildHistory(self):
+		"""(Re)creates the "Previous conversations" branch, keeping what was expanded."""
+		tree = self.conversationTree
+		if not core.conf()["saveHistory"]:
+			if self._historyNode is not None:
+				tree.Delete(self._historyNode)
+				self._historyNode = None
+			self._historyData = {}
+			return
+		wasExpanded = self._historyNode is not None and tree.IsExpanded(self._historyNode)
+		expandedIds = set()
+		if self._historyNode is not None:
+			child, cookie = tree.GetFirstChild(self._historyNode)
+			while child.IsOk():
+				if tree.IsExpanded(child):
+					expandedIds.add(tree.GetItemData(child)[1])
+				child, cookie = tree.GetNextChild(self._historyNode, cookie)
+			tree.DeleteChildren(self._historyNode)
+		else:
+			first, _cookie = tree.GetFirstChild(self._root)
+			if first.IsOk():
+				self._historyNode = tree.InsertItem(self._root, 0, "")
+			else:
+				self._historyNode = tree.AppendItem(self._root, "")
+			tree.SetItemData(self._historyNode, ("history",))
+		previous = self.session.previousConversations()
+		self._historyData = {d["id"]: d for d in previous}
+		# Translators: first item of the conversation tree. {count} is the number of saved conversations.
+		tree.SetItemText(self._historyNode, _("Previous conversations ({count})").format(count=len(previous)))
+		for data in previous:
+			node = tree.AppendItem(self._historyNode, self._conversationLabel(data))
+			tree.SetItemData(node, ("conv", data["id"]))
+			# Placeholder so the branch can be expanded; messages are added on expansion.
+			placeholder = tree.AppendItem(node, "…")
+			tree.SetItemData(placeholder, ("placeholder",))
+			if data["id"] in expandedIds:
+				self._fillConversationNode(node)
+				tree.Expand(node)
+		if wasExpanded and previous:
+			tree.Expand(self._historyNode)
+
+	def _fillConversationNode(self, node):
+		tree = self.conversationTree
+		convId = tree.GetItemData(node)[1]
+		tree.DeleteChildren(node)
+		data = self._historyData.get(convId) or {}
+		for index, raw in enumerate(data.get("entries") or []):
+			child = tree.AppendItem(node, self._entryLabel(ChatEntry.fromDict(raw)))
+			tree.SetItemData(child, ("msg", convId, index))
+
+	def onTreeExpanding(self, evt):
+		item = evt.GetItem()
+		data = self.conversationTree.GetItemData(item) if item.IsOk() else None
+		if data and data[0] == "conv":
+			first, _cookie = self.conversationTree.GetFirstChild(item)
+			if first.IsOk() and self.conversationTree.GetItemData(first) == ("placeholder",):
+				self._fillConversationNode(item)
+		evt.Skip()
 
 	# Session / conversation listeners ------------------------------------------
 
 	def refreshList(self):
+		"""Rebuilds the messages of the current conversation (top level, after the history item)."""
 		if not self:
 			return
-		labels = [self._entryLabel(e) for e in self.session.conversation.entries]
+		tree = self.conversationTree
+		toDelete = []
+		child, cookie = tree.GetFirstChild(self._root)
+		while child.IsOk():
+			if child != self._historyNode:
+				toDelete.append(child)
+			child, cookie = tree.GetNextChild(self._root, cookie)
+		for item in toDelete:
+			tree.Delete(item)
+		last = None
+		for index, entry in enumerate(self.session.conversation.entries):
+			last = tree.AppendItem(self._root, self._entryLabel(entry))
+			tree.SetItemData(last, ("msg", None, index))
 		if self.session.busy:
 			name = getProviderClass(core.conf()["provider"]).name
 			# Translators: last item of the conversation while waiting. {name} is ChatGPT, Gemini or Claude.
-			labels.append(_("{name} is answering…").format(name=name))
-		self.conversationList.Set(labels)
-		if labels:
-			self.conversationList.SetSelection(len(labels) - 1)
-			self.conversationList.EnsureVisible(len(labels) - 1)
+			last = tree.AppendItem(self._root, _("{name} is answering…").format(name=name))
+			tree.SetItemData(last, ("busy",))
+		if last is not None:
+			tree.SelectItem(last)
+			tree.EnsureVisible(last)
+		elif self._historyNode is not None:
+			tree.SelectItem(self._historyNode)
 		self._updateButtons()
+
+	def onHistoryChanged(self):
+		if not self:
+			return
+		self.rebuildHistory()
+		self.refreshList()
 
 	def onBusyChanged(self, busy):
 		if not self:
@@ -311,7 +427,7 @@ class ChatDialog(wx.Dialog):
 		focus = wx.Window.FindFocus()
 		if focus is self.questionEdit:
 			self.onQuestionKeyDown(evt)
-		elif focus is self.conversationList:
+		elif focus is self.conversationTree:
 			self.onListKeyDown(evt)
 		else:
 			evt.Skip()
@@ -326,12 +442,71 @@ class ChatDialog(wx.Dialog):
 	def onListKeyDown(self, evt):
 		key = evt.GetKeyCode()
 		if key in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER):
-			self.onReadMessage(None)
+			self.onTreeActivate()
 			return
 		if evt.ControlDown() and key in (ord("C"), ord("c")):
 			self.onCopyMessage(None)
 			return
+		if key == wx.WXK_DELETE:
+			data = self.selectedData()
+			if data and data[0] == "conv":
+				self.deletePreviousConversation(data[1])
+				return
 		evt.Skip()
+
+	def onTreeActivate(self):
+		"""Enter: reads a message of the current conversation; on a previous
+		conversation (or one of its messages) opens it to be continued."""
+		data = self.selectedData()
+		if not data:
+			return
+		kind = data[0]
+		if kind == "history":
+			tree = self.conversationTree
+			if tree.IsExpanded(self._historyNode):
+				tree.Collapse(self._historyNode)
+			elif tree.GetChildrenCount(self._historyNode, False):
+				tree.Expand(self._historyNode)
+		elif kind == "conv":
+			self.openPreviousConversation(data[1])
+		elif kind == "msg":
+			if data[1] is None:
+				self.onReadMessage(None)
+			else:
+				self.openPreviousConversation(data[1])
+
+	def openPreviousConversation(self, convId):
+		if self.session.busy:
+			# Translators: announced when a question is already being answered.
+			ui.message(_("Please wait for the current answer"))
+			return
+		saved = self._historyData.get(convId)
+		try:
+			conversation = self.session.openFromHistory(convId)
+		except (KeyError, OSError, ValueError):
+			# Translators: error when a saved conversation cannot be opened.
+			ui.message(_("Could not open this conversation"))
+			self.rebuildHistory()
+			return
+		title = history.summary(saved)[0] if saved else ""
+		# Translators: announced after opening a previous conversation. {title} is its first question, {count} the number of messages.
+		ui.message(_("Conversation \"{title}\" opened, {count} messages. Continue it in the Question field.").format(title=title, count=len(conversation)))
+		self.questionEdit.SetFocus()
+
+	def deletePreviousConversation(self, convId):
+		saved = self._historyData.get(convId)
+		title = history.summary(saved)[0] if saved else ""
+		if gui.messageBox(
+			# Translators: confirmation before deleting a previous conversation. {title} is its first question.
+			_("Delete the conversation \"{title}\" from the history?").format(title=title),
+			"NVDAIAs",
+			wx.YES_NO | wx.ICON_QUESTION,
+			self,
+		) != wx.YES:
+			return
+		self.session.deleteFromHistory(convId)
+		# Translators: announced after deleting a previous conversation.
+		ui.message(_("Conversation deleted"))
 
 	def onSend(self, evt):
 		text = self.questionEdit.GetValue().strip()
@@ -388,7 +563,7 @@ class ChatDialog(wx.Dialog):
 			copyText(entry.text)
 
 	def onNewConversation(self, evt):
-		if len(self.session.conversation) and gui.messageBox(
+		if len(self.session.conversation) and not core.conf()["saveHistory"] and gui.messageBox(
 			# Translators: confirmation before clearing the conversation.
 			_("Start a new conversation? The current messages will be removed."),
 			"NVDAIAs",

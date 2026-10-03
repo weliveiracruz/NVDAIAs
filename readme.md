@@ -1,7 +1,7 @@
 # NVDAIAs – Chat with ChatGPT, Gemini and Claude from NVDA
 
 * Author: Wellington Cruz
-* Version: 1.1.0
+* Version: 1.2.0
 * Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 * License: GNU General Public License, version 2
 * Documentation in Portuguese (Brazil): docs/pt_BR/readme.md
@@ -31,7 +31,7 @@ The three services only let third-party programs connect through an **access tok
 
 Open it with **NVDA+Alt+I** or NVDA menu > Tools > **NVDAIAs - Chat with AI**. Focus starts in the Question field.
 
-Tab order: **AI** (combo box), **Model**, **Conversation** (list of messages), **Question**, then the buttons Send, Cancel sending, Read message, Copy message, New conversation, Save conversation, Connect account, Settings and Close. **Shift+Tab from the Question field goes straight to the conversation list.**
+Tab order: **AI** (combo box), **Model**, **Conversation** (a tree: first the collapsed **Previous conversations** item, then the messages of the current conversation), **Question**, then the buttons Send, Cancel sending, Read message, Copy message, New conversation, Save conversation, Connect account, Settings and Close. **Shift+Tab from the Question field goes straight to the conversation list.**
 
 The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a **thick orange frame around the field that has the focus**. A **status line** under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.
 
@@ -40,11 +40,18 @@ The window has a visual theme that also helps people with low vision: navy heade
 | Question | Enter | Sends the question |
 | Question | Shift+Enter | New line |
 | Question | Shift+Tab | Goes to the conversation list |
-| Conversation list | Enter | Opens the full message in a browse mode window (headings, lists, links) |
-| Conversation list | Ctrl+C | Copies the selected message |
-| Anywhere | Escape | Closes the window; the conversation is kept until NVDA restarts |
+| Conversation | Right / Left arrow | Expands / collapses "Previous conversations" or a previous conversation |
+| Conversation, current message | Enter | Opens the full message in a browse mode window (headings, lists, links) |
+| Conversation, previous conversation or one of its messages | Enter | Reopens that conversation to be continued |
+| Conversation | Ctrl+C | Copies the selected message |
+| Conversation, previous conversation | Delete | Deletes it from the history (asks first) |
+| Anywhere | Escape | Closes the window; the conversation stays open and is already saved |
 
 While waiting, a short beep plays every 1.5 seconds. When the answer arrives NVDA reads it (press Ctrl to stop). On errors, NVDA explains what happened and puts the question back in the field. You can switch AI in the middle of a conversation: the new AI receives the whole history.
+
+### Previous conversations
+
+Every conversation is saved automatically. The first item of the Conversation tree, **Previous conversations (N)**, starts collapsed. Expand it with the Right arrow; each previous conversation shows its date, AIs, first question and number of messages, and expands to show its messages. **Enter** on a previous conversation or on any of its messages reopens it as the current conversation, focus goes to the Question field and the AI receives the whole history. The conversation that was open goes to the history. **New conversation** saves the current one and starts a blank one.
 
 ## Commands
 
@@ -59,7 +66,7 @@ All commands can be changed in NVDA menu > Preferences > Input gestures, categor
 
 ## Settings
 
-NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; use the visual theme; larger text; maximum answer size for Claude; time limit.
+NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; keep previous conversations, maximum number and Delete all previous conversations; use the visual theme; larger text; maximum answer size for Claude; time limit.
 
 ## Privacy and security
 
@@ -67,9 +74,13 @@ NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for each AI the to
 * Questions, conversation history and the screenshots you ask to describe are sent directly from your computer to the chosen provider (OpenAI, Google or Anthropic) over HTTPS, and to no one else. Each provider handles the data under its own privacy policy.
 * Screenshots include everything visible in the captured area.
 * The add-on does not run on secure screens (logon, UAC).
-* The conversation lives only in memory; use **Save conversation** to keep it in a text file.
+* Conversations are saved automatically after each answer in the `NVDAIAs-history` folder of the NVDA configuration, **encrypted with DPAPI** like the tokens (screenshots included). Delete one with the Delete key, delete all in the settings or turn the history off. The history is deleted when the add-on is uninstalled. **Save conversation** writes a plain text file.
 
 ## Changes
+
+### 1.2.0
+
+* Previous conversations: first item of the conversation tree, collapsed by default; each saved conversation expands to show its messages and Enter on any of them reopens it to be continued. Saved automatically, encrypted with DPAPI. Delete removes one. New options: keep previous conversations, maximum number, delete all.
 
 ### 1.1.0
 

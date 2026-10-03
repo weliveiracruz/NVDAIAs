@@ -84,7 +84,7 @@ Bordas: `stripe` 4px · `idle` 1px · `focus` 3px · `gap` 4px
 1. Cabeçalho
 2. Linha de situação
 3. IA e Modelo, lado a lado
-4. Conversa (ocupa o espaço que sobrar quando a janela cresce)
+4. Conversa: árvore com **Conversas anteriores** (recolhido) no topo e as mensagens da conversa atual em seguida. Ocupa o espaço que sobrar quando a janela cresce.
 5. Pergunta, com o botão Enviar ao lado
 6. Cancelar envio, Ler mensagem, Copiar mensagem
 7. Nova conversa, Salvar conversa, Conectar conta, Configurações, Fechar
@@ -95,12 +95,15 @@ As imagens abaixo foram geradas em Linux por `tests/screenshots.py`. Por isso, o
 
 * `design/chat-foco-pergunta.png`: janela de conversa com o foco na pergunta
 * `design/chat-foco-lista.png`: foco na lista da conversa
+* `design/chat-historico.png`: conversas anteriores expandidas
 * `design/chat-aguardando.png`: aguardando a resposta
 * `design/chat-erro.png`: depois de um erro
 * `design/conectar-conta.png`: tela Conectar conta
 * `design/chat-sem-tema.png`: com o tema desligado
 
 ![Janela de conversa com o foco na pergunta](design/chat-foco-pergunta.png)
+
+![Conversas anteriores expandidas](design/chat-historico.png)
 
 ![Aguardando a resposta](design/chat-aguardando.png)
 

@@ -17,6 +17,7 @@ from logHandler import log
 
 from .conversation import ChatEntry, Conversation
 from .credentials import CredentialStore
+from .history import HistoryStore
 from .providers import PROVIDERS, PROVIDER_IDS, ProviderError, getProviderClass
 from . import textutils
 
@@ -38,6 +39,8 @@ confspec = {
 	"timeout": "integer(default=120, min=10, max=600)",
 	"visualTheme": "boolean(default=True)",
 	"largeText": "boolean(default=False)",
+	"saveHistory": "boolean(default=True)",
+	"maxHistory": "integer(default=100, min=5, max=1000)",
 }
 
 
@@ -104,6 +107,18 @@ def store():
 	if _store is None:
 		_store = CredentialStore(globalVars.appArgs.configPath)
 	return _store
+
+
+_history = None
+
+
+def history():
+	"""Store of the previous conversations."""
+	global _history
+	if _history is None:
+		_history = HistoryStore(globalVars.appArgs.configPath)
+	_history.maxConversations = conf()["maxHistory"]
+	return _history
 
 
 def makeProvider(providerId, token=None, model=None):
@@ -246,6 +261,7 @@ class ChatSession:
 			self._pendingEntry = None
 			self._setBusy(False)
 			answerEntry = self.conversation.add(ChatEntry("assistant", answer, providerName=providerName, model=model))
+			self.saveToHistory()
 			tones.beep(880, 60)
 			if conf()["speakResponses"]:
 				ui.message(self.speechText(answer))
@@ -279,8 +295,46 @@ class ChatSession:
 		return entry.text if entry else None
 
 	def newConversation(self):
+		"""Starts a new conversation. The current one stays in the history."""
 		self.cancel()
+		self.saveToHistory()
 		self.conversation.clear()
+		self._emit("onHistoryChanged")
+
+	# History -------------------------------------------------------------------
+
+	def saveToHistory(self):
+		if not conf()["saveHistory"] or not len(self.conversation):
+			return False
+		try:
+			return history().save(self.conversation.toDict())
+		except Exception:
+			log.error("NVDAIAs: could not save the conversation history", exc_info=True)
+			return False
+
+	def previousConversations(self):
+		"""Saved conversations except the current one, most recent first."""
+		if not conf()["saveHistory"]:
+			return []
+		try:
+			return history().list(excludeId=self.conversation.id)
+		except Exception:
+			log.error("NVDAIAs: could not read the conversation history", exc_info=True)
+			return []
+
+	def openFromHistory(self, convId):
+		"""Makes a previous conversation the current one, to be continued.
+		The conversation that was open is saved in the history first."""
+		data = history().load(convId)
+		self.cancel()
+		self.saveToHistory()
+		self.conversation.load(data)
+		self._emit("onHistoryChanged")
+		return self.conversation
+
+	def deleteFromHistory(self, convId):
+		history().delete(convId)
+		self._emit("onHistoryChanged")
 
 	@staticmethod
 	def speechText(text):
