@@ -37,6 +37,15 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def __init__(self):
 		super().__init__()
 		core.initConfig()
+		# Brings back the tokens and history that versions up to 1.4.0 deleted while being updated.
+		try:
+			from . import userData
+
+			tokens, history = userData.restoreAfterUpdate(globalVars.appArgs.configPath)
+			if tokens or history:
+				log.info("NVDAIAs: tokens (%s) and history (%s) restored after the update" % (tokens, history))
+		except Exception:
+			log.error("NVDAIAs: could not restore the data kept during the update", exc_info=True)
 		self.session = core.ChatSession()
 		from .settingsPanel import NVDAIAsSettingsPanel
 

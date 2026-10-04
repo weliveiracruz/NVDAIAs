@@ -1,5 +1,12 @@
 # Changelog / Histórico de versões
 
+## 1.5.0
+
+* Tokens and conversation history are kept when the add-on is updated. NVDA runs the uninstall task of the old version during an update, and versions 1.0.0 to 1.4.0 deleted the data there. Now the uninstall task only deletes on a real uninstall, and installing 1.5.0 makes a copy that is restored when it starts, so updating from older versions is safe too.
+* The current conversation is a branch of the conversation tree ("Current conversation (N messages)"), after "Previous conversations", and can be collapsed and expanded with the arrows or Enter. It opens again when a new answer arrives.
+* Os tokens e o histórico de conversas são mantidos na atualização do complemento. O NVDA roda a desinstalação da versão antiga durante a atualização, e as versões 1.0.0 a 1.4.0 apagavam os dados ali. Agora a desinstalação só apaga numa desinstalação de verdade, e a instalação da 1.5.0 faz uma cópia que é restaurada quando ela inicia, então a atualização a partir das versões antigas também é segura.
+* A conversa atual é um ramo da árvore ("Conversa atual (N mensagens)"), depois de "Conversas anteriores", e pode ser recolhida e expandida com as setas ou Enter. Ela se abre de novo quando chega uma resposta nova.
+
 ## 1.4.0
 
 * Message actions: Enter (or the Applications key / Shift+F10) on a message of the current conversation, or the new "Actions for this message" button, opens a menu with Read message, Copy, Delete, Translate to (12 languages), Describe this image in more detail (messages with images) and Improve this answer (answers). Messages of previous conversations get Read, Copy and Open this conversation.

@@ -37,6 +37,7 @@ Garantir, a cada nova versão, que o NVDAIAs:
 | Tradução | `tests/test_translation.py` | ACE (interface em português, atalhos únicos) |
 | Acessibilidade | `tests/test_accessibility.py` | ACE |
 | Segurança | `tests/test_security.py` | SEG |
+| Atualização | `tests/test_update.py` | FUN (tokens e histórico preservados na atualização) |
 | Pacote | `tests/run_all.py` (etapa build) | FUN (manifesto e pacote válidos) |
 
 O executor `tests/run_all.py` roda todas as suítes, conta testes, aprovados e falhas, compara com a execução anterior para contar as correções e grava o histórico em `reports/execucoes.json` e o resumo em `reports/ULTIMA-EXECUCAO.md`.
@@ -59,6 +60,12 @@ O executor `tests/run_all.py` roda todas as suítes, conta testes, aprovados e f
 | FUN-12 | Excluir mensagem | Pede confirmação, remove e atualiza o histórico | gui |
 | FUN-13 | Manifesto e pacote | Manifesto válido para o NVDA e pacote gerado | run_all |
 | FUN-14 | Compatibilidade de Python | Testes de unidade passam em 3.11, 3.12 e 3.13 | run_all |
+| FUN-15 | Desinstalação de verdade | Tokens, histórico e cópia de atualização apagados | update |
+| FUN-16 | Atualização detectada | Pela pasta da nova versão ou pelo estado do NVDA; tokens e histórico mantidos | update |
+| FUN-17 | Atualização a partir das versões 1.0.0 a 1.4.0 | A cópia feita na instalação é restaurada quando a nova versão inicia | update |
+| FUN-18 | Restauração segura | Nunca sobrescreve um token ou conversa mais novos | update |
+| FUN-19 | Primeira instalação e falhas | Sem cópia desnecessária; falha na cópia não bloqueia a instalação | update |
+| FUN-20 | Conversa atual em ramo | "Conversa atual (N mensagens)" recolhe e expande, abre quando chega resposta | gui |
 
 ## 6. Casos de teste de acessibilidade (ACE)
 
@@ -84,6 +91,7 @@ Referências: WCAG 2.2 nível AA, guia de complementos do NVDA e as práticas de
 | ACE-16 | Tradução completa | Toda frase da interface traduzida para pt_BR, com os mesmos marcadores |
 | ACE-17 | Fala limpa | Símbolos de Markdown removidos da leitura quando a opção está ligada |
 | ACE-18 | Mensagens longas | Item da lista resumido, texto completo na janela de leitura |
+| ACE-19 | Ramos da árvore | Conversas anteriores e Conversa atual dizem quantos itens têm; Enter e setas expandem e recolhem |
 
 ## 7. Casos de teste de vulnerabilidade (SEG)
 

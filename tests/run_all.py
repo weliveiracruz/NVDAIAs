@@ -91,7 +91,7 @@ def main():
 	for exe in unitPythons():
 		suites.append(runSuite([exe, os.path.join("tests", "_run_unittest.py")]))
 	if wxPython:
-		for script, env in (("test_gui.py", {}), ("test_theme.py", {}), ("test_translation.py", {"NVDAIAS_LANG": "pt_BR"}), ("test_accessibility.py", {}), ("test_security.py", {})):
+		for script, env in (("test_gui.py", {}), ("test_theme.py", {}), ("test_translation.py", {"NVDAIAS_LANG": "pt_BR"}), ("test_accessibility.py", {}), ("test_security.py", {}), ("test_update.py", {})):
 			suites.append(runSuite(xvfb + [wxPython, "-u", os.path.join("tests", script)], env=env))
 	else:
 		suites.append({"suite": "wxPython", "total": 1, "passed": 0, "failed": 1, "failures": ["wxPython not found: install python3-wxgtk4.0"], "tests": ["wxPython"], "log": ""})

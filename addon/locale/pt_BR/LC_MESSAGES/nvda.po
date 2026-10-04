@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NVDAIAs 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-03 20:02-0300\n"
+"POT-Creation-Date: 2026-10-04 19:35-0300\n"
 "Last-Translator: Wellington Cruz <weliveiracruz@gmail.com>\n"
 "Language-Team: Portuguese (Brazil)\n"
 "Language: pt_BR\n"
@@ -20,26 +20,26 @@ msgid "NVDAIAs"
 msgstr "NVDAIAs"
 
 #. Translators: item of the NVDA Tools menu.
-#: addon/globalPlugins/NVDAIAs/__init__.py:51
+#: addon/globalPlugins/NVDAIAs/__init__.py:60
 msgid "NVDAIAs - &Chat with AI…"
 msgstr "NVDAIAs - &Conversar com IA…"
 
 #. Translators: help text of the Tools menu item.
 #. Translators: description of the command that opens the chat window.
-#: addon/globalPlugins/NVDAIAs/__init__.py:53
-#: addon/globalPlugins/NVDAIAs/__init__.py:133
+#: addon/globalPlugins/NVDAIAs/__init__.py:62
+#: addon/globalPlugins/NVDAIAs/__init__.py:142
 msgid "Opens the NVDAIAs window to chat with ChatGPT, Gemini or Claude"
 msgstr ""
 "Abre a janela do NVDAIAs para conversar com o ChatGPT, o Gemini ou o Claude"
 
 #. Translators: error when the screenshot fails.
-#: addon/globalPlugins/NVDAIAs/__init__.py:100
+#: addon/globalPlugins/NVDAIAs/__init__.py:109
 msgid "Could not capture the screen"
 msgstr "Não foi possível capturar a tela"
 
 #. Translators: question sent with a screenshot. {what} describes what was
 #. captured.
-#: addon/globalPlugins/NVDAIAs/__init__.py:103
+#: addon/globalPlugins/NVDAIAs/__init__.py:112
 #, python-brace-format
 msgid ""
 "Describe this image for a blind person ({what}). Start with a short "
@@ -51,27 +51,27 @@ msgstr ""
 " como estão organizados."
 
 #. Translators: announced when a question is already being answered.
-#: addon/globalPlugins/NVDAIAs/__init__.py:115
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:623
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:650
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:681
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:723
+#: addon/globalPlugins/NVDAIAs/__init__.py:124
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:640
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:667
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:698
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:740
 msgid "Please wait for the current answer"
 msgstr "Aguarde a resposta atual"
 
 #. Translators: file name given to screenshots sent to the AI.
-#: addon/globalPlugins/NVDAIAs/__init__.py:120
+#: addon/globalPlugins/NVDAIAs/__init__.py:129
 msgid "screenshot.png"
 msgstr "captura-de-tela.png"
 
 #. Translators: announced after sending the screenshot.
-#: addon/globalPlugins/NVDAIAs/__init__.py:125
+#: addon/globalPlugins/NVDAIAs/__init__.py:134
 msgid "Image sent, waiting for the description"
 msgstr "Imagem enviada, aguardando a descrição"
 
 #. Translators: description of the command that describes the navigator
 #. object.
-#: addon/globalPlugins/NVDAIAs/__init__.py:141
+#: addon/globalPlugins/NVDAIAs/__init__.py:150
 msgid ""
 "Sends an image of the current navigator object to the AI and reads its "
 "description"
@@ -79,18 +79,18 @@ msgstr ""
 "Envia para a IA uma imagem do objeto de navegação atual e lê a descrição"
 
 #. Translators: announced when the navigator object has no position on screen.
-#: addon/globalPlugins/NVDAIAs/__init__.py:149
+#: addon/globalPlugins/NVDAIAs/__init__.py:158
 msgid "This object has no position on the screen"
 msgstr "Este objeto não tem posição na tela"
 
 #. Translators: describes the captured area. {name} and {role} come from NVDA.
-#: addon/globalPlugins/NVDAIAs/__init__.py:157
+#: addon/globalPlugins/NVDAIAs/__init__.py:166
 #, python-brace-format
 msgid "screen element: {name} {role}"
 msgstr "elemento da tela: {name} {role}"
 
 #. Translators: description of the command that describes the whole screen.
-#: addon/globalPlugins/NVDAIAs/__init__.py:162
+#: addon/globalPlugins/NVDAIAs/__init__.py:171
 msgid ""
 "Sends an image of the whole screen (current monitor) to the AI and reads its"
 " description"
@@ -98,12 +98,12 @@ msgstr ""
 "Envia para a IA uma imagem da tela inteira (monitor atual) e lê a descrição"
 
 #. Translators: describes the captured area (whole screen).
-#: addon/globalPlugins/NVDAIAs/__init__.py:172
+#: addon/globalPlugins/NVDAIAs/__init__.py:181
 msgid "whole screen"
 msgstr "tela inteira"
 
 #. Translators: description of the command that opens the settings.
-#: addon/globalPlugins/NVDAIAs/__init__.py:176
+#: addon/globalPlugins/NVDAIAs/__init__.py:185
 msgid "Opens the NVDAIAs settings"
 msgstr "Abre as configurações do NVDAIAs"
 
@@ -146,144 +146,157 @@ msgid "Con&versation:"
 msgstr "Con&versa:"
 
 #. Translators: label of the field where the user types the question.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:142
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:146
 msgid "&Question (Enter sends, Shift+Enter adds a new line):"
 msgstr "&Pergunta (Enter envia, Shift+Enter cria nova linha):"
 
 #. Translators: button that attaches files to the next question.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:146
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:150
 msgid "Attac&h files…"
 msgstr "Ane&xar arquivos…"
 
 #. Translators: button that sends the question.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:149
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:153
 msgid "&Send"
 msgstr "E&nviar"
 
 #. Translators: label of the list of files that will be sent with the next
 #. question.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:166
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:170
 msgid "Attached &files (Delete removes):"
 msgstr "Arq&uivos anexados (Delete remove):"
 
 #. Translators: button that cancels the question being sent.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:177
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:181
 msgid "Cance&l sending"
 msgstr "&Cancelar envio"
 
 #. Translators: button that opens the selected message in a reading window.
 #. Translators: item of the message actions menu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:180
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:564
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:184
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:581
 msgid "&Read message"
 msgstr "&Ler mensagem"
 
 #. Translators: button that copies the selected message.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:183
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:187
 msgid "C&opy message"
 msgstr "C&opiar mensagem"
 
 #. Translators: button that opens the menu of actions for the selected
 #. message.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:186
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:190
 msgid "Act&ions for this message…"
 msgstr "Açõ&es da mensagem…"
 
 #. Translators: button that clears the conversation.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:192
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:196
 msgid "&New conversation"
 msgstr "Nova conve&rsa"
 
 #. Translators: button that saves the conversation to a text file.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:195
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:199
 msgid "Sav&e conversation…"
 msgstr "&Salvar conversa…"
 
 #. Translators: button that opens the connect account (token) screen.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:198
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:202
 msgid "Connec&t account…"
 msgstr "Conec&tar conta…"
 
 #. Translators: button that opens the NVDAIAs settings.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:201
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:205
 msgid "Settin&gs…"
 msgstr "Confi&gurações…"
 
 #. Translators: button that closes the chat window.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:204
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:208
 msgid "&Close"
 msgstr "&Fechar"
 
 #. Translators: prefix of the user's messages in the conversation list.
 #. Translators: label of the user in the saved file.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:258
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:916
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:262
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:933
 msgid "You"
 msgstr "Você"
 
 #. Translators: shown in a message that has files attached. {names} is the
 #. list of files.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:264
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:916
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:268
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:933
 #, python-brace-format
 msgid "[attached: {names}]"
 msgstr "[anexos: {names}]"
 
 #. Translators: date format of the previous conversations (Python strftime).
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:293
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:297
 msgid "%Y-%m-%d %H:%M"
 msgstr "%d/%m/%Y %H:%M"
 
 #. Translators: one previous conversation in the tree. {date}, {ais} (e.g.
 #. Claude, Gemini), {title} (first question) and {count} (messages).
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:295
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:299
 #, python-brace-format
 msgid "{date} · {ais} · {title} ({count} messages)"
 msgstr "{date} · {ais} · {title} ({count} mensagens)"
 
 #. Translators: first item of the conversation tree. {count} is the number of
 #. saved conversations.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:325
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:329
 #, python-brace-format
 msgid "Previous conversations ({count})"
 msgstr "Conversas anteriores ({count})"
 
+#. Translators: branch with the messages of the current conversation. {count}
+#. is the number of messages.
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:378
+#, python-brace-format
+msgid "Current conversation ({count} messages)"
+msgstr "Conversa atual ({count} mensagens)"
+
+#. Translators: branch of the current conversation when it has no messages
+#. yet.
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:381
+msgid "Current conversation (no messages yet)"
+msgstr "Conversa atual (ainda sem mensagens)"
+
 #. Translators: last item of the conversation while waiting. {name} is
 #. ChatGPT, Gemini or Claude.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:378
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:390
 #, python-brace-format
 msgid "{name} is answering…"
 msgstr "{name} está respondendo…"
 
 #. Translators: status line after an error. {name} is the AI.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:423
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:439
 #, python-brace-format
 msgid "{name} · the last question failed, it is back in the Question field"
 msgstr "{name} · a última pergunta falhou e voltou para o campo Pergunta"
 
 #. Translators: status line while waiting. {name} is the AI, {model} the
 #. model.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:426
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:442
 #, python-brace-format
 msgid "{name} · {model} · answering…"
 msgstr "{name} · {model} · respondendo…"
 
 #. Translators: status line when the AI is connected. {name} is the AI,
 #. {model} the model.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:429
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:445
 #, python-brace-format
 msgid "{name} · {model} · connected"
 msgstr "{name} · {model} · conectado"
 
 #. Translators: status line when the AI has no token. {name} is the AI.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:432
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:448
 #, python-brace-format
 msgid "{name} · not connected, sending a question opens the connection screen"
 msgstr ""
 "{name} · não conectado; ao enviar uma pergunta, a tela de conexão abre"
 
 #. Translators: announced when the chosen AI has no token yet.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:454
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:470
 msgid ""
 "This AI is not connected yet. A connection screen will open when you send a "
 "question."
@@ -292,105 +305,105 @@ msgstr ""
 "enviar uma pergunta."
 
 #. Translators: a target language of the "Translate to" submenu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:517
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:534
 msgid "Portuguese (Brazil)"
 msgstr "português (Brasil)"
 
 #. Translators: a target language of the "Translate to" submenu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:519
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:536
 msgid "English"
 msgstr "inglês"
 
 #. Translators: a target language of the "Translate to" submenu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:521
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:538
 msgid "Spanish"
 msgstr "espanhol"
 
 #. Translators: a target language of the "Translate to" submenu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:523
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:540
 msgid "French"
 msgstr "francês"
 
 #. Translators: a target language of the "Translate to" submenu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:525
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:542
 msgid "German"
 msgstr "alemão"
 
 #. Translators: a target language of the "Translate to" submenu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:527
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:544
 msgid "Italian"
 msgstr "italiano"
 
 #. Translators: a target language of the "Translate to" submenu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:529
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:546
 msgid "Japanese"
 msgstr "japonês"
 
 #. Translators: a target language of the "Translate to" submenu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:531
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:548
 msgid "Chinese (simplified)"
 msgstr "chinês (simplificado)"
 
 #. Translators: a target language of the "Translate to" submenu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:533
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:550
 msgid "Korean"
 msgstr "coreano"
 
 #. Translators: a target language of the "Translate to" submenu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:535
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:552
 msgid "Arabic"
 msgstr "árabe"
 
 #. Translators: a target language of the "Translate to" submenu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:537
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:554
 msgid "Russian"
 msgstr "russo"
 
 #. Translators: a target language of the "Translate to" submenu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:539
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:556
 msgid "Hindi"
 msgstr "hindi"
 
 #. Translators: item of the message actions menu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:566
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:583
 msgid "&Copy"
 msgstr "&Copiar"
 
 #. Translators: item of the actions menu of a message from a previous
 #. conversation.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:570
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:587
 msgid "&Open this conversation to continue it"
 msgstr "&Abrir esta conversa para continuar"
 
 #. Translators: item of the message actions menu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:573
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:590
 msgid "&Delete"
 msgstr "&Excluir"
 
 #. Translators: submenu of the message actions menu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:576
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:593
 msgid "&Translate to"
 msgstr "&Traduzir para"
 
 #. Translators: item of the message actions menu, for messages with images.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:579
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:596
 msgid "Describe this &image in more detail"
 msgstr "Descrever esta &imagem com mais detalhes"
 
 #. Translators: item of the message actions menu, for answers.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:582
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:599
 msgid "I&mprove this answer"
 msgstr "&Melhorar esta resposta"
 
 #. Translators: announced when there is no message selected for the actions
 #. menu.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:589
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:606
 msgid "Select a message in the conversation first"
 msgstr "Selecione primeiro uma mensagem na conversa"
 
 #. Translators: confirmation before deleting a message. {message} is the start
 #. of the message.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:643
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:660
 #, python-brace-format
 msgid ""
 "Delete this message from the conversation?\n"
@@ -400,13 +413,13 @@ msgstr ""
 "{message}"
 
 #. Translators: announced after deleting a message.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:653
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:670
 msgid "Message deleted"
 msgstr "Mensagem excluída"
 
 #. Translators: request sent to the AI to translate a message. {language} is
 #. the target language, {text} the message.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:659
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:676
 #, python-brace-format
 msgid ""
 "Translate the message below into {language}. Answer only with the translation, keeping the formatting.\n"
@@ -419,14 +432,14 @@ msgstr ""
 
 #. Translators: announced after asking for a translation. {language} is the
 #. target language.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:661
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:678
 #, python-brace-format
 msgid "Translating to {language}"
 msgstr "Traduzindo para {language}"
 
 #. Translators: request sent to the AI to describe images in detail. {names}
 #. are the image file names.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:666
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:683
 #, python-brace-format
 msgid ""
 "Describe in much more detail the image(s) {names} sent earlier in this "
@@ -438,13 +451,13 @@ msgstr ""
 "o mais que uma pessoa cega gostaria de saber."
 
 #. Translators: announced after asking for a detailed description.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:670
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:687
 msgid "Asking for a detailed description of the image"
 msgstr "Pedindo uma descrição detalhada da imagem"
 
 #. Translators: request sent to the AI to improve an answer. {text} is the
 #. answer.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:674
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:691
 #, python-brace-format
 msgid ""
 "Improve the answer below: make it clearer, more complete, correct and well organised, in the same language. Answer only with the improved version.\n"
@@ -456,18 +469,18 @@ msgstr ""
 "{text}"
 
 #. Translators: announced after asking for an improved answer.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:676
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:693
 msgid "Asking for an improved answer"
 msgstr "Pedindo uma resposta melhorada"
 
 #. Translators: error when a saved conversation cannot be opened.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:688
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:705
 msgid "Could not open this conversation"
 msgstr "Não foi possível abrir esta conversa"
 
 #. Translators: announced after opening a previous conversation. {title} is
 #. its first question, {count} the number of messages.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:693
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:710
 #, python-brace-format
 msgid ""
 "Conversation \"{title}\" opened, {count} messages. Continue it in the "
@@ -477,68 +490,68 @@ msgstr ""
 
 #. Translators: confirmation before deleting a previous conversation. {title}
 #. is its first question.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:701
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:718
 #, python-brace-format
 msgid "Delete the conversation \"{title}\" from the history?"
 msgstr "Apagar a conversa \"{title}\" do histórico?"
 
 #. Translators: announced after deleting a previous conversation.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:709
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:726
 msgid "Conversation deleted"
 msgstr "Conversa apagada"
 
 #. Translators: question sent when the user attaches files without typing
 #. anything.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:715
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:732
 msgid "Please analyse the attached file(s) and summarise the content."
 msgstr "Analise o(s) arquivo(s) anexado(s) e resuma o conteúdo."
 
 #. Translators: announced when trying to send an empty question.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:718
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:735
 msgid "Type a question first"
 msgstr "Digite uma pergunta primeiro"
 
 #. Translators: announced after sending with files. {name} is the AI, {count}
 #. the number of files.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:744
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:761
 #, python-brace-format
 msgid "Sent to {name} with {count} file(s)"
 msgstr "Enviado para o {name} com {count} arquivo(s)"
 
 #. Translators: announced after sending. {name} is ChatGPT, Gemini or Claude.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:747
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:764
 #, python-brace-format
 msgid "Sent to {name}"
 msgstr "Enviado para o {name}"
 
 #. Translators: kind of attached file shown in the list.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:755
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:772
 msgid "image"
 msgstr "imagem"
 
 #. Translators: kind of attached file shown in the list.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:757
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:774
 msgid "PDF"
 msgstr "PDF"
 
 #. Translators: kind of attached file shown in the list.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:759
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:776
 msgid "audio or video"
 msgstr "áudio ou vídeo"
 
 #. Translators: kind of attached file shown in the list.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:761
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:778
 msgid "text"
 msgstr "texto"
 
 #. Translators: appended when a long text file was cut.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:766
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:783
 msgid "[truncated]"
 msgstr "[cortado]"
 
 #. Translators: announced after attaching. {names} are the files, {count} the
 #. total waiting to be sent.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:792
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:809
 #, python-brace-format
 msgid ""
 "Attached: {names}. {count} file(s) will be sent with the next question."
@@ -547,7 +560,7 @@ msgstr ""
 
 #. Translators: warning when audio or video is attached and the AI is not
 #. Gemini.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:797
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:814
 msgid ""
 "Attention: only Gemini can listen to audio and watch video. Choose Gemini in"
 " the AI box."
@@ -556,25 +569,25 @@ msgstr ""
 " na caixa IA."
 
 #. Translators: warning when a text was cut because it is too long.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:800
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:817
 msgid "A very long text was cut to fit."
 msgstr "Um texto muito longo foi cortado para caber."
 
 #. Translators: error when a file is too big. {name} is the file, {max} the
 #. limit.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:808
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:825
 #, python-brace-format
 msgid "The file {name} is too big. The limit is {max}."
 msgstr "O arquivo {name} é grande demais. O limite é {max}."
 
 #. Translators: error when a file is empty or has no text.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:811
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:828
 #, python-brace-format
 msgid "The file {name} is empty or has no readable content."
 msgstr "O arquivo {name} está vazio ou não tem conteúdo legível."
 
 #. Translators: error for .doc, .xls and .ppt files.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:814
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:831
 #, python-brace-format
 msgid ""
 "The file {name} uses an old Office format that cannot be read here. Open it "
@@ -585,7 +598,7 @@ msgstr ""
 
 #. Translators: error for documents that look malicious (zip bomb, XML
 #. entities).
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:817
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:834
 #, python-brace-format
 msgid ""
 "The file {name} was not opened because it looks damaged or unsafe (it "
@@ -596,7 +609,7 @@ msgstr ""
 
 #. Translators: error for files without readable content (programs,
 #. archives...).
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:820
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:837
 #, python-brace-format
 msgid ""
 "The AIs cannot read the content of {name}. Convert it to PDF, text or an "
@@ -606,72 +619,72 @@ msgstr ""
 "imagem e anexe de novo."
 
 #. Translators: error when a file cannot be opened.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:822
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:839
 #, python-brace-format
 msgid "Could not open the file {name}."
 msgstr "Não foi possível abrir o arquivo {name}."
 
 #. Translators: title of the dialog to choose files to attach.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:828
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:845
 msgid "Attach files"
 msgstr "Anexar arquivos"
 
 #. Translators: file type filter of the attach dialog.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:830
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:847
 msgid "All files (*.*)"
 msgstr "Todos os arquivos (*.*)"
 
 #. Translators: announced after removing an attached file. {name} is the file.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:847
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:864
 #, python-brace-format
 msgid "{name} removed"
 msgstr "{name} removido"
 
 #. Translators: announced after cancelling a question.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:864
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:881
 msgid "Sending cancelled"
 msgstr "Envio cancelado"
 
 #. Translators: title of the window that shows a message written by the user.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:873
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:890
 msgid "Your message"
 msgstr "Sua mensagem"
 
 #. Translators: title of the window that shows an answer. {name} is the AI,
 #. {model} the model.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:876
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:893
 #, python-brace-format
 msgid "Answer from {name} ({model})"
 msgstr "Resposta do {name} ({model})"
 
 #. Translators: confirmation before clearing the conversation.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:887
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:904
 msgid "Start a new conversation? The current messages will be removed."
 msgstr "Começar uma nova conversa? As mensagens atuais serão apagadas."
 
 #. Translators: announced after clearing the conversation.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:895
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:912
 msgid "New conversation"
 msgstr "Nova conversa"
 
 #. Translators: title of the save conversation dialog.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:905
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:922
 msgid "Save conversation"
 msgstr "Salvar conversa"
 
 #. Translators: file type in the save dialog.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:909
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:926
 msgid "Text files (*.txt)"
 msgstr "Arquivos de texto (*.txt)"
 
 #. Translators: error while saving the file.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:922
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:939
 #, python-brace-format
 msgid "Could not save the file: {error}"
 msgstr "Não foi possível salvar o arquivo: {error}"
 
 #. Translators: announced after saving the conversation.
-#: addon/globalPlugins/NVDAIAs/chatDialog.py:925
+#: addon/globalPlugins/NVDAIAs/chatDialog.py:942
 msgid "Conversation saved"
 msgstr "Conversa salva"
 
@@ -749,49 +762,49 @@ msgstr ""
 msgid "NVDAIAs - Connect account"
 msgstr "NVDAIAs - Conectar conta"
 
-#. Translators: title and subtitle of the coloured header of the connect
-#. dialog.
+#. Translators: title of the coloured header of the connect dialog.
 #: addon/globalPlugins/NVDAIAs/connectDialog.py:77
 msgid "Connect account"
 msgstr "Conectar conta"
 
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:77
+#. Translators: subtitle of the coloured header of the connect dialog.
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:79
 msgid "Paste the token generated on the AI's site"
 msgstr "Cole o token gerado no site da IA"
 
 #. Translators: label of the combo box to choose the AI in the connect dialog.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:81
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:84
 msgid "&Artificial intelligence:"
 msgstr "&Inteligência artificial:"
 
 #. Translators: label of the read-only field with the connection instructions.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:86
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:89
 msgid "&Instructions:"
 msgstr "Ins&truções:"
 
 #. Translators: button that opens the provider site where the token is
 #. generated.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:95
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:98
 msgid "&Open page to generate token"
 msgstr "&Abrir página para gerar o token"
 
 #. Translators: label of the password field where the token is pasted.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:99
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:102
 msgid "&Token (API key):"
 msgstr "T&oken (chave de API):"
 
 #. Translators: button that tests and saves the token.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:105
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:108
 msgid "&Connect"
 msgstr "&Conectar"
 
 #. Translators: cancel button.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:109
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:112
 msgid "Cancel"
 msgstr "Cancelar"
 
 #. Translators: appended to the instructions when a token is already saved.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:132
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:135
 msgid ""
 "A token for this AI is already saved. Paste a new one only if you want to "
 "replace it."
@@ -800,27 +813,27 @@ msgstr ""
 "substituí-lo."
 
 #. Translators: message when the token field is empty.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:141
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:144
 msgid "Paste the token in the Token field first."
 msgstr "Cole o token no campo Token primeiro."
 
 #. Translators: shown and announced while the token is being tested.
 #. Translators: announced while testing the connection.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:149
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:152
 #: addon/globalPlugins/NVDAIAs/settingsPanel.py:98
 msgid "Testing the connection, please wait…"
 msgstr "Testando a conexão, aguarde…"
 
 #. Translators: error when the token cannot be saved. {error} is the technical
 #. error.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:163
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:166
 #, python-brace-format
 msgid "The connection works, but the token could not be saved: {error}"
 msgstr "A conexão funciona, mas não foi possível salvar o token: {error}"
 
 #. Translators: message after a successful connection. {name} is ChatGPT,
 #. Gemini or Claude.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:173
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:176
 #, python-brace-format
 msgid "Connected to {name}. The token was saved securely on this computer."
 msgstr ""

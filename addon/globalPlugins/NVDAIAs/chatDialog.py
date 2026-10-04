@@ -126,6 +126,10 @@ class ChatDialog(wx.Dialog):
 		)
 		self._root = self.conversationTree.AddRoot("root")
 		self._historyNode = None
+		# Branch with the messages of the current conversation (expanded by default).
+		self._currentNode = self.conversationTree.AppendItem(self._root, "")
+		self.conversationTree.SetItemData(self._currentNode, ("current",))
+		self._currentCount = -1
 		self._historyData = {}
 		self.conversationTree.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.onTreeExpanding)
 		self.conversationTree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, lambda evt: self.onTreeActivate())
@@ -356,32 +360,44 @@ class ChatDialog(wx.Dialog):
 	# Session / conversation listeners ------------------------------------------
 
 	def refreshList(self):
-		"""Rebuilds the messages of the current conversation (top level, after the history item)."""
+		"""Rebuilds the "Current conversation" branch (after "Previous conversations").
+		The branch keeps the state chosen by the user (expanded or collapsed), but
+		opens again when a new message arrives, so the answer can be read."""
 		if not self:
 			return
 		tree = self.conversationTree
-		toDelete = []
-		child, cookie = tree.GetFirstChild(self._root)
-		while child.IsOk():
-			if child != self._historyNode:
-				toDelete.append(child)
-			child, cookie = tree.GetNextChild(self._root, cookie)
-		for item in toDelete:
-			tree.Delete(item)
+		node = self._currentNode
+		entries = self.session.conversation.entries
+		count = len(entries) + (1 if self.session.busy else 0)
+		expand = self._currentCount < 0 or tree.IsExpanded(node) or count > self._currentCount
+		selected = tree.GetSelection()
+		selectionInside = selected.IsOk() and (selected == node or tree.GetItemParent(selected) == node)
+		tree.DeleteChildren(node)
+		if entries:
+			# Translators: branch with the messages of the current conversation. {count} is the number of messages.
+			label = _("Current conversation ({count} messages)").format(count=len(entries))
+		else:
+			# Translators: branch of the current conversation when it has no messages yet.
+			label = _("Current conversation (no messages yet)")
+		tree.SetItemText(node, label)
 		last = None
-		for index, entry in enumerate(self.session.conversation.entries):
-			last = tree.AppendItem(self._root, self._entryLabel(entry))
+		for index, entry in enumerate(entries):
+			last = tree.AppendItem(node, self._entryLabel(entry))
 			tree.SetItemData(last, ("msg", None, index))
 		if self.session.busy:
 			name = getProviderClass(core.conf()["provider"]).name
 			# Translators: last item of the conversation while waiting. {name} is ChatGPT, Gemini or Claude.
-			last = tree.AppendItem(self._root, _("{name} is answering…").format(name=name))
+			last = tree.AppendItem(node, _("{name} is answering…").format(name=name))
 			tree.SetItemData(last, ("busy",))
-		if last is not None:
+		grew = count > self._currentCount
+		self._currentCount = count
+		if expand and last is not None:
+			tree.Expand(node)
+		if last is not None and tree.IsExpanded(node) and (grew or selectionInside or not selected.IsOk()):
 			tree.SelectItem(last)
 			tree.EnsureVisible(last)
-		elif self._historyNode is not None:
-			tree.SelectItem(self._historyNode)
+		elif selectionInside or not selected.IsOk() or not tree.GetSelection().IsOk():
+			tree.SelectItem(node)
 		self._updateButtons()
 
 	def onHistoryChanged(self):
@@ -495,12 +511,13 @@ class ChatDialog(wx.Dialog):
 		if not data:
 			return
 		kind = data[0]
-		if kind == "history":
+		if kind in ("history", "current"):
 			tree = self.conversationTree
-			if tree.IsExpanded(self._historyNode):
-				tree.Collapse(self._historyNode)
-			elif tree.GetChildrenCount(self._historyNode, False):
-				tree.Expand(self._historyNode)
+			node = self._historyNode if kind == "history" else self._currentNode
+			if tree.IsExpanded(node):
+				tree.Collapse(node)
+			elif tree.GetChildrenCount(node, False):
+				tree.Expand(node)
 		elif kind == "conv":
 			self.openPreviousConversation(data[1])
 		elif kind == "msg":

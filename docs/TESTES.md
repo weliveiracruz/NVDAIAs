@@ -45,7 +45,7 @@ Os testes automáticos não substituem estes pontos:
 
 ## Teste no Windows com o NVDA (roteiro)
 
-1. Instale o pacote mais recente da pasta `dist` (Enter sobre o arquivo) e reinicie o NVDA.
+1. Instale o pacote mais recente da pasta `dist` (Enter sobre o arquivo) e reinicie o NVDA. Se já tinha uma versão anterior com token e conversas, confira depois do reinício que o token continua salvo (Configurações > NVDAIAs, "Situação: conectado") e que as conversas aparecem em "Conversas anteriores".
 2. Pressione NVDA+Alt+I. A tela Conectar conta deve abrir. Escolha Gemini (tem nível gratuito), abra a página, gere a chave, cole e pressione Conectar. Deve aparecer "Conectado ao Gemini".
 3. Na janela de conversa, digite "Qual é a capital do Brasil?" e pressione Enter. Deve ouvir "Enviado para o Gemini", bipes curtos e depois a resposta.
 4. Pressione Shift+Tab: o foco deve ir para a árvore Conversa. Use as setas e pressione Enter numa resposta: o menu Ações da mensagem deve abrir. Teste Ler mensagem (abre a janela de leitura; Esc fecha), Traduzir para > inglês e Melhorar esta resposta. Teste também a tecla Aplicações e Ctrl+C.

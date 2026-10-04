@@ -187,10 +187,10 @@ def run():
 	tree = dlg.conversationTree
 	dlg.conversationTree.SetFocus()
 	last = None
-	child, cookie = tree.GetFirstChild(tree.GetRootItem())
+	child, cookie = tree.GetFirstChild(dlg._currentNode)
 	while child.IsOk():
 		last = child
-		child, cookie = tree.GetNextChild(tree.GetRootItem(), cookie)
+		child, cookie = tree.GetNextChild(dlg._currentNode, cookie)
 	tree.SelectItem(last)
 	n = len(POPUPS)
 	dlg.onCharHook(keyEvent(tree, wx.WXK_RETURN))
@@ -250,6 +250,17 @@ def run():
 	dlg.updateStatus()
 	R.check("ACE-10 connected state has text in the status line", "connected" in dlg.statusLine.GetLabel(), dlg.statusLine.GetLabel())
 	R.check("ACE-10 status line is text, not focusable", isinstance(dlg.statusLine, wx.StaticText) and dlg.statusLine not in focusables(dlg))
+
+	# ACE-19 tree branches
+	R.check("ACE-19 current conversation branch says how many messages it has", re.match(r"Current conversation \(\d+ messages\)|Current conversation \(no messages yet\)", tree.GetItemText(dlg._currentNode)) is not None, tree.GetItemText(dlg._currentNode))
+	tree.SetFocus()
+	pump(timeout=0.2)
+	tree.SelectItem(dlg._currentNode)
+	wasExpanded = tree.IsExpanded(dlg._currentNode)
+	dlg.onCharHook(keyEvent(tree, wx.WXK_RETURN))
+	R.check("ACE-05 Enter on the current conversation branch collapses or expands it", tree.IsExpanded(dlg._currentNode) != wasExpanded or tree.GetChildrenCount(dlg._currentNode, False) == 0)
+	dlg.onCharHook(keyEvent(tree, wx.WXK_RETURN))
+	R.check("ACE-19 history branch says how many conversations it has", dlg._historyNode is None or re.match(r"Previous conversations \(\d+\)", tree.GetItemText(dlg._historyNode)) is not None)
 
 	# ACE-11 reading window semantics
 	entry = core.ChatEntry("assistant", "# Título\n\n- item\n\n| A | B |\n|---|---|\n| 1 | 2 |", providerName="Claude", model="m")

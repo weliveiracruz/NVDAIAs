@@ -409,5 +409,173 @@
     "failures": []
    }
   ]
+ },
+ {
+  "number": 6,
+  "date": "2026-10-04T19:36:39-03:00",
+  "version": "1.5.0",
+  "note": "1.5.0 execução 1: tokens e histórico preservados na atualização, conversa atual em ramo da árvore, nova suíte de atualização",
+  "total": 408,
+  "passed": 407,
+  "failed": 1,
+  "corrected": [],
+  "suites": [
+   {
+    "suite": "unit (python 3.11)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.12)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.13)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "interface (test_gui)",
+    "total": 154,
+    "passed": 154,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "visual theme (test_theme)",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "translation (test_translation)",
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "accessibility (test_accessibility)",
+    "total": 49,
+    "passed": 48,
+    "failed": 1,
+    "failures": [
+     "ACE-05 Enter on the current conversation branch collapses or expands it"
+    ]
+   },
+   {
+    "suite": "security (test_security)",
+    "total": 35,
+    "passed": 35,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "updates (test_update)",
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "package (build.py)",
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "failures": []
+   }
+  ]
+ },
+ {
+  "number": 7,
+  "date": "2026-10-04T19:37:12-03:00",
+  "version": "1.5.0",
+  "note": "1.5.0 execução 2: teste ACE-05 do ramo corrigido (o foco não estava na árvore; T-05)",
+  "total": 408,
+  "passed": 408,
+  "failed": 0,
+  "corrected": [
+   "accessibility (test_accessibility) :: ACE-05 Enter on the current conversation branch collapses or expands it"
+  ],
+  "suites": [
+   {
+    "suite": "unit (python 3.11)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.12)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.13)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "interface (test_gui)",
+    "total": 154,
+    "passed": 154,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "visual theme (test_theme)",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "translation (test_translation)",
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "accessibility (test_accessibility)",
+    "total": 49,
+    "passed": 49,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "security (test_security)",
+    "total": 35,
+    "passed": 35,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "updates (test_update)",
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "package (build.py)",
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "failures": []
+   }
+  ]
  }
 ]

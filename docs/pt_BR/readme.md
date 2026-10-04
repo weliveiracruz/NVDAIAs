@@ -1,7 +1,7 @@
 # NVDAIAs – Converse com o ChatGPT, o Gemini e o Claude pelo NVDA
 
 * Autor: Wellington Cruz
-* Versão: 1.4.0
+* Versão: 1.5.0
 * Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 * Licença: GNU General Public License, versão 2
 
@@ -49,7 +49,7 @@ Ordem dos elementos com a tecla Tab:
 
 1. **IA**: escolhe ChatGPT, Gemini ou Claude. Você pode trocar de IA no meio da conversa: a nova IA recebe todo o histórico.
 2. **Modelo**: o modelo da IA escolhida. Você pode escolher da lista ou digitar o nome de outro modelo.
-3. **Conversa**: árvore com as mensagens. O primeiro item é **Conversas anteriores**, que começa recolhido. Depois dele vêm as mensagens da conversa atual; cada item começa com "Você:" ou com o nome da IA.
+3. **Conversa**: árvore com dois ramos. O primeiro é **Conversas anteriores**, que começa recolhido. O segundo é **Conversa atual (N mensagens)**, que começa expandido e traz as mensagens desta conversa; cada item começa com "Você:" ou com o nome da IA. Os dois ramos recolhem e expandem com as setas para a esquerda e para a direita, ou com Enter. A Conversa atual se abre sozinha quando chega uma resposta nova.
 4. **Pergunta**: campo onde você digita.
 5. **Anexar arquivos** e **Enviar**, ao lado do campo Pergunta.
 6. **Arquivos anexados**: lista que só aparece quando há arquivos esperando para ir com a próxima pergunta.
@@ -121,7 +121,8 @@ O tema se desliga sozinho quando o alto contraste do Windows está ativo. També
 | Campo Pergunta | Shift+Enter | Cria uma nova linha sem enviar |
 | Campo Pergunta | Shift+Tab | Vai para a lista da conversa |
 | Conversa | Setas para cima e para baixo | Passa pelos itens |
-| Conversa | Seta para a direita / para a esquerda | Expande / recolhe "Conversas anteriores" ou uma conversa anterior |
+| Conversa | Seta para a direita / para a esquerda | Expande / recolhe "Conversas anteriores", "Conversa atual" ou uma conversa anterior |
+| Conversa, ramo "Conversas anteriores" ou "Conversa atual" | Enter | Expande ou recolhe o ramo |
 | Conversa, mensagem da conversa atual | Enter, tecla Aplicações ou Shift+F10 | Abre o menu **Ações da mensagem** (veja abaixo) |
 | Conversa, conversa anterior ou mensagem dela | Enter | Reabre aquela conversa para continuar |
 | Conversa | Ctrl+C | Copia a mensagem selecionada (atual ou anterior) |
@@ -192,12 +193,12 @@ Os tokens só são gravados quando você pressiona OK ou Aplicar.
 ## Privacidade e segurança
 
 * Os tokens **não** ficam no arquivo de configuração do NVDA (nvda.ini). Eles são guardados no arquivo `NVDAIAs-credentials.json`, na pasta de configuração do NVDA, **criptografados com a proteção de dados do Windows (DPAPI)**. Só o seu usuário do Windows, neste computador, consegue abrir. Se o arquivo for copiado para outro computador, os tokens não funcionam lá.
-* Ao desinstalar o complemento, o arquivo com os tokens é apagado.
+* **Atualizar o complemento mantém os tokens e o histórico.** Só a desinstalação de verdade apaga os tokens e o histórico.
 * O que você digita, o histórico da conversa e as imagens de tela que você pedir para descrever são enviados diretamente do seu computador para a IA escolhida (OpenAI, Google ou Anthropic), por conexão segura (HTTPS). Não passam por nenhum outro servidor. Cada empresa trata esses dados conforme a política de privacidade dela.
 * Cuidado ao descrever a tela: tudo o que estiver visível na área capturada é enviado, inclusive dados pessoais.
 * O complemento não funciona nas telas seguras do Windows (tela de logon e controle de conta de usuário).
 * As conversas são salvas automaticamente depois de cada resposta, na pasta `NVDAIAs-history` da configuração do NVDA, **criptografadas com a proteção de dados do Windows**, como os tokens. As imagens de tela descritas e os arquivos anexados também ficam guardados na conversa.
-* Os arquivos anexados são enviados diretamente para a IA escolhida, como as perguntas. Você pode apagar uma conversa com Delete, apagar todas nas configurações ou desligar o histórico. Ao desinstalar o complemento, o histórico é apagado. **Salvar conversa** continua gravando um arquivo de texto comum, sem criptografia.
+* Os arquivos anexados são enviados diretamente para a IA escolhida, como as perguntas. Você pode apagar uma conversa com Delete, apagar todas nas configurações ou desligar o histórico. Ao atualizar o complemento, o histórico é mantido; ao desinstalar, ele é apagado. **Salvar conversa** continua gravando um arquivo de texto comum, sem criptografia.
 
 ## Mensagens de erro
 
@@ -212,6 +213,11 @@ Os tokens só são gravados quando você pressiona OK ou Aplicar.
 | "bloqueada pelo provedor" | A IA se recusou a responder ou o filtro de segurança dela bloqueou a pergunta. |
 
 ## Histórico de versões
+
+### 1.5.0
+
+* Tokens e histórico de conversas mantidos na atualização do complemento, inclusive vindo das versões 1.0.0 a 1.4.0.
+* A conversa atual virou um ramo da árvore, "Conversa atual (N mensagens)", que pode ser recolhido e expandido.
 
 ### 1.4.0
 

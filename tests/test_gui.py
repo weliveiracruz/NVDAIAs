@@ -81,14 +81,13 @@ def keyDown(window, keyCode, shift=False, ctrl=False):
 
 
 def topItems(dlg):
-	"""Top level items of the conversation tree, without the history item."""
+	"""Messages of the current conversation (children of the "Current conversation" branch)."""
 	tree = dlg.conversationTree
 	items = []
-	child, cookie = tree.GetFirstChild(tree.GetRootItem())
+	child, cookie = tree.GetFirstChild(dlg._currentNode)
 	while child.IsOk():
-		if child != dlg._historyNode:
-			items.append(child)
-		child, cookie = tree.GetNextChild(tree.GetRootItem(), cookie)
+		items.append(child)
+		child, cookie = tree.GetNextChild(dlg._currentNode, cookie)
 	return items
 
 
@@ -671,6 +670,58 @@ def run():
 	tree.SelectItem(dlg._historyNode)
 	dlg.showActionsMenu(fromButton=True)
 	check("actions without a selected message explain what to do", RECORD["spoken"][-1] == "Select a message in the conversation first")
+
+	# 19. Current conversation branch -------------------------------------------------------
+	dlg = chatDialog.ChatDialog._instance
+	tree = dlg.conversationTree
+	root = tree.GetRootItem()
+	top = children(tree, root)
+	check("tree top level: Previous conversations, then Current conversation", top == [dlg._historyNode, dlg._currentNode], [tree.GetItemText(t) for t in top])
+	core.store().set("anthropic", mock_server.VALID["anthropic"])
+	dlg.providerChoice.SetSelection(2)
+	dlg.onProviderChanged(None)
+	plugin.session.newConversation()
+	pump(timeout=0.2)
+	check("empty current conversation label", tree.GetItemText(dlg._currentNode) == "Current conversation (no messages yet)", tree.GetItemText(dlg._currentNode))
+	dlg.questionEdit.SetValue("Primeira")
+	dlg.onSend(None)
+	pump(lambda: not plugin.session.busy, 10)
+	check("current conversation label counts the messages", tree.GetItemText(dlg._currentNode) == "Current conversation (2 messages)", tree.GetItemText(dlg._currentNode))
+	check("current conversation is expanded and the answer selected", tree.IsExpanded(dlg._currentNode) and tree.GetSelection() == topItems(dlg)[-1])
+	# collapse with Enter on the branch
+	tree.SelectItem(dlg._currentNode)
+	dlg.onTreeActivate()
+	check("Enter collapses the current conversation", not tree.IsExpanded(dlg._currentNode))
+	dlg.refreshList()
+	check("a refresh without new messages keeps it collapsed", not tree.IsExpanded(dlg._currentNode))
+	dlg.onTreeActivate()
+	check("Enter expands it again", tree.IsExpanded(dlg._currentNode))
+	tree.Collapse(dlg._currentNode)
+	dlg.questionEdit.SetValue("Segunda")
+	dlg.onSend(None)
+	pump(lambda: not plugin.session.busy, 10)
+	check("a new answer opens the branch and selects the answer", tree.IsExpanded(dlg._currentNode) and tree.GetItemText(tree.GetSelection()).startswith("Claude: Claude responde: Segunda"), tree.GetItemText(tree.GetSelection()))
+	tree.SelectItem(dlg._currentNode)
+	check("the branch itself has no message actions", dlg.messageActions() == [])
+	# real keyboard
+	dlg.Raise()
+	tree.SetFocus()
+	tree.SelectItem(dlg._currentNode)
+	pump(timeout=0.4)
+	sim = wx.UIActionSimulator()
+	sim.Char(wx.WXK_LEFT)
+	pump(timeout=0.4)
+	check("real Left arrow collapses the current conversation", not tree.IsExpanded(dlg._currentNode))
+	sim.Char(wx.WXK_RIGHT)
+	pump(timeout=0.4)
+	check("real Right arrow expands the current conversation", tree.IsExpanded(dlg._currentNode))
+	# history off: current branch still there
+	core.conf()["saveHistory"] = False
+	dlg.onHistoryChanged()
+	check("without history the tree has only the current conversation", children(tree, root) == [dlg._currentNode])
+	core.conf()["saveHistory"] = True
+	dlg.onHistoryChanged()
+	check("history branch comes back before the current conversation", children(tree, root) == [dlg._historyNode, dlg._currentNode])
 
 	# 15. Secure screens ----------------------------------------------------------------
 	import globalVars

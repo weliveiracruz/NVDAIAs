@@ -1,7 +1,7 @@
 # NVDAIAs – Chat with ChatGPT, Gemini and Claude from NVDA
 
 * Author: Wellington Cruz
-* Version: 1.4.0
+* Version: 1.5.0
 * Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 * License: GNU General Public License, version 2
 * Documentation in Portuguese (Brazil): docs/pt_BR/readme.md
@@ -31,7 +31,7 @@ The three services only let third-party programs connect through an **access tok
 
 Open it with **NVDA+Alt+I** or NVDA menu > Tools > **NVDAIAs - Chat with AI**. Focus starts in the Question field.
 
-Tab order: **AI** (combo box), **Model**, **Conversation** (a tree: first the collapsed **Previous conversations** item, then the messages of the current conversation), **Question**, **Attach files**, Send, the **Attached files** list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings and Close. **Shift+Tab from the Question field goes straight to the conversation list.**
+Tab order: **AI** (combo box), **Model**, **Conversation** (a tree with two branches: **Previous conversations**, collapsed, and **Current conversation (N messages)**, expanded; both collapse and expand with the arrows or Enter, and the current one opens again when a new answer arrives), **Question**, **Attach files**, Send, the **Attached files** list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings and Close. **Shift+Tab from the Question field goes straight to the conversation list.**
 
 The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a **thick orange frame around the field that has the focus**. A **status line** under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.
 
@@ -89,13 +89,18 @@ NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for each AI the to
 
 ## Privacy and security
 
-* Tokens are not stored in nvda.ini. They are kept in `NVDAIAs-credentials.json` in the NVDA configuration folder, **encrypted with the Windows Data Protection API (DPAPI)** for the current Windows user. The file is deleted when the add-on is uninstalled.
+* Tokens are not stored in nvda.ini. They are kept in `NVDAIAs-credentials.json` in the NVDA configuration folder, **encrypted with the Windows Data Protection API (DPAPI)** for the current Windows user. Updating the add-on keeps the tokens and the history; only a real uninstall deletes them.
 * Questions, conversation history and the screenshots you ask to describe are sent directly from your computer to the chosen provider (OpenAI, Google or Anthropic) over HTTPS, and to no one else. Each provider handles the data under its own privacy policy.
 * Screenshots include everything visible in the captured area.
 * The add-on does not run on secure screens (logon, UAC).
-* Conversations are saved automatically after each answer in the `NVDAIAs-history` folder of the NVDA configuration, **encrypted with DPAPI** like the tokens (screenshots and attached files included). Delete one with the Delete key, delete all in the settings or turn the history off. The history is deleted when the add-on is uninstalled. **Save conversation** writes a plain text file.
+* Conversations are saved automatically after each answer in the `NVDAIAs-history` folder of the NVDA configuration, **encrypted with DPAPI** like the tokens (screenshots and attached files included). Delete one with the Delete key, delete all in the settings or turn the history off. The history is kept when the add-on is updated and deleted when it is uninstalled. **Save conversation** writes a plain text file.
 
 ## Changes
+
+### 1.5.0
+
+* Tokens and conversation history kept when the add-on is updated, also coming from 1.0.0 to 1.4.0.
+* The current conversation is a collapsible branch of the tree.
 
 ### 1.4.0
 
