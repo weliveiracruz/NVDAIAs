@@ -334,8 +334,118 @@ def run():
 	from NVDAIAs import feedback
 	R.check("SEG-22 feedback form address is HTTPS on docs.google.com", feedback.FEEDBACK_URL.startswith("https://docs.google.com/forms/"))
 	opens = ["%s: %s" % (p, line.strip()) for p, src in sources.items() for line in src.splitlines() if "webbrowser.open(" in line]
-	R.check("SEG-22 the browser is only opened with fixed addresses (feedback form and token pages)", len(opens) == 2 and all(("(url" in o) for o in opens), opens)
+	openers = sorted(o.split(":")[0] for o in opens)
+	expected = sorted(os.path.join("addon", "globalPlugins", "NVDAIAs", n) for n in ("connectDialog.py", "feedback.py", "planUi.py"))
+	R.check("SEG-22 the browser is only opened by the feedback form, the token pages and the ChatGPT sign-in/usage", openers == expected and all(("(url" in o) for o in opens), opens)
 	R.check("SEG-22 token pages are HTTPS", all(cls.tokenUrl.startswith("https://") for cls in providers.PROVIDERS))
+	from NVDAIAs import chatgptPlan, planUi
+	R.check("SEG-22 ChatGPT usage page is HTTPS on chatgpt.com", chatgptPlan.USAGE_URL == "https://chatgpt.com/settings/usage")
+
+	# SEG-23 Sign in with ChatGPT: OAuth with PKCE ----------------------------------------------------------
+	srcPlan = sources[os.path.join("addon", "globalPlugins", "NVDAIAs", "chatgptPlan.py")]
+	R.check("SEG-23 OpenAI addresses are HTTPS", all(u.startswith("https://") for u in (chatgptPlan.ISSUER, chatgptPlan.API_BASE, chatgptPlan.RESOURCE)) and chatgptPlan.ISSUER == "https://auth.openai.com")
+	httpUses = re.findall(r'"http://[^"]*"', srcPlan)
+	R.check("SEG-23 the only plain HTTP address is the loopback 127.0.0.1/callback", httpUses == ['"http://127.0.0.1:%d/callback"'], httpUses)
+	R.check("SEG-23 public client: no client secret anywhere", not any("client_secret" in src for src in sources.values()))
+	client = chatgptPlan.OAuthClient()
+	verifier, challenge = chatgptPlan.pkcePair()
+	url = client.buildAuthorizeUrl("dynamic_agent_client", "urn:uuid:x", "http://127.0.0.1:1234/callback", chatgptPlan.randomToken(), chatgptPlan.randomToken(), challenge)
+	import urllib.parse
+	q = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(url).query))
+	R.check("SEG-23 authorize request uses PKCE S256, random state and nonce", url.startswith("https://auth.openai.com/api/accounts/authorize?") and q["code_challenge_method"] == "S256" and len(q["state"]) >= 40 and len(q["nonce"]) >= 40 and verifier not in url, q)
+	states = {chatgptPlan.randomToken() for _ in range(200)}
+	R.check("SEG-23 state values never repeat", len(states) == 200)
+	receiver = chatgptPlan.LoopbackReceiver("s")
+	R.check("SEG-23 the sign-in listener only accepts this computer (127.0.0.1)", receiver._server.server_address[0] == "127.0.0.1")
+	import urllib.request
+	import urllib.error
+	try:
+		urllib.request.urlopen("http://127.0.0.1:%d/callback?state=atacante&code=roubado" % receiver.port, timeout=5)
+		forged = True
+	except urllib.error.HTTPError:
+		forged = receiver.result is not None
+	receiver.close()
+	R.check("SEG-23 an answer with another state is refused (CSRF)", not forged)
+	R.check("SEG-23 the listener never logs the address (it carries the code)", "def log_message(self, *args):\n\t\t# Never log" in srcPlan)
+	R.check("SEG-23 OAuth requests have a time limit", "self._opener(req, self.timeout)" in srcPlan and "_urlopen(req, self.timeout)" in srcPlan)
+
+	# SEG-24 ChatGPT session at rest and in logs ---------------------------------------------------------------
+	mock_server.resetChatGPT()
+	planFolder = tempfile.mkdtemp()
+	planCreds = credentials.CredentialStore(planFolder, codec=XorCodec())
+	planSession = chatgptPlan.PlanSession(chatgptPlan.PlanStore(planCreds), chatgptPlan.OAuthClient(issuer=BASE + "/chatgpt/auth", timeout=5))
+	sess = planSession.signIn(mock_server.fakeBrowser, timeout=10)
+	with open(planCreds.path, "rb") as f:
+		raw = f.read()
+	R.check("SEG-24 ChatGPT tokens encrypted on disk", all(t.encode() not in raw for t in (sess["access_token"], sess["refresh_token"], sess["id_token"][:30])))
+	core._plan = planSession
+	core.store = lambda: planCreds
+	core.conf()["openaiUsePlan"] = True
+	chatgptPlan.ChatGPTPlanProvider.defaultBaseUrl = BASE + "/chatgpt/v1"
+	core.conf()["model_openai_plan"] = "gpt-5.5"
+	RECORD.setdefault("log", [])
+	plugin2 = NVDAIAs.GlobalPlugin()
+	plugin2.session.send("oi", providerId="openai")
+	pump(lambda: not plugin2.session.busy, 10)
+	mock_server.FORCE["chatgpt"] = (401, {"error": {"code": "subscription_sharing_invalid_user", "message": "x"}})
+	plugin2.session.send("falha", providerId="openai")
+	pump(lambda: not plugin2.session.busy, 10)
+	mock_server.FORCE.clear()
+	current = planSession.store.session()
+	secrets = [s for s in (sess["access_token"], sess["refresh_token"], current.get("access_token"), current.get("refresh_token")) if s]
+	everything = "\n".join(RECORD.get("log", []) + RECORD["spoken"] + RECORD["messageBoxes"]) + json.dumps(dict(nvda_stubs.sys.modules["config"].conf), default=str)
+	R.check("SEG-24 ChatGPT tokens never in log, speech, messages or NVDA configuration", not any(re.search(r"\b%s\b" % re.escape(s), everything) for s in secrets), secrets)
+	R.check("SEG-24 ChatGPT answer arrived through the plan", any("Plano ChatGPT responde" in e.text for e in plugin2.session.conversation.entries))
+	plugin2.terminate()
+
+	# SEG-25 ID token checks ----------------------------------------------------------------------------------------
+	import _testkey
+	keys = {_testkey.KID: (_testkey.N, _testkey.E)}
+	good = {"iss": "https://auth.openai.com", "aud": "c", "sub": "u", "exp": time.time() + 60, "nonce": "n"}
+	refusedTokens = []
+	for label, token in (
+		("bad signature", mock_server.signJwt(good, corrupt=True)),
+		("alg none", chatgptPlan.b64url(b'{"alg":"none"}') + "." + chatgptPlan.b64url(json.dumps(good).encode()) + "."),
+		("alg HS256", chatgptPlan.b64url(b'{"alg":"HS256"}') + "." + chatgptPlan.b64url(json.dumps(good).encode()) + ".YQ"),
+		("other issuer", mock_server.signJwt(dict(good, iss="https://evil.example"))),
+		("other audience", mock_server.signJwt(dict(good, aud="x"))),
+		("replayed nonce", mock_server.signJwt(dict(good, nonce="velho"))),
+	):
+		try:
+			chatgptPlan.validateIdToken(token, keys, "https://auth.openai.com", "c", "n")
+		except providers.ProviderError:
+			refusedTokens.append(label)
+	R.check("SEG-25 forged or replayed ID tokens are refused", len(refusedTokens) == 6, refusedTokens)
+
+	# SEG-26 ChatGPT access token never follows a redirect ----------------------------------------------------------
+	capturedPlan = []
+
+	class Evil2(BaseHTTPRequestHandler):
+		def log_message(self, *a):
+			pass
+
+		def do_GET(self):
+			capturedPlan.append(dict(self.headers))
+			self.send_response(200)
+			self.send_header("Content-Length", "2")
+			self.end_headers()
+			self.wfile.write(b"{}")
+
+		do_POST = do_GET
+
+	evil2 = ThreadingHTTPServer(("127.0.0.1", 0), Evil2)
+	threading.Thread(target=evil2.serve_forever, daemon=True).start()
+	mock_server.FORCE["chatgpt"] = ("redirect", "http://127.0.0.1:%d/roubar" % evil2.server_address[1])
+	planProvider = chatgptPlan.ChatGPTPlanProvider(planSession, model="gpt-5.5", baseUrl=BASE + "/chatgpt/v1", timeout=5)
+	for call in (lambda: planProvider.chat([providers.Message("user", "x")]), planProvider.listModels):
+		try:
+			call()
+		except providers.ProviderError:
+			pass
+	mock_server.FORCE.clear()
+	evil2.shutdown()
+	R.check("SEG-26 ChatGPT access token is never re-sent to another address by a redirect", not any("Bearer" in str(h) for h in capturedPlan), len(capturedPlan))
+	R.check("SEG-26 sign out revokes the session at OpenAI", planSession.signOut() and not planSession.signedIn())
 
 	# SEG-21 error detail size ----------------------------------------------------------------------------------
 	msg = core.errorMessage(providers.ProviderError("other", "x" * 5000), "Claude")

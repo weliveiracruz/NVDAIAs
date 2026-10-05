@@ -12,7 +12,7 @@ from gui import guiHelper, nvdaControls
 from gui.settingsDialogs import NVDASettingsDialog, SettingsPanel
 from logHandler import log
 
-from . import core
+from . import chatgptPlan, core, planUi
 from .connectDialog import openTokenPage
 from .credentials import maskToken
 from .providers import PROVIDER_IDS, getProviderClass
@@ -38,6 +38,9 @@ class _ProviderGroup:
 		parentHelper.addItem(group)
 
 		self.statusText = group.addItem(wx.StaticText(boxParent, label=""))
+		self.planCheck = None
+		if providerId == "openai":
+			self._addPlanControls(group, boxParent)
 		self.tokenEdit = group.addLabeledControl(
 			# Translators: label of the token field in the settings. {name} is ChatGPT, Gemini or Claude.
 			_("New {name} token (leave empty to keep the saved one):").format(name=cls.name),
@@ -59,18 +62,80 @@ class _ProviderGroup:
 
 		# Translators: label of the model combo box in the settings.
 		self.modelCombo = group.addLabeledControl(_("Model:"), wx.ComboBox, style=wx.CB_DROPDOWN)
-		current = core.getModel(providerId)
-		choices = list(core.modelCache.get(providerId) or cls.suggestedModels)
-		if current not in choices:
-			choices.insert(0, current)
-		self.modelCombo.Set(choices)
-		self.modelCombo.SetValue(current)
+		self.refreshModels()
 		# Translators: button that downloads the list of models available for the account. {name} is ChatGPT, Gemini or Claude.
 		self.updateModelsButton = group.addItem(wx.Button(boxParent, label=_("Update {name} model list").format(name=cls.name)))
 		self.updateModelsButton.Bind(wx.EVT_BUTTON, self.onUpdateModels)
 		self.updateStatus()
 
+	def _addPlanControls(self, group, boxParent):
+		"""Sign in with ChatGPT: use the ChatGPT plan instead of an API key."""
+		self.planStatusText = group.addItem(wx.StaticText(boxParent, label=""))
+		buttons = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		# Translators: button that signs in with the ChatGPT account and uses the ChatGPT plan, without API key.
+		self.signInButton = buttons.addButton(boxParent, label=_("Continue with ChatGPT"))
+		self.signInButton.Bind(wx.EVT_BUTTON, self.onSignIn)
+		# Translators: button that signs out of the ChatGPT account (stops using the ChatGPT plan).
+		self.signOutButton = buttons.addButton(boxParent, label=_("Sign out of ChatGPT"))
+		self.signOutButton.Bind(wx.EVT_BUTTON, self.onSignOut)
+		# Translators: button that opens the ChatGPT page with the usage of the plan.
+		self.usageButton = buttons.addButton(boxParent, label=_("Manage ChatGPT usage"))
+		self.usageButton.Bind(wx.EVT_BUTTON, lambda evt: planUi.openUsagePage(self.panel))
+		group.addItem(buttons)
+		# Translators: checkbox that chooses between the ChatGPT plan and the API token.
+		self.planCheck = group.addItem(wx.CheckBox(boxParent, label=_("Use my ChatGPT plan instead of the API token when signed in")))
+		self.planCheck.SetValue(core.conf()["openaiUsePlan"])
+		self.planCheck.Bind(wx.EVT_CHECKBOX, lambda evt: self.refreshModels())
+
+	def usesPlan(self):
+		"""True when Test and Update model list use the ChatGPT plan."""
+		return (
+			self.planCheck is not None and self.planCheck.GetValue()
+			and not self.tokenEdit.GetValue().strip() and core.planSignedIn()
+		)
+
+	def _cacheKey(self):
+		return core.PLAN_SLOT if self.usesPlan() else self.providerId
+
+	def refreshModels(self):
+		if self.usesPlan():
+			current = core.conf()["model_openai_plan"] or (core.modelCache.get(core.PLAN_SLOT) or [""])[0]
+			choices = list(core.modelCache.get(core.PLAN_SLOT) or [])
+		else:
+			current = core.conf()["model_" + self.providerId].strip() or self.cls.defaultModel
+			choices = list(core.modelCache.get(self.providerId) or self.cls.suggestedModels)
+		if current and current not in choices:
+			choices.insert(0, current)
+		self.modelCombo.Set(choices)
+		self.modelCombo.SetValue(current)
+
+	def onSignIn(self, evt):
+		def done(ok):
+			if not self.panel:
+				return
+			if ok:
+				self.planCheck.SetValue(True)
+			self.updateStatus()
+			self.refreshModels()
+
+		planUi.startSignIn(self.panel, done)
+
+	def onSignOut(self, evt):
+		if planUi.signOut(self.panel):
+			self.updateStatus()
+			self.refreshModels()
+
 	def updateStatus(self):
+		if self.planCheck is not None:
+			signedIn = core.planSignedIn()
+			if signedIn:
+				# Translators: status of the sign in with ChatGPT. {email} is the account.
+				label = _("ChatGPT plan: signed in as {email}.").format(email=core.plan().email() or "-")
+			else:
+				# Translators: status when not signed in with ChatGPT.
+				label = _("ChatGPT plan: not signed in. Continue with ChatGPT uses your plan without an API key.")
+			self.planStatusText.SetLabel(label)
+			self.signOutButton.Enable(signedIn)
 		token = core.store().get(self.providerId)
 		if token:
 			# Translators: status of a provider with a saved token. {hint} shows the last characters.
@@ -85,14 +150,18 @@ class _ProviderGroup:
 		return self.tokenEdit.GetValue().strip() or core.store().get(self.providerId)
 
 	def _provider(self):
-		return core.makeProvider(self.providerId, token=self.currentToken(), model=self.modelCombo.GetValue().strip() or None)
+		model = self.modelCombo.GetValue().strip() or None
+		if self.usesPlan():
+			return chatgptPlan.ChatGPTPlanProvider(core.plan(), model=model, timeout=core.conf()["timeout"])
+		return core.makeProvider(self.providerId, token=self.currentToken(), model=model)
 
 	def onTest(self, evt):
-		if not self.currentToken():
+		if not self.usesPlan() and not self.currentToken():
 			# Translators: message when testing without token.
 			gui.messageBox(_("Paste a token first."), "NVDAIAs", wx.OK | wx.ICON_WARNING, self.panel)
 			return
 		provider = self._provider()
+		cacheKey = self._cacheKey()
 		self.testButton.Disable()
 		# Translators: announced while testing the connection.
 		ui.message(_("Testing the connection, please wait…"))
@@ -103,7 +172,7 @@ class _ProviderGroup:
 			self.testButton.Enable()
 			models, found = result
 			if models:
-				core.modelCache[self.providerId] = models
+				core.modelCache[cacheKey] = models
 			# Translators: result of a successful test. {name} is the AI, {count} the number of models.
 			msg = _("Connection to {name} working. {count} models available.").format(name=provider.name, count=len(models))
 			if not found:
@@ -123,10 +192,11 @@ class _ProviderGroup:
 		core.runInBackground(provider.testConnection, ok, fail)
 
 	def onUpdateModels(self, evt):
-		if not self.currentToken():
+		if not self.usesPlan() and not self.currentToken():
 			gui.messageBox(_("Paste a token first."), "NVDAIAs", wx.OK | wx.ICON_WARNING, self.panel)
 			return
 		provider = self._provider()
+		cacheKey = self._cacheKey()
 		self.updateModelsButton.Disable()
 		# Translators: announced while downloading the model list.
 		ui.message(_("Updating the model list…"))
@@ -137,7 +207,7 @@ class _ProviderGroup:
 			self.updateModelsButton.Enable()
 			if not models:
 				return
-			core.modelCache[self.providerId] = models
+			core.modelCache[cacheKey] = models
 			value = self.modelCombo.GetValue()
 			self.modelCombo.Set(models)
 			self.modelCombo.SetValue(value)
@@ -168,6 +238,8 @@ class _ProviderGroup:
 		ui.message(_("Token removed"))
 
 	def save(self):
+		# Which list the Model box shows now (the plan has its own models).
+		planModel = self.usesPlan()
 		token = self.tokenEdit.GetValue().strip()
 		if token:
 			try:
@@ -177,9 +249,14 @@ class _ProviderGroup:
 				log.error("NVDAIAs: could not save the token", exc_info=True)
 				# Translators: error when the token cannot be saved. {error} is the technical error.
 				gui.messageBox(_("The token could not be saved: {error}").format(error=e), "NVDAIAs", wx.OK | wx.ICON_ERROR)
+		if self.planCheck is not None:
+			core.conf()["openaiUsePlan"] = self.planCheck.GetValue()
 		model = self.modelCombo.GetValue().strip()
 		if model:
-			core.setModel(self.providerId, model)
+			if planModel:
+				core.conf()["model_openai_plan"] = model
+			else:
+				core.conf()["model_" + self.providerId] = "" if model == self.cls.defaultModel else model
 		self.updateStatus()
 
 

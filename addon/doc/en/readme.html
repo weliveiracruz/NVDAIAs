@@ -9,7 +9,7 @@
 <ul>
 <li>Author: Wellington Cruz
 </li>
-<li>Version: 1.6.0
+<li>Version: 1.7.0
 </li>
 <li>Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 </li>
@@ -20,8 +20,14 @@
 </ul>
 <p>NVDAIAs opens an accessible NVDA window where you ask questions to <strong>ChatGPT</strong> (OpenAI), <strong>Gemini</strong> (Google) or <strong>Claude</strong> (Anthropic) and read the answers without leaving the program you are working in. It can also <strong>describe images of the screen</strong> with the AI.</p>
 <p>Parts of this add-on were written with the help of AI (Claude), and reviewed and tested by the author.</p>
-<h2>Before you start: the access token</h2>
-<p>The three services only let third-party programs connect through an <strong>access token</strong>, also called an <strong>API key</strong>. There is no official way to sign in to ChatGPT, Gemini or Claude with your e-mail and password from another program. The NVDAIAs "login screen" is therefore the <strong>Connect account</strong> screen, where you paste the token generated on each provider's site.</p>
+<h2>Before you start: how to connect</h2>
+<p>There are two ways to connect, both on the <strong>Connect account</strong> screen:</p>
+<ul>
+<li><strong>ChatGPT: Continue with ChatGPT</strong> (new in 1.7.0). Sign in with your ChatGPT account in the browser and NVDAIAs uses <strong>your ChatGPT plan</strong> (Plus, Pro and other plans offered by OpenAI), with no API key and no extra billing: questions count toward the usage limits of your plan. This uses OpenAI's official <em>Sign in with ChatGPT</em> for open-source apps that run on the user's computer.
+</li>
+<li><strong>Access token (API key)</strong>, for the three AIs. Gemini and Claude only offer this way: Google has no official way for other programs to use Gemini with a personal Google account, and Anthropic does not allow other programs to use the Claude Free, Pro or Max subscriptions. Paste the token generated on each provider's site.
+</li>
+</ul>
 <table border="1">
 <tr><th>AI</th><th>Where to create the token</th><th>Cost</th></tr>
 <tr><td>ChatGPT</td><td>platform.openai.com/api-keys</td><td>Pay per use, billed separately from ChatGPT Plus; the platform account needs credit.</td></tr>
@@ -32,16 +38,44 @@
 <ol>
 <li>Press <strong>NVDA+Alt+I</strong>. With no AI connected yet, the <strong>Connect account</strong> screen opens.
 </li>
-<li>Choose the AI, read the instructions and press <strong>Open page to generate token</strong>.
+<li>For ChatGPT with your plan: keep ChatGPT in the AI box and press <strong>Continue with ChatGPT</strong> (Alt+W), right after the AI box. See "Continue with ChatGPT" below.
+</li>
+<li>For a token: choose the AI, read the instructions and press <strong>Open page to generate token</strong>.
 </li>
 <li>Sign in on the site, create the key, copy it, paste it in <strong>Token (API key)</strong> and press <strong>Connect</strong>.
 </li>
 <li>NVDAIAs tests the token (listing the models, which costs nothing) and stores it encrypted.
 </li>
 </ol>
+<h2>Continue with ChatGPT (your ChatGPT plan)</h2>
+<ol>
+<li>On the Connect account screen (or in the settings, ChatGPT group) press <strong>Continue with ChatGPT</strong>.
+</li>
+<li>A small window says the browser was opened and waits (<strong>Cancel sign-in</strong> stops it). In the browser, sign in to ChatGPT, review the name NVDAIAs and allow it to use your ChatGPT plan.
+</li>
+<li>The browser shows "Signed in. You can close this tab and go back to NVDA." NVDA announces "Signed in to ChatGPT as" and your e-mail.
+</li>
+<li>The first time, a notice <strong>You're using your ChatGPT plan</strong> explains that questions count toward your plan's limits (button <strong>Got it</strong>).
+</li>
+</ol>
+<p>After that:</p>
+<ul>
+<li>The status line of the chat window says <strong>using your ChatGPT plan</strong> and the account e-mail, and the button <strong>Manage ChatGPT usage</strong> (Alt+U) opens chatgpt.com/settings/usage.
+</li>
+<li>The Model box lists the models your plan offers (they are different from the API models).
+</li>
+<li>When the plan reaches its usage limit, NVDAIAs says so and offers <strong>Manage usage</strong> as the main button.
+</li>
+<li>The sign-in lasts while you use it: the access is renewed automatically; if it ends (for example after 30 days without use or if you remove it in ChatGPT), NVDAIAs asks you to sign in again.
+</li>
+<li>In the settings, ChatGPT group: account status, <strong>Continue with ChatGPT</strong>, <strong>Sign out of ChatGPT</strong>, <strong>Manage ChatGPT usage</strong> and the option <strong>Use my ChatGPT plan instead of the API token when signed in</strong>. Saving a token on the Connect account screen switches ChatGPT to the token.
+</li>
+<li>Limits of this OpenAI preview: audio and video cannot be sent (images, PDF and text files can), and only the plan's own models are available. NVDAIAs does not see your ChatGPT conversations, and they do not see NVDAIAs.
+</li>
+</ul>
 <h2>The chat window</h2>
 <p>Open it with <strong>NVDA+Alt+I</strong> or NVDA menu &gt; Tools &gt; <strong>NVDAIAs - Chat with AI</strong>. Focus starts in the Question field.</p>
-<p>Tab order: <strong>AI</strong> (combo box), <strong>Model</strong>, <strong>Conversation</strong> (a tree with two branches: <strong>Previous conversations</strong>, collapsed, and <strong>Current conversation (N messages)</strong>, expanded; both collapse and expand with the arrows or Enter, and the current one opens again when a new answer arrives), <strong>Question</strong>, <strong>Attach files</strong>, Send, the <strong>Attached files</strong> list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings, Send feedback and Close. <strong>Shift+Tab from the Question field goes straight to the conversation list.</strong></p>
+<p>Tab order: <strong>AI</strong> (combo box), <strong>Model</strong>, <strong>Conversation</strong> (a tree with two branches: <strong>Previous conversations</strong>, collapsed, and <strong>Current conversation (N messages)</strong>, expanded; both collapse and expand with the arrows or Enter, and the current one opens again when a new answer arrives), <strong>Question</strong>, <strong>Attach files</strong>, Send, the <strong>Attached files</strong> list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings, Send feedback, Manage ChatGPT usage (only while using the ChatGPT plan) and Close. <strong>Shift+Tab from the Question field goes straight to the conversation list.</strong></p>
 <p>The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a <strong>thick orange frame around the field that has the focus</strong>. A <strong>status line</strong> under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.</p>
 <table border="1">
 <tr><th>Where</th><th>Key</th><th>Action</th></tr>
@@ -85,9 +119,11 @@
 </table>
 <p>All commands can be changed in NVDA menu &gt; Preferences &gt; Input gestures, category <strong>NVDAIAs</strong>.</p>
 <h2>Settings</h2>
-<p>NVDA menu &gt; Preferences &gt; Settings &gt; <strong>NVDAIAs</strong>: default AI; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; keep previous conversations, maximum number and Delete all previous conversations; use the visual theme; larger text; maximum answer size for Claude; time limit.</p>
+<p>NVDA menu &gt; Preferences &gt; Settings &gt; <strong>NVDAIAs</strong>: default AI; for ChatGPT, the ChatGPT plan controls described above; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; keep previous conversations, maximum number and Delete all previous conversations; use the visual theme; larger text; maximum answer size for Claude; time limit.</p>
 <h2>Privacy and security</h2>
 <ul>
+<li>The ChatGPT sign-in follows OpenAI's rules for open-source apps: the browser comes back only to this computer (127.0.0.1), with PKCE, a random state and a nonce; the ID token is checked (signature, issuer, audience, expiry and nonce); the sign-in tokens are stored encrypted with DPAPI like the API tokens and never written to the log; Sign out revokes the session at OpenAI.
+</li>
 <li>Tokens are not stored in nvda.ini. They are kept in <code>NVDAIAs-credentials.json</code> in the NVDA configuration folder, <strong>encrypted with the Windows Data Protection API (DPAPI)</strong> for the current Windows user. Updating the add-on keeps the tokens and the history; only a real uninstall deletes them.
 </li>
 <li>Questions, conversation history and the screenshots you ask to describe are sent directly from your computer to the chosen provider (OpenAI, Google or Anthropic) over HTTPS, and to no one else. Each provider handles the data under its own privacy policy.
@@ -100,6 +136,15 @@
 </li>
 </ul>
 <h2>Changes</h2>
+<h3>1.7.0</h3>
+<ul>
+<li>Continue with ChatGPT: sign in with your ChatGPT account and use your ChatGPT plan, without an API key. The token option stays.
+</li>
+<li>Plan indicator in the status line and Manage ChatGPT usage button.
+</li>
+<li>Gemini and Claude have no official equivalent, so they keep using tokens.
+</li>
+</ul>
 <h3>1.6.0</h3>
 <ul>
 <li>Send feedback button with confirmation (Give feedback / Cancel).

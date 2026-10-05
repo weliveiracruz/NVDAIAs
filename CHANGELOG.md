@@ -1,5 +1,16 @@
 # Changelog / Histórico de versões
 
+## 1.7.0
+
+* Continue with ChatGPT: sign in with your ChatGPT account and use your ChatGPT plan (Plus, Pro and others) without an API key, using OpenAI's official Sign in with ChatGPT for open-source apps (OAuth with PKCE in the browser, answer received only on 127.0.0.1, ID token checked, tokens encrypted with DPAPI and renewed automatically, revoked on sign out). Available on the Connect account screen and in the settings. The API token option stays; a setting chooses which one ChatGPT uses.
+* The status line says when the ChatGPT plan is in use, with the account e-mail; new Manage ChatGPT usage button (only while using the plan). When the plan reaches its usage limit, Manage usage is offered as the main action. One-time notice "You're using your ChatGPT plan".
+* Gemini and Claude have no official equivalent (Google offers no sign-in for third-party apps with a personal account; Anthropic does not allow third-party apps to use Claude subscriptions), so they keep using tokens.
+* Fix: the credential file is now safe when written from background threads at the same time (P-10 in reports/PROBLEMAS-1.7.0.md).
+* Continuar com o ChatGPT: entre com a sua conta do ChatGPT e use o seu plano do ChatGPT (Plus, Pro e outros) sem chave de API, pelo Entrar com o ChatGPT oficial da OpenAI para apps de código aberto (OAuth com PKCE no navegador, resposta recebida só em 127.0.0.1, token de identidade conferido, tokens criptografados com DPAPI e renovados sozinhos, revogados ao sair). Disponível na tela Conectar conta e nas configurações. A opção de token continua; uma opção escolhe qual o ChatGPT usa.
+* A linha de situação diz quando o plano do ChatGPT está em uso, com o e-mail da conta; novo botão Gerenciar uso do ChatGPT (só com o plano em uso). Quando o plano atinge o limite de uso, Gerenciar uso é oferecido como ação principal. Aviso único "Você está usando o seu plano do ChatGPT".
+* Gemini e Claude não têm algo oficial equivalente (o Google não oferece entrada com conta pessoal para apps de terceiros; a Anthropic não permite que apps de terceiros usem as assinaturas do Claude), então continuam usando tokens.
+* Correção: o arquivo de credenciais agora é gravado com segurança quando duas tarefas em segundo plano escrevem ao mesmo tempo (P-10 em reports/PROBLEMAS-1.7.0.md).
+
 ## 1.6.0
 
 * "Send feedback" button in the chat window (Alt+D) and an unassigned "Send feedback" command in Input gestures. A standard message box says "The evaluation will open in a new tab of your browser" with the buttons Give feedback and Cancel; Give feedback opens the feedback form.

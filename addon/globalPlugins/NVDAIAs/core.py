@@ -17,6 +17,7 @@ from logHandler import log
 
 from .conversation import ChatEntry, Conversation
 from .credentials import CredentialStore
+from . import chatgptPlan
 from .history import HistoryStore
 from .providers import PROVIDERS, PROVIDER_IDS, ProviderError, getProviderClass
 from . import textutils
@@ -30,6 +31,12 @@ confspec = {
 	"model_openai": 'string(default="")',
 	"model_gemini": 'string(default="")',
 	"model_anthropic": 'string(default="")',
+	# Model used with "Sign in with ChatGPT" (the plan has its own list of models).
+	"model_openai_plan": 'string(default="")',
+	# When signed in with ChatGPT, use the plan instead of the API token.
+	"openaiUsePlan": "boolean(default=True)",
+	# The "You're using your ChatGPT plan" notice is shown only once.
+	"planNoticeShown": "boolean(default=False)",
 	# Newlines are stored escaped (see getSystemPrompt / setSystemPrompt).
 	"systemPrompt": 'string(default="")',
 	"speakResponses": "boolean(default=True)",
@@ -85,14 +92,42 @@ def setSystemPrompt(text):
 	conf()["systemPrompt"] = text.replace("\\", "\\\\").replace("\r\n", "\n").replace("\n", "\\n")
 
 
+#: Model slot of "Sign in with ChatGPT" (models and choice kept apart from the API key ones).
+PLAN_SLOT = "openai_plan"
+
+
+def modelSlot(providerId):
+	"""Where the model of this AI is kept: the plan has its own models."""
+	return PLAN_SLOT if usingPlan(providerId) else providerId
+
+
 def getModel(providerId):
+	if modelSlot(providerId) == PLAN_SLOT:
+		cached = modelCache.get(PLAN_SLOT) or [""]
+		return conf()["model_openai_plan"].strip() or cached[0]
 	return conf()["model_" + providerId].strip() or getProviderClass(providerId).defaultModel
 
 
 def setModel(providerId, model):
 	model = (model or "").strip()
+	if modelSlot(providerId) == PLAN_SLOT:
+		conf()["model_openai_plan"] = model
+		return
 	cls = getProviderClass(providerId)
 	conf()["model_" + providerId] = "" if model == cls.defaultModel else model
+
+
+def modelChoices(providerId):
+	"""Models offered in the Model combo boxes."""
+	slot = modelSlot(providerId)
+	if slot == PLAN_SLOT:
+		choices = list(modelCache.get(PLAN_SLOT) or [])
+	else:
+		choices = list(modelCache.get(providerId) or getProviderClass(providerId).suggestedModels)
+	current = getModel(providerId)
+	if current and current not in choices:
+		choices.insert(0, current)
+	return choices
 
 
 #: Models listed by each provider during this NVDA session (filled by "Update models").
@@ -120,9 +155,40 @@ def history():
 	return _history
 
 
+_plan = None
+
+
+def plan():
+	"""The ChatGPT account signed in with "Continue with ChatGPT"."""
+	global _plan
+	if _plan is None:
+		_plan = chatgptPlan.PlanSession(chatgptPlan.PlanStore(store()))
+	return _plan
+
+
+def planSignedIn():
+	try:
+		return plan().signedIn()
+	except Exception:
+		log.error("NVDAIAs: could not read the ChatGPT session", exc_info=True)
+		return False
+
+
+def usingPlan(providerId=None):
+	"""True when questions to this AI use the user's ChatGPT plan."""
+	providerId = providerId or conf()["provider"]
+	return providerId == "openai" and conf()["openaiUsePlan"] and planSignedIn()
+
+
+def isConnected(providerId):
+	return store().has(providerId) or usingPlan(providerId)
+
+
 def makeProvider(providerId, token=None, model=None):
 	cls = getProviderClass(providerId)
 	c = conf()
+	if token is None and usingPlan(providerId):
+		return chatgptPlan.ChatGPTPlanProvider(plan(), model=model or getModel(providerId), timeout=c["timeout"], maxTokens=c["maxTokens"])
 	return cls(
 		token if token is not None else store().get(providerId),
 		model=model or getModel(providerId),
@@ -132,7 +198,7 @@ def makeProvider(providerId, token=None, model=None):
 
 
 def connectedProviders():
-	return [p for p in PROVIDER_IDS if store().has(p)]
+	return [p for p in PROVIDER_IDS if isConnected(p)]
 
 
 def errorMessage(err, providerName):
@@ -148,6 +214,9 @@ def errorMessage(err, providerName):
 	elif kind == "network":
 		# Translators: error when there is no internet connection.
 		msg = _("Could not connect to {name}. Check your internet connection.")
+	elif kind == "timeout" and detail == "sign-in":
+		# Translators: error when the user did not finish signing in to ChatGPT in time.
+		return _("The sign-in in the browser took too long and was stopped. Try again.")
 	elif kind == "timeout":
 		# Translators: error when the AI takes too long to answer.
 		msg = _("{name} took too long to answer. Try again or increase the time limit in the settings.")
@@ -164,6 +233,28 @@ def errorMessage(err, providerName):
 	elif kind == "server":
 		# Translators: error when the provider has a temporary problem.
 		msg = _("{name} had a temporary problem. Try again in a few moments.")
+	elif kind == "signin":
+		# Translators: error when the "Sign in with ChatGPT" session ended. {name} is ChatGPT.
+		msg = _("Your {name} sign-in has expired or was ended. Press Connect account and choose Continue with ChatGPT to sign in again.")
+	elif kind == "planLimit":
+		# Translators: error when the ChatGPT plan reached its usage limit. {name} is ChatGPT.
+		msg = _("You have reached the usage limit of your {name} plan. Use Manage ChatGPT usage to see your usage in the ChatGPT settings.")
+		return msg.format(name=providerName)
+	elif kind == "planNotEligible":
+		# Translators: error when the ChatGPT plan cannot be used by NVDAIAs. {name} is ChatGPT.
+		msg = _("Using your {name} plan is not available for this account, workspace or region. You can connect with an API token instead.")
+	elif kind == "unsupported":
+		# Translators: error when the question uses something the ChatGPT plan does not support here. {name} is ChatGPT.
+		msg = _("{name}: your plan does not support part of this question here. Remove it and try again.")
+	elif kind == "cancelled":
+		# Translators: announced when the user cancels the sign in with ChatGPT.
+		return _("Sign-in cancelled.")
+	elif kind == "denied":
+		# Translators: error when the user did not allow NVDAIAs on the ChatGPT page.
+		return _("Access was not allowed on the {name} page. Nothing was changed.").format(name=providerName)
+	elif kind == "browser":
+		# Translators: shown when the browser could not be opened for the sign in. {url} is the address.
+		return _("Could not open the browser. Open this address manually: {url}").format(url=detail)
 	else:
 		# Translators: generic error from the AI provider.
 		msg = _("{name} returned an error.")
@@ -245,10 +336,9 @@ class ChatSession:
 		if not text or self.busy:
 			return False
 		providerId = providerId or conf()["provider"]
-		token = store().get(providerId)
-		if not token:
+		if not isConnected(providerId):
 			raise NoTokenError(providerId)
-		provider = makeProvider(providerId, token)
+		provider = makeProvider(providerId)
 		systemPrompt = getSystemPrompt()
 		entry = self.conversation.add(ChatEntry("user", text, image=image, imageMime=imageMime, attachments=attachments))
 		messages = self.conversation.apiMessages()
@@ -282,6 +372,9 @@ class ChatSession:
 			tones.beep(220, 120)
 			ui.message(message)
 			self._emit("onError", message, text, list(entry.attachments))
+			if getattr(err, "kind", "") == "planLimit":
+				# The guidelines of "Sign in with ChatGPT": Manage usage is the main action.
+				self._emit("onUsageLimit")
 
 		runInBackground(lambda: provider.chat(messages, systemPrompt), ok, fail)
 		return True
@@ -373,4 +466,5 @@ class ChatSession:
 __all__ = [
 	"PROVIDERS", "PROVIDER_IDS", "ProviderError", "ChatSession", "NoTokenError",
 	"initConfig", "conf", "store", "makeProvider", "providerLabel", "errorMessage",
+	"plan", "usingPlan", "isConnected", "modelChoices",
 ]

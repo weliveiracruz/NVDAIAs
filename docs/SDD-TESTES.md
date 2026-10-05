@@ -14,7 +14,7 @@ Garantir, a cada nova versão, que o NVDAIAs:
 
 * Código do complemento: `addon/` (plugin global, janelas, provedores, anexos, histórico, tema, tradução, manifesto).
 * Empacotamento: `build.py` e o arquivo `.nvda-addon`.
-* Fora do escopo automático, coberto pelo roteiro manual em `docs/TESTES.md`: fala real do NVDA, criptografia DPAPI no Windows e chamadas reais às três empresas com tokens de verdade.
+* Fora do escopo automático, coberto pelo roteiro manual em `docs/TESTES.md`: fala real do NVDA, criptografia DPAPI no Windows, chamadas reais às três empresas com tokens de verdade e a entrada real com o ChatGPT.
 
 ## 3. Ambiente de teste
 
@@ -22,7 +22,7 @@ Garantir, a cada nova versão, que o NVDAIAs:
 |---|---|
 | Interface | wxPython real (a mesma biblioteca do NVDA), com tela virtual (Xvfb) |
 | NVDA | Módulos substituídos por simulações (`tests/nvda_stubs.py`), exceto o `guiHelper`, que é o original do NVDA |
-| APIs das IAs | Servidor local que imita OpenAI, Gemini e Anthropic (`tests/mock_server.py`), conferindo autenticação e formato de cada requisição |
+| APIs das IAs | Servidor local que imita OpenAI, Gemini e Anthropic (`tests/mock_server.py`), conferindo autenticação e formato de cada requisição. Também imita o auth.openai.com (autorização, troca de código com PKCE, renovação, revogação, chaves públicas) e a API Responses do plano do ChatGPT, com um navegador simulado e uma chave RSA só de teste (`tests/_testkey.py`) |
 | Criptografia | Codificador de teste injetado no lugar do DPAPI, para verificar que nada fica em texto puro |
 | Versões do Python | 3.11 (NVDA 2024.x), 3.12 e 3.13 (NVDA 2026.x) |
 | Análise estática | `bandit` (segurança de código Python) e varredura de padrões proibidos |
@@ -67,6 +67,11 @@ O executor `tests/run_all.py` roda todas as suítes, conta testes, aprovados e f
 | FUN-19 | Primeira instalação e falhas | Sem cópia desnecessária; falha na cópia não bloqueia a instalação | update |
 | FUN-21 | Enviar feedback | Botão pede confirmação ("Dar feedback" ou "Cancelar"); só Dar feedback abre o formulário numa nova aba; falha do navegador mostra o endereço | gui |
 | FUN-20 | Conversa atual em ramo | "Conversa atual (N mensagens)" recolhe e expande, abre quando chega resposta | gui |
+| FUN-22 | Continuar com o ChatGPT | Navegador aberto em auth.openai.com, retorno em 127.0.0.1, código trocado com PKCE, sessão salva, e-mail anunciado, aviso de primeiro uso só uma vez, ChatGPT passa a usar o plano | pure, gui |
+| FUN-23 | Pergunta pelo plano do ChatGPT | API Responses com store false, stream true, instructions, histórico, imagens, PDF e textos; áudio e vídeo recusados antes de enviar; modelos do plano (visibility list) | pure, gui |
+| FUN-24 | Renovação e fim da entrada | Token renovado antes de expirar e depois de um 401, refresh token trocado a cada renovação; refresh token reutilizado ou inválido encerra a sessão e pede nova entrada | pure |
+| FUN-25 | Erros do plano | Limite de uso (oferece Gerenciar uso), plano não elegível, recurso não aceito, indisponível, entrada expirada, acesso negado, cancelamento, tempo esgotado | pure, gui |
+| FUN-26 | Plano ou token | Opção nas configurações escolhe; modelos do plano guardados à parte; token salvo em Conectar conta volta para o token; Sair do ChatGPT revoga e apaga a sessão | gui |
 
 ## 6. Casos de teste de acessibilidade (ACE)
 
@@ -93,6 +98,7 @@ Referências: WCAG 2.2 nível AA, guia de complementos do NVDA e as práticas de
 | ACE-17 | Fala limpa | Símbolos de Markdown removidos da leitura quando a opção está ligada |
 | ACE-18 | Mensagens longas | Item da lista resumido, texto completo na janela de leitura |
 | ACE-19 | Ramos da árvore | Conversas anteriores e Conversa atual dizem quantos itens têm; Enter e setas expandem e recolhem |
+| ACE-20 | Continuar com o ChatGPT | Botão logo depois da caixa IA, com letra de atalho, fora da tabulação para outras IAs; janela de espera com título, foco na explicação e Cancelar entrada; entrada, saída e limite anunciados; linha de situação diz que o plano está em uso; Gerenciar uso do ChatGPT só aparece com o plano |
 
 ## 7. Casos de teste de vulnerabilidade (SEG)
 
@@ -121,7 +127,11 @@ Referências: OWASP Top 10, OWASP ASVS (armazenamento, comunicação, validaçã
 | SEG-19 | Redirecionamento | A chave de API nunca é reenviada a outro endereço por redirecionamento |
 | SEG-20 | Captura de tela | Só acontece por comando explícito do usuário |
 | SEG-21 | Tamanho dos detalhes de erro | Detalhes de erro limitados, sem inundar a fala |
-| SEG-22 | Endereços abertos no navegador | Só endereços fixos em HTTPS: formulário de feedback e páginas de token |
+| SEG-22 | Endereços abertos no navegador | Só endereços fixos em HTTPS: formulário de feedback, páginas de token, entrada (auth.openai.com) e uso (chatgpt.com) do ChatGPT |
+| SEG-23 | OAuth do Entrar com o ChatGPT | PKCE S256, state e nonce aleatórios, cliente público sem segredo, retorno só em 127.0.0.1/callback, resposta com outro state recusada (CSRF), endereço com o código nunca registrado, tempo limite |
+| SEG-24 | Sessão do ChatGPT em repouso e em logs | Tokens de acesso, de renovação e de identidade criptografados (DPAPI) e nunca no log, na fala, em mensagens nem no nvda.ini |
+| SEG-25 | Token de identidade | Assinatura RS256 conferida com as chaves publicadas pela OpenAI; alg none e HS256, outro emissor, outro destinatário, vencido e nonce repetido recusados |
+| SEG-26 | Token do plano e redirecionamento | Token de acesso do ChatGPT nunca reenviado a outro endereço; Sair do ChatGPT revoga o refresh token na OpenAI |
 
 ## 8. Critérios de aprovação
 

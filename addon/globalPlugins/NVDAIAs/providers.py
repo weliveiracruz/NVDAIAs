@@ -82,12 +82,20 @@ class BaseProvider:
 		raise NotImplementedError
 
 	def _request(self, method, path, body=None, query=None):
+		raw = self._requestRaw(method, path, body, query)
+		try:
+			return json.loads(raw.decode("utf-8"))
+		except Exception:
+			raise ProviderError("server", "invalid JSON response")
+
+	def _requestRaw(self, method, path, body=None, query=None, accept="application/json"):
+		"""Sends the request and returns the raw answer (bytes)."""
 		if not self.apiKey:
 			raise ProviderError("auth", "missing token")
 		url = self.baseUrl + path
 		if query:
 			url += "?" + urllib.parse.urlencode(query)
-		headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+		headers = {"User-Agent": USER_AGENT, "Accept": accept}
 		headers.update(self._headers())
 		data = None
 		if body is not None:
@@ -111,10 +119,7 @@ class BaseProvider:
 			raise ProviderError("network", str(reason))
 		except (ConnectionError, OSError) as e:
 			raise ProviderError("network", str(e))
-		try:
-			return json.loads(raw.decode("utf-8"))
-		except Exception:
-			raise ProviderError("server", "invalid JSON response")
+		return raw
 
 	def _open(self, req):
 		if self._opener is not None:

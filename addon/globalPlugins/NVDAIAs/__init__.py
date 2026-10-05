@@ -115,7 +115,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 		def send(dlg):
 			providerId = core.conf()["provider"]
-			if not core.store().has(providerId):
+			if not core.isConnected(providerId):
 				if not dlg._runConnect(providerId):
 					return
 				providerId = core.conf()["provider"]

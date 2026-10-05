@@ -22,7 +22,7 @@ import gui  # noqa: E402
 
 gui.mainFrame = gui.MainFrame()
 import NVDAIAs  # noqa: E402
-from NVDAIAs import core, chatDialog, connectDialog, settingsPanel, providers  # noqa: E402
+from NVDAIAs import core, chatDialog, connectDialog, settingsPanel, providers, planUi  # noqa: E402
 
 failures = []
 
@@ -60,11 +60,20 @@ if "aistudio.google.com" not in cd.instructionsText.GetValue() or "Pressione" no
 	failures.append("connect instructions not translated")
 checkUnique("connect", cd)
 cd.Destroy()
+cd = connectDialog.ConnectDialog(dlg, "openai")
+if cd.chatgptButton.GetLabel() != "Contin&uar com o ChatGPT" or "Continuar com o ChatGPT" not in cd.instructionsText.GetValue():
+	failures.append("chatgpt sign-in not translated: %s" % cd.chatgptButton.GetLabel())
+cd.Destroy()
+waiting = planUi.SignInDialog(dlg)
+if waiting.GetTitle() != "NVDAIAs - Continuar com o ChatGPT" or "Aguardando" not in waiting.messageText.GetValue():
+	failures.append("chatgpt sign-in not translated: %s" % waiting.GetTitle())
+checkUnique("sign-in waiting window", waiting)
+waiting.Destroy()
 frame = wx.Frame(None)
 panel = settingsPanel.NVDAIAsSettingsPanel(frame)
 checkUnique("settings (top level)", panel)
-for kind in ("auth", "quota", "network", "timeout", "model", "blocked", "server", "other"):
-	msg = core.errorMessage(providers.ProviderError(kind, "detalhe"), "Claude")
+for kind in ("auth", "quota", "network", "timeout", "model", "blocked", "server", "other", "signin", "planLimit", "planNotEligible", "unsupported", "cancelled", "denied", "browser"):
+	msg = core.errorMessage(providers.ProviderError(kind, "detalhe"), "ChatGPT" if kind[:4] in ("sign", "plan", "unsu", "canc", "deni", "brow") else "Claude")
 	print(kind, "->", msg)
 	if "{" in msg:
 		failures.append("placeholder left in " + kind)
@@ -84,6 +93,8 @@ CHECKS = {
 	"unique Alt shortcuts: settings": "settings (top level): duplicated",
 	"pt_BR error messages without placeholders": "placeholder left",
 	"pt_BR default instructions": "default instructions",
+	"pt_BR Continue with ChatGPT": "chatgpt sign-in not translated",
+	"unique Alt shortcuts: sign-in waiting window": "sign-in waiting window: duplicated",
 }
 failedChecks = [name for name, key in CHECKS.items() if any(key in f for f in failures)]
 from _results import emit  # noqa: E402

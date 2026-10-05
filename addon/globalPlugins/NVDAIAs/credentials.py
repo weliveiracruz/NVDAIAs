@@ -12,6 +12,7 @@ import base64
 import json
 import os
 import sys
+import threading
 
 _ENTROPY = b"NVDAIAs-token-v1"
 FILE_NAME = "NVDAIAs-credentials.json"
@@ -86,6 +87,10 @@ def _defaultCodec():
 
 
 class CredentialStore:
+	#: Writes come from the GUI and from background threads (ChatGPT sign-in and
+	#: token refresh): one lock for every store of the process.
+	_lock = threading.RLock()
+
 	def __init__(self, folder, codec=None):
 		self.path = os.path.join(folder, FILE_NAME)
 		self._codec = codec or _defaultCodec()
@@ -105,13 +110,14 @@ class CredentialStore:
 		folder = os.path.dirname(self.path)
 		if folder and not os.path.isdir(folder):
 			os.makedirs(folder)
-		tmp = self.path + ".tmp"
+		tmp = "%s.%d.%d.tmp" % (self.path, os.getpid(), threading.get_ident())
 		with open(tmp, "w", encoding="utf-8") as f:
 			json.dump(self._cache, f, indent=1)
 		os.replace(tmp, self.path)
 
 	def get(self, providerId):
-		enc = self._load().get(providerId)
+		with self._lock:
+			enc = self._load().get(providerId)
 		if not enc:
 			return ""
 		try:
@@ -125,22 +131,24 @@ class CredentialStore:
 
 	def set(self, providerId, token):
 		token = (token or "").strip()
-		data = self._load()
-		if token:
-			data[providerId] = base64.b64encode(self._codec.protect(token.encode("utf-8"))).decode("ascii")
-		else:
-			data.pop(providerId, None)
-		self._save()
+		with self._lock:
+			data = self._load()
+			if token:
+				data[providerId] = base64.b64encode(self._codec.protect(token.encode("utf-8"))).decode("ascii")
+			else:
+				data.pop(providerId, None)
+			self._save()
 
 	def remove(self, providerId):
 		self.set(providerId, "")
 
 	def removeAll(self):
-		self._cache = {}
-		try:
-			os.remove(self.path)
-		except OSError:
-			pass
+		with self._lock:
+			self._cache = {}
+			try:
+				os.remove(self.path)
+			except OSError:
+				pass
 
 
 def maskToken(token):

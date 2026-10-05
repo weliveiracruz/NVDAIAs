@@ -104,6 +104,9 @@ def install(configPath=None):
 				RECORD.setdefault("log", []).append("%s: %s" % (name, msg))
 				if name in ("error", "exception"):
 					RECORD.setdefault("logErrors", []).append(msg)
+					if k.get("exc_info"):
+						import traceback as _tb
+						RECORD.setdefault("logTracebacks", []).append(_tb.format_exc())
 			return f
 
 	logHandler.log = Log()

@@ -14,7 +14,7 @@ import wx
 from gui import guiHelper
 from logHandler import log
 
-from . import core, theme
+from . import core, planUi, theme
 from .providers import PROVIDER_IDS, getProviderClass
 
 addonHandler.initTranslation()
@@ -85,6 +85,11 @@ class ConnectDialog(wx.Dialog):
 		self.providerChoice.SetSelection(PROVIDER_IDS.index(providerId))
 		self.providerChoice.Bind(wx.EVT_CHOICE, self.onProviderChanged)
 
+		# "Sign in with ChatGPT": uses the user's ChatGPT plan, no API key (ChatGPT only).
+		# Translators: button that signs in with the ChatGPT account and uses the ChatGPT plan, without API key.
+		self.chatgptButton = sHelper.addItem(wx.Button(self, label=_("Continue &with ChatGPT")))
+		self.chatgptButton.Bind(wx.EVT_BUTTON, self.onContinueWithChatGPT)
+
 		# Translators: label of the read-only field with the connection instructions.
 		instructionsLabel = wx.StaticText(self, label=_("&Instructions:"))
 		self.instructionsText = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2, size=(560, 180))
@@ -129,11 +134,37 @@ class ConnectDialog(wx.Dialog):
 		self._updateInstructions()
 
 	def _updateInstructions(self):
+		isChatGPT = self.providerId == "openai"
+		if self.chatgptButton.IsShown() != isChatGPT:
+			self.chatgptButton.Show(isChatGPT)
+			self.Layout()
 		text = instructions(self.providerId)
+		if isChatGPT:
+			# Translators: explanation of the Continue with ChatGPT button in the connect dialog.
+			text = _("No API key? Press \"Continue with ChatGPT\" to sign in with your ChatGPT account and use your ChatGPT plan (Plus, Pro and others). "
+				"Questions then count toward the usage limits of your plan, with no extra billing.") + "\n\n" + text
+			if core.planSignedIn():
+				# Translators: appended to the instructions when already signed in with ChatGPT. {email} is the account.
+				text += "\n" + _("Already signed in with ChatGPT as {email}.").format(email=core.plan().email() or "-")
 		if core.store().has(self.providerId):
 			# Translators: appended to the instructions when a token is already saved.
 			text += "\n" + _("A token for this AI is already saved. Paste a new one only if you want to replace it.")
 		self.instructionsText.SetValue(text)
+
+	def onContinueWithChatGPT(self, evt):
+		if self._testing:
+			return
+
+		def done(ok):
+			if not ok or not self:
+				return
+			self.connectedProvider = "openai"
+			if self.IsModal():
+				self.EndModal(wx.ID_OK)
+			else:
+				self.Close()
+
+		planUi.startSignIn(self, done)
 
 	def onConnect(self, evt):
 		if self._testing:
@@ -160,6 +191,9 @@ class ConnectDialog(wx.Dialog):
 			self.connectButton.Enable()
 			try:
 				core.store().set(providerId, token)
+				if providerId == "openai":
+					# A token typed now means: use the token, not the ChatGPT plan.
+					core.conf()["openaiUsePlan"] = False
 			except Exception as e:
 				log.error("NVDAIAs: could not save the token", exc_info=True)
 				# Translators: error when the token cannot be saved. {error} is the technical error.

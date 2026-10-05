@@ -32,7 +32,7 @@ import gui  # noqa: E402
 
 gui.mainFrame = gui.MainFrame()
 import NVDAIAs  # noqa: E402
-from NVDAIAs import core, providers, chatDialog, connectDialog, settingsPanel, textutils, theme  # noqa: E402
+from NVDAIAs import core, providers, chatDialog, connectDialog, settingsPanel, textutils, theme, chatgptPlan, planUi  # noqa: E402
 
 for cls, path in ((providers.OpenAIProvider, "/openai/v1"), (providers.GeminiProvider, "/gemini/v1beta"), (providers.AnthropicProvider, "/anthropic/v1")):
 	cls.defaultBaseUrl = BASE + path
@@ -145,6 +145,43 @@ def run():
 	panel = settingsPanel.NVDAIAsSettingsPanel(frame)
 	checkWindow("settings", panel, requireMnemonicOnButtons=False)
 	frame.Destroy()
+
+	# ACE-20 Sign in with ChatGPT ----------------------------------------------------------
+	chatgptPlan.ISSUER = BASE + "/chatgpt/auth"
+	chatgptPlan.ChatGPTPlanProvider.defaultBaseUrl = BASE + "/chatgpt/v1"
+	planUi.openBrowser = lambda url: mock_server.fakeBrowser(url, delay=1.5)  # the user takes a while in the browser
+	core._plan = None  # created again with the fake authorization server
+	core.conf()["planNoticeShown"] = True
+	cd = connectDialog.ConnectDialog(dlg, "openai")
+	order = focusables(cd)
+	R.check("ACE-20 Continue with ChatGPT reachable with Tab right after the AI box", order.index(cd.chatgptButton) == order.index(cd.providerChoice) + 1)
+	R.check("ACE-20 Continue with ChatGPT has an Alt shortcut", "&" in cd.chatgptButton.GetLabel())
+	cd.providerChoice.SetSelection(1)
+	cd.onProviderChanged(None)
+	R.check("ACE-04 Continue with ChatGPT out of the tab order for other AIs", cd.chatgptButton not in focusables(cd))
+	cd.Destroy()
+	waiting = planUi.SignInDialog(dlg)
+	checkWindow("sign-in waiting window", waiting)
+	R.check("ACE-01 waiting message has a name", accessibleName(waiting.messageText).replace("&", "") == "Status:", accessibleName(waiting.messageText))
+	waiting.Destroy()
+	RECORD["spoken"].clear()
+	waiting = planUi.startSignIn(dlg)
+	pump(timeout=0.4)
+	R.check("ACE-07 focus on the explanation while waiting for the browser", planUi.SignInDialog._running is waiting and wx.Window.FindFocus() is waiting.messageText, wx.Window.FindFocus())
+	pump(lambda: planUi.SignInDialog._running is None, 15)
+	R.check("ACE-06 sign-in with ChatGPT is announced", any(s.startswith("Signed in to ChatGPT as") for s in RECORD["spoken"]), RECORD["spoken"])
+	dlg.providerChoice.SetSelection(0)
+	dlg.onProviderChanged(None)
+	checkWindow("chat using the ChatGPT plan", dlg)
+	R.check("ACE-10 status line says the ChatGPT plan is in use", "using your ChatGPT plan" in dlg.statusLine.GetLabel(), dlg.statusLine.GetLabel())
+	R.check("ACE-20 Manage ChatGPT usage reachable with Tab", dlg.usageButton in focusables(dlg))
+	nvda_stubs.MESSAGEBOX_ANSWER["value"] = wx.YES
+	planUi.signOut(dlg)
+	dlg.updateStatus()
+	R.check("ACE-04 Manage ChatGPT usage out of the tab order without the plan", dlg.usageButton not in focusables(dlg))
+	R.check("ACE-06 sign out is announced", RECORD["spoken"][-1] == "Signed out of ChatGPT", RECORD["spoken"][-1:])
+	dlg.providerChoice.SetSelection(2)
+	dlg.onProviderChanged(None)
 
 	# ACE-03 tab order
 	order = focusables(dlg)

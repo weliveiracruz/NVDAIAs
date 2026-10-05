@@ -32,10 +32,24 @@ import gui  # noqa: E402
 gui.mainFrame = gui.MainFrame()
 
 import NVDAIAs  # noqa: E402  (the add-on package, exactly as NVDA loads it)
-from NVDAIAs import core, providers, chatDialog, connectDialog, settingsPanel  # noqa: E402
+from NVDAIAs import core, providers, chatDialog, connectDialog, settingsPanel, chatgptPlan, planUi  # noqa: E402
 
 for cls, path in ((providers.OpenAIProvider, "/openai/v1"), (providers.GeminiProvider, "/gemini/v1beta"), (providers.AnthropicProvider, "/anthropic/v1")):
 	cls.defaultBaseUrl = BASE + path
+# Sign in with ChatGPT talks to the fake auth.openai.com and api.openai.com.
+chatgptPlan.ISSUER = BASE + "/chatgpt/auth"
+chatgptPlan.ChatGPTPlanProvider.defaultBaseUrl = BASE + "/chatgpt/v1"
+OPENED = []
+
+
+def _fakeBrowser(url):
+	OPENED.append(url)
+	if url.startswith(chatgptPlan.ISSUER):
+		return mock_server.fakeBrowser(url)
+	return True
+
+
+planUi.openBrowser = _fakeBrowser
 
 RESULTS = []
 POPUPS = []
@@ -794,6 +808,148 @@ def run():
 	check("its buttons are called Give feedback and Cancel", md.labels == ("Give &feedback", "&Cancel"))
 	check("Cancel in the message box returns False and closes it", result is False and getattr(md, "destroyed", False))
 
+
+	# 21. Sign in with ChatGPT (ChatGPT plan, no API key) ---------------------------------
+	dlg = chatDialog.ChatDialog.showInstance(plugin.session)
+	notices = []
+
+	class FakeNotice:
+		def __init__(self, parent, message, caption, style):
+			notices.append({"message": message, "caption": caption})
+
+		def SetOKLabel(self, label):
+			notices[-1]["ok"] = label
+
+		def ShowModal(self):
+			return wx.ID_OK
+
+		def Destroy(self):
+			pass
+
+	realMD = planUi.wx.MessageDialog
+	planUi.wx.MessageDialog = FakeNotice
+	core.conf()["planNoticeShown"] = False
+	core.store().remove("openai")
+	cd = connectDialog.ConnectDialog(dlg, "openai")
+	check("Continue with ChatGPT shown for ChatGPT", cd.chatgptButton.IsShown() and cd.chatgptButton.GetLabel() == "Continue &with ChatGPT", cd.chatgptButton.GetLabel())
+	check("instructions explain the ChatGPT plan", "Continue with ChatGPT" in cd.instructionsText.GetValue() and "API key" in cd.instructionsText.GetValue())
+	focusableCd = [c for c in cd.GetChildren() if c.AcceptsFocusFromKeyboard() and c.IsShown() and not isinstance(c, wx.StaticText)]
+	check("Continue with ChatGPT comes right after the AI box", focusableCd.index(cd.chatgptButton) == focusableCd.index(cd.providerChoice) + 1)
+	cd.providerChoice.SetSelection(1)
+	cd.onProviderChanged(None)
+	check("Continue with ChatGPT hidden for Gemini", not cd.chatgptButton.IsShown())
+	cd.providerChoice.SetSelection(0)
+	cd.onProviderChanged(None)
+	RECORD["spoken"].clear()
+	cd.onContinueWithChatGPT(None)
+	waiting = planUi.SignInDialog._running
+	check("waiting window opens with the explanation", waiting is not None and "Sign in, allow NVDAIAs" in waiting.messageText.GetValue() and waiting.GetTitle() == "NVDAIAs - Continue with ChatGPT")
+	pump(lambda: planUi.SignInDialog._running is None, 15)
+	check("browser opened on auth.openai.com authorize", OPENED and OPENED[-1].startswith(chatgptPlan.ISSUER + "/api/accounts/authorize?client_id=dynamic_agent_client"), OPENED[-1:])
+	check("signed in with ChatGPT", core.plan().signedIn() and core.plan().email() == "pessoa@example.com")
+	check("connect dialog reports ChatGPT connected", cd.connectedProvider == "openai")
+	check("sign-in announced with the account", "Signed in to ChatGPT as pessoa@example.com" in RECORD["spoken"], RECORD["spoken"])
+	check("first-use notice You're using your ChatGPT plan with Got it", notices and notices[0]["caption"] == "You're using your ChatGPT plan" and notices[0]["ok"] == "&Got it", notices)
+	check("notice remembered", core.conf()["planNoticeShown"] is True)
+	check("plan models and default model", core.modelCache.get(core.PLAN_SLOT) == ["gpt-5.5", "gpt-5.5-mini"] and core.conf()["model_openai_plan"] == "gpt-5.5")
+	check("ChatGPT becomes the AI, using the plan", core.conf()["provider"] == "openai" and core.usingPlan("openai") and core.isConnected("openai"))
+	check("no API token was needed", not core.store().has("openai"))
+	cd.Destroy()
+	# Chat window: indicator and Manage usage
+	dlg.providerChoice.SetSelection(0)
+	dlg._fillModels()
+	dlg.updateStatus()
+	statusText = dlg.statusLine.GetLabel()
+	check("status line says the ChatGPT plan is used", statusText == "ChatGPT · gpt-5.5 · using your ChatGPT plan (pessoa@example.com)", statusText)
+	check("Manage ChatGPT usage button shown", dlg.usageButton.IsShown() and dlg.usageButton.GetLabel() == "Manage ChatGPT &usage…")
+	check("model box lists the plan models", dlg.modelCombo.GetStrings() == ["gpt-5.5", "gpt-5.5-mini"] and dlg.modelCombo.GetValue() == "gpt-5.5", dlg.modelCombo.GetStrings())
+	dlg.onNewConversation(None)
+	dlg.questionEdit.SetValue("Pergunta pelo plano")
+	dlg.onSend(None)
+	pump(lambda: not plugin.session.busy, 10)
+	check("question answered through the ChatGPT plan", any("Plano ChatGPT responde: Pergunta pelo plano" in t for t in current(dlg)), current(dlg))
+	check("plan request without API key, store false, stream true", mock_server.CHATGPT["responses"][-1]["store"] is False and not any(r["path"].startswith("/openai/") for r in mock_server.REQUESTS[-3:]))
+	OPENED.clear()
+	dlg.onManageUsage(None)
+	check("Manage usage opens chatgpt.com/settings/usage", OPENED == ["https://chatgpt.com/settings/usage"], OPENED)
+	asked = []
+	realConfirm = planUi.confirm
+
+	def fakeConfirm(parent, message, caption, okLabel, cancelLabel):
+		asked.append((message, caption, okLabel, cancelLabel))
+		return True
+
+	planUi.confirm = fakeConfirm
+	OPENED.clear()
+	mock_server.FORCE["chatgpt"] = (429, {"error": {"code": "subscription_sharing_usage_limit_exceeded", "message": "limit"}})
+	dlg.questionEdit.SetValue("Mais uma")
+	dlg.onSend(None)
+	pump(lambda: not plugin.session.busy and asked, 10)
+	mock_server.FORCE.clear()
+	planUi.confirm = realConfirm
+	check("usage limit explained", any("usage limit of your ChatGPT plan" in m for m in RECORD["spoken"][-3:]), RECORD["spoken"][-3:])
+	check("usage limit offers Manage usage as the main action", asked and asked[0][2] == "&Manage usage" and asked[0][3] == "&Close", asked)
+	check("Manage usage opened after the limit", OPENED == ["https://chatgpt.com/settings/usage"], OPENED)
+	check("question back in the field after the limit", dlg.questionEdit.GetValue() == "Mais uma")
+	dlg.questionEdit.SetValue("")
+	# Second sign-in: no second notice, same registration
+	n = len(notices)
+	cd = connectDialog.ConnectDialog(dlg, "openai")
+	check("instructions show the signed-in account", "Already signed in with ChatGPT as pessoa@example.com" in cd.instructionsText.GetValue())
+	cd.onContinueWithChatGPT(None)
+	pump(lambda: planUi.SignInDialog._running is None, 15)
+	check("notice shown only once", len(notices) == n)
+	check("second sign-in reuses the issued client id", "client_id=" + mock_server.ISSUED_CLIENT in OPENED[-1] and "agent_name_hint" not in OPENED[-1], OPENED[-1:])
+	cd.Destroy()
+	# Cancel while waiting
+	waiting = planUi.startSignIn(dlg)
+	OPENED.clear()
+	waiting2 = planUi.startSignIn(dlg)
+	check("only one sign-in at a time", waiting2 is waiting)
+	planUi.SignInDialog._running = None
+	cancelled = planUi.SignInDialog(dlg)
+	cancelled.cancelEvent.set()
+	cancelled.start()
+	pump(lambda: waiting.result is not None and cancelled.error is not None, 15)
+	check("cancel stops the sign-in and is announced", cancelled.error is not None and cancelled.error.kind == "cancelled" and "Sign-in cancelled." in RECORD["spoken"], RECORD["spoken"][-3:])
+	# Settings panel: ChatGPT plan controls
+	frame = wx.Frame(None)
+	panel = settingsPanel.NVDAIAsSettingsPanel(frame)
+	g = {x.providerId: x for x in panel.groups}["openai"]
+	check("settings show the ChatGPT account", g.planStatusText.GetLabel() == "ChatGPT plan: signed in as pessoa@example.com.", g.planStatusText.GetLabel())
+	check("settings buttons for the plan", [b.GetLabel() for b in (g.signInButton, g.signOutButton, g.usageButton)] == ["Continue with ChatGPT", "Sign out of ChatGPT", "Manage ChatGPT usage"] and g.signOutButton.IsEnabled())
+	check("plan checkbox on and plan models listed", g.planCheck.GetValue() and g.modelCombo.GetStrings()[:2] == ["gpt-5.5", "gpt-5.5-mini"], g.modelCombo.GetStrings())
+	g.onTest(None)
+	pump(lambda: g.testButton.IsEnabled(), 10)
+	check("test connection uses the plan without token", "Connection to ChatGPT working. 2 models available." in RECORD["messageBoxes"][-1], RECORD["messageBoxes"][-1:])
+	g.modelCombo.SetValue("gpt-5.5-mini")
+	panel.onSave()
+	check("plan model saved apart from the API model", core.conf()["model_openai_plan"] == "gpt-5.5-mini" and core.conf()["model_openai"] != "gpt-5.5-mini")
+	g.planCheck.SetValue(False)
+	g.refreshModels()
+	check("unchecking shows the API models", "gpt-5-mini" in g.modelCombo.GetStrings(), g.modelCombo.GetStrings())
+	panel.onSave()
+	check("plan switched off keeps the session", core.conf()["openaiUsePlan"] is False and not core.usingPlan("openai") and core.plan().signedIn())
+	check("without token and plan, ChatGPT is not connected", not core.isConnected("openai"))
+	g.planCheck.SetValue(True)
+	g.refreshModels()
+	panel.onSave()
+	check("plan switched back on", core.usingPlan("openai") and core.getModel("openai") == "gpt-5.5-mini")
+	nvda_stubs.MESSAGEBOX_ANSWER["value"] = wx.YES
+	refresh = core.plan().store.session()["refresh_token"]
+	g.onSignOut(None)
+	pump(lambda: any(r.get("token") == refresh for r in mock_server.CHATGPT["revoked"]), 10)
+	check("sign out deletes the session at once", not core.plan().signedIn() and "not signed in" in g.planStatusText.GetLabel() and not g.signOutButton.IsEnabled())
+	check("sign out revokes the refresh token at OpenAI", any(r.get("token") == refresh and r.get("token_type_hint") == "refresh_token" for r in mock_server.CHATGPT["revoked"]))
+	check("sign out announced", RECORD["spoken"][-1] == "Signed out of ChatGPT", RECORD["spoken"][-1:])
+	frame.Destroy()
+	dlg.updateStatus()
+	check("Manage usage hidden after sign out", not dlg.usageButton.IsShown())
+	planUi.wx.MessageDialog = realMD
+	core.store().set("openai", mock_server.VALID["openai"])
+	dlg.Close()
+	pump(timeout=0.3)
+
 	# 15. Secure screens ----------------------------------------------------------------
 	import globalVars
 	globalVars.appArgs.secure = True
@@ -803,7 +959,7 @@ def run():
 	plugin.terminate()
 	pump(timeout=0.3)
 	check("terminate unregisters panel and closes window", settingsPanel.NVDAIAsSettingsPanel not in gui.settingsDialogs.NVDASettingsDialog.categoryClasses and chatDialog.ChatDialog._instance is None)
-	check("no errors logged", not RECORD.get("logErrors"), RECORD.get("logErrors"))
+	check("no errors logged", not RECORD.get("logErrors"), str((RECORD.get("logErrors"), RECORD.get("logTracebacks"))))
 
 
 try:

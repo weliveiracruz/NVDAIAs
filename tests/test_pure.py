@@ -23,7 +23,7 @@ pkg = types.ModuleType("NVDAIAs")
 pkg.__path__ = [PKG_DIR]
 sys.modules["NVDAIAs"] = pkg
 
-from NVDAIAs import providers, textutils, credentials, conversation, history, attachments  # noqa: E402
+from NVDAIAs import providers, textutils, credentials, conversation, history, attachments, chatgptPlan  # noqa: E402
 import mock_server  # noqa: E402
 
 SERVER, BASE = mock_server.start()
@@ -507,6 +507,367 @@ class AttachmentTests(unittest.TestCase):
 		self.assertEqual(conversation.ChatEntry.fromDict(d).attachmentNames(), ["a.txt"])
 		legacy = {"role": "user", "text": "x", "time": 1, "image": base64.b64encode(PNG).decode(), "imageMime": "image/png"}
 		self.assertEqual(conversation.ChatEntry.fromDict(legacy).image, PNG)
+
+# ---------------------------------------------------------------------------
+# Sign in with ChatGPT (ChatGPT plan, no API key)
+# ---------------------------------------------------------------------------
+
+class _FlipCodec:
+	def protect(self, data):
+		return bytes(b ^ 0x33 for b in data)
+
+	def unprotect(self, data):
+		return bytes(b ^ 0x33 for b in data)
+
+
+class ChatGPTPlanTests(unittest.TestCase):
+	def setUp(self):
+		mock_server.REQUESTS.clear()
+		mock_server.FORCE.clear()
+		mock_server.resetChatGPT()
+		self.folder = tempfile.mkdtemp()
+		self.creds = credentials.CredentialStore(self.folder, codec=_FlipCodec())
+		self.store = chatgptPlan.PlanStore(self.creds)
+		self.session = chatgptPlan.PlanSession(self.store, chatgptPlan.OAuthClient(issuer=BASE + "/chatgpt/auth", timeout=5))
+
+	def signIn(self, **kw):
+		return self.session.signIn(mock_server.fakeBrowser, timeout=kw.pop("timeout", 10), **kw)
+
+	def provider(self, model=None):
+		return chatgptPlan.ChatGPTPlanProvider(self.session, model=model, baseUrl=BASE + "/chatgpt/v1", timeout=5)
+
+	# Sign in ---------------------------------------------------------------
+
+	def test_sign_in_stores_session(self):
+		s = self.signIn()
+		self.assertTrue(self.session.signedIn())
+		self.assertEqual(self.session.email(), "pessoa@example.com")
+		self.assertEqual(s["client_id"], mock_server.ISSUED_CLIENT)
+		self.assertIn(chatgptPlan.PLAN_SCOPE, s["scopes"])
+		self.assertEqual(s["subject"], "user-123")
+		q = mock_server.CHATGPT["authorize"][0]
+		self.assertEqual(q["client_id"], "dynamic_agent_client")
+		self.assertEqual(q["agent_name_hint"], "NVDAIAs")
+		self.assertTrue(q["redirect_uri"].startswith("http://127.0.0.1:"))
+		self.assertEqual(len(q["state"]) >= 32 and len(q["nonce"]) >= 32, True)
+
+	def test_second_sign_in_reuses_client_and_host(self):
+		self.signIn()
+		self.session.signOut()
+		self.signIn()
+		first, second = mock_server.CHATGPT["authorize"][:2]
+		self.assertEqual(second["client_id"], mock_server.ISSUED_CLIENT)
+		self.assertNotIn("agent_name_hint", second)
+		self.assertEqual(second["login_hint"], "pessoa@example.com")
+		self.assertEqual(first["ext_agent_host_id"], second["ext_agent_host_id"])
+		self.assertNotEqual(first["state"], second["state"])
+		self.assertNotEqual(first["code_challenge"], second["code_challenge"])
+
+	def test_pkce_pair(self):
+		verifier, challenge = chatgptPlan.pkcePair()
+		self.assertTrue(43 <= len(verifier) <= 128)
+		self.assertEqual(challenge, chatgptPlan.b64url(__import__("hashlib").sha256(verifier.encode()).digest()))
+		self.assertNotIn("=", challenge)
+
+	def test_access_denied(self):
+		mock_server.CHATGPT["deny"] = True
+		with self.assertRaises(providers.ProviderError) as cm:
+			self.signIn()
+		self.assertEqual(cm.exception.kind, "denied")
+		self.assertFalse(self.session.signedIn())
+
+	def test_callback_with_other_state_is_ignored(self):
+		mock_server.CHATGPT["wrong_state"] = True
+		with self.assertRaises(providers.ProviderError) as cm:
+			self.signIn(timeout=1.5)
+		self.assertEqual((cm.exception.kind, cm.exception.detail), ("timeout", "sign-in"))
+		self.assertFalse(self.session.signedIn())
+		self.assertEqual(mock_server.CHATGPT["codes"] != {}, True, "the code was never exchanged")
+
+	def test_cancel(self):
+		import threading
+		cancel = threading.Event()
+		cancel.set()
+		with self.assertRaises(providers.ProviderError) as cm:
+			self.session.signIn(lambda url: True, cancelEvent=cancel, timeout=5)
+		self.assertEqual(cm.exception.kind, "cancelled")
+
+	def test_browser_not_opened(self):
+		with self.assertRaises(providers.ProviderError) as cm:
+			self.session.signIn(lambda url: False, timeout=5)
+		self.assertEqual(cm.exception.kind, "browser")
+		self.assertTrue(cm.exception.detail.startswith(BASE + "/chatgpt/auth/api/accounts/authorize?"))
+
+	def test_wrong_nonce_refused(self):
+		mock_server.CHATGPT["bad_nonce"] = True
+		with self.assertRaises(providers.ProviderError) as cm:
+			self.signIn()
+		self.assertEqual(cm.exception.kind, "signin")
+		self.assertIn("nonce", cm.exception.detail)
+		self.assertFalse(self.session.signedIn())
+
+	def test_bad_signature_refused(self):
+		mock_server.CHATGPT["bad_signature"] = True
+		with self.assertRaises(providers.ProviderError) as cm:
+			self.signIn()
+		self.assertIn("signature", cm.exception.detail)
+		self.assertFalse(self.session.signedIn())
+
+	def test_plan_scope_required(self):
+		mock_server.CHATGPT["scope"] = "openid profile email offline_access"
+		with self.assertRaises(providers.ProviderError) as cm:
+			self.signIn()
+		self.assertEqual(cm.exception.kind, "planNotEligible")
+		self.assertFalse(self.session.signedIn())
+
+	def test_session_encrypted_at_rest(self):
+		s = self.signIn()
+		with open(self.creds.path, "rb") as f:
+			raw = f.read()
+		for secret in (s["access_token"], s["refresh_token"], s["id_token"][:40], "pessoa@example.com"):
+			self.assertNotIn(secret.encode(), raw)
+			self.assertNotIn(secret.encode(), base64.b64decode(json.loads(raw)[chatgptPlan.SESSION_KEY]))
+
+	def test_store_safe_with_threads(self):
+		"""Sign-in and token refresh write from background threads (P-10)."""
+		import threading
+		errors = []
+
+		def writer(n):
+			try:
+				for i in range(40):
+					self.creds.set("k%d" % n, "valor-%d-%d" % (n, i))
+			except Exception as e:  # noqa: BLE001
+				errors.append(repr(e))
+
+		threads = [threading.Thread(target=writer, args=(n,)) for n in range(6)]
+		for t in threads:
+			t.start()
+		for t in threads:
+			t.join()
+		self.assertEqual(errors, [])
+		fresh = credentials.CredentialStore(self.folder, codec=_FlipCodec())
+		self.assertEqual([fresh.get("k%d" % n) for n in range(6)], ["valor-%d-39" % n for n in range(6)])
+		self.assertEqual([f for f in os.listdir(self.folder) if f.endswith(".tmp")], [])
+
+	# ID token ---------------------------------------------------------------
+
+	def _claims(self, **kw):
+		import time as _t
+		c = {"iss": "https://auth.openai.com", "aud": "oaiapp_x", "sub": "u", "exp": _t.time() + 600, "nonce": "n1"}
+		c.update(kw)
+		return c
+
+	def _keys(self):
+		import _testkey
+		return {_testkey.KID: (_testkey.N, _testkey.E)}
+
+	def test_id_token_valid(self):
+		tok = mock_server.signJwt(self._claims())
+		claims = chatgptPlan.validateIdToken(tok, self._keys(), "https://auth.openai.com", "oaiapp_x", "n1")
+		self.assertEqual(claims["sub"], "u")
+
+	def test_id_token_refusals(self):
+		import time as _t
+		cases = {
+			"issuer": mock_server.signJwt(self._claims(iss="https://evil.example")),
+			"audience": mock_server.signJwt(self._claims(aud="oaiapp_other")),
+			"expired": mock_server.signJwt(self._claims(exp=_t.time() - 3600)),
+			"nonce": mock_server.signJwt(self._claims(nonce="other")),
+			"signature": mock_server.signJwt(self._claims(), corrupt=True),
+		}
+		for what, tok in cases.items():
+			with self.subTest(what):
+				with self.assertRaises(providers.ProviderError) as cm:
+					chatgptPlan.validateIdToken(tok, self._keys(), "https://auth.openai.com", "oaiapp_x", "n1")
+				self.assertEqual(cm.exception.kind, "signin")
+				self.assertIn(what, cm.exception.detail)
+		# alg "none" and HMAC algorithms are refused.
+		for alg in ("none", "HS256"):
+			with self.subTest(alg):
+				h = chatgptPlan.b64url(json.dumps({"alg": alg}).encode())
+				p = chatgptPlan.b64url(json.dumps(self._claims()).encode())
+				with self.assertRaises(providers.ProviderError):
+					chatgptPlan.validateIdToken(h + "." + p + ".", self._keys(), "https://auth.openai.com", "oaiapp_x", "n1")
+
+	def test_rs256_needs_strong_key(self):
+		self.assertFalse(chatgptPlan.verifyRs256(b"x", b"\x01" * 64, (1 << 511) + 1, 65537))
+
+	def test_discovery_from_other_host_refused(self):
+		def opener(req, timeout):
+			return json.dumps({"jwks_uri": "https://evil.example/jwks"}).encode()
+
+		client = chatgptPlan.OAuthClient(opener=opener)
+		with self.assertRaises(providers.ProviderError):
+			client.keys()
+		for url, ok in (("https://auth.openai.com/.well-known/jwks.json", True), ("https://keys.openai.com/jwks", True),
+				("http://auth.openai.com/jwks", False), ("https://openai.com.evil.example/jwks", False), ("https://evilopenai.com/jwks", False)):
+			with self.subTest(url):
+				self.assertEqual(chatgptPlan._trustedUrl(url, "https://auth.openai.com"), ok)
+
+	# Tokens ------------------------------------------------------------------
+
+	def test_refresh_when_expired(self):
+		s = self.signIn()
+		s["expires_at"] = 0
+		self.store.saveSession(s)
+		token = self.session.accessToken()
+		self.assertNotEqual(token, s["access_token"])
+		new = self.store.session()
+		self.assertNotEqual(new["refresh_token"], s["refresh_token"], "refresh token rotates")
+		form = [r for r in mock_server.REQUESTS if r["path"].endswith("/oauth/token")][-1]["body"]
+		self.assertEqual((form["grant_type"], form["client_id"], form["resource"]), ("refresh_token", mock_server.ISSUED_CLIENT, "https://api.openai.com/v1"))
+		self.assertNotIn("scope", form)
+
+	def test_valid_token_not_refreshed(self):
+		s = self.signIn()
+		self.assertEqual(self.session.accessToken(), s["access_token"])
+
+	def test_reused_refresh_token_ends_session(self):
+		s = self.signIn()
+		self.session.accessToken(force=True)
+		self.store.saveSession(s)  # an old copy with the already used refresh token
+		with self.assertRaises(providers.ProviderError) as cm:
+			self.session.accessToken(force=True)
+		self.assertEqual((cm.exception.kind, cm.exception.detail), ("signin", "refresh_token_reused"))
+		self.assertFalse(self.session.signedIn())
+		self.assertEqual(self.store.registration()["client_id"], mock_server.ISSUED_CLIENT, "registration kept for the next sign-in")
+
+	def test_sign_out_revokes(self):
+		s = self.signIn()
+		self.assertTrue(self.session.signOut())
+		self.assertFalse(self.session.signedIn())
+		self.assertEqual(mock_server.CHATGPT["revoked"][0], {"token": s["refresh_token"], "token_type_hint": "refresh_token", "client_id": mock_server.ISSUED_CLIENT})
+
+	def test_not_signed_in(self):
+		with self.assertRaises(providers.ProviderError) as cm:
+			self.provider("gpt-5.5").chat([providers.Message("user", "oi")])
+		self.assertEqual(cm.exception.kind, "signin")
+
+	# Inference -----------------------------------------------------------------
+
+	def test_chat_with_plan(self):
+		self.signIn()
+		msgs = [providers.Message("user", "Oi"), providers.Message("assistant", "Olá!"), providers.Message("user", "Tudo bem?")]
+		answer = self.provider("gpt-5.5").chat(msgs, "Seja breve.")
+		self.assertEqual(answer, "Plano ChatGPT responde: Tudo bem? (3 mensagens)")
+		body = mock_server.CHATGPT["responses"][-1]
+		self.assertEqual((body["store"], body["stream"], body["instructions"]), (False, True, "Seja breve."))
+		self.assertEqual(set(body), {"model", "input", "store", "stream", "instructions"})
+		req = [r for r in mock_server.REQUESTS if r["path"].endswith("/responses")][-1]
+		self.assertEqual(req["headers"]["Authorization"], "Bearer " + self.store.session()["access_token"])
+
+	def test_attachments(self):
+		self.signIn()
+		files = [
+			attachments.Attachment.image(PNG, name="tela.png"),
+			attachments.Attachment("doc.pdf", "pdf", "application/pdf", data=b"%PDF-1.4 x"),
+			attachments.Attachment("a.txt", "text", "text/plain", text="conteudo"),
+		]
+		self.provider("gpt-5.5").chat([providers.Message("user", "Veja", attachments=files)])
+		self.assertEqual(mock_server.LAST_ATTACHMENTS["chatgpt"], ["imagem", "pdf", "texto"])
+		media = attachments.Attachment("a.mp3", "media", "audio/mp3", data=b"ID3")
+		mock_server.REQUESTS.clear()
+		with self.assertRaises(providers.ProviderError) as cm:
+			self.provider("gpt-5.5").chat([providers.Message("user", "x", attachments=[media])])
+		self.assertEqual((cm.exception.kind, cm.exception.detail), ("attachment", "a.mp3"))
+		self.assertFalse([r for r in mock_server.REQUESTS if r["path"].endswith("/responses")])
+
+	def test_models_only_listed(self):
+		self.signIn()
+		self.assertEqual(self.provider().listModels(), ["gpt-5.5", "gpt-5.5-mini"])
+		models, found = self.provider("gpt-internal").testConnection()
+		self.assertFalse(found)
+
+	def test_empty_model_uses_first(self):
+		self.signIn()
+		p = self.provider()
+		p.chat([providers.Message("user", "oi")])
+		self.assertEqual(p.model, "gpt-5.5")
+
+	def test_401_refreshes_once_and_retries(self):
+		s = self.signIn()
+		mock_server.CHATGPT["access"].discard(s["access_token"])  # revoked on the server
+		self.assertIn("oi", self.provider("gpt-5.5").chat([providers.Message("user", "oi")]))
+		self.assertNotEqual(self.store.session()["access_token"], s["access_token"])
+
+	def test_plan_errors(self):
+		self.signIn()
+		cases = [
+			((429, {"error": {"code": "subscription_sharing_usage_limit_exceeded", "message": "limit"}}), "planLimit"),
+			((403, {"error": {"code": "subscription_sharing_user_not_eligible", "message": "no"}}), "planNotEligible"),
+			((403, {"error": {"code": "chatpass_v2_scope_not_authorized"}}), "planNotEligible"),
+			((400, {"error": {"code": "subscription_sharing_unsupported_capability", "param": "tools"}}), "unsupported"),
+			((503, {"error": {"code": "subscription_sharing_usage_unavailable"}}), "server"),
+			((403, {"detail": "region not supported"}), "planNotEligible"),
+			((401, {"error": {"code": "subscription_sharing_invalid_user"}}), "signin"),
+		]
+		for (status, body), kind in cases:
+			with self.subTest(kind=kind, status=status):
+				mock_server.FORCE["chatgpt"] = (status, body)
+				with self.assertRaises(providers.ProviderError) as cm:
+					self.provider("gpt-5.5").chat([providers.Message("user", "oi")])
+				self.assertEqual(cm.exception.kind, kind)
+		mock_server.FORCE["chatgpt"] = (400, {"error": {"code": "subscription_sharing_unsupported_capability", "param": "input[0].content[0]"}})
+		with self.assertRaises(providers.ProviderError) as cm:
+			self.provider("gpt-5.5").chat([providers.Message("user", "oi")])
+		self.assertEqual(cm.exception.detail, "input[0].content[0]")
+
+	def test_stream_events(self):
+		def ev(*events):
+			return "".join("data: %s\n\n" % json.dumps(e) for e in events)
+
+		self.assertEqual(chatgptPlan.parseStream(ev(
+			{"type": "response.output_text.delta", "delta": "Olá "},
+			{"type": "response.output_text.delta", "delta": "mundo"},
+			{"type": "response.completed", "response": {}},
+		) + "data: [DONE]\n\n"), "Olá mundo")
+		self.assertEqual(chatgptPlan.parseStream(ev({"type": "response.completed", "response": {"output": [
+			{"type": "message", "content": [{"type": "output_text", "text": "só no fim"}]}]}})), "só no fim")
+		bad = {
+			"planLimit": ev({"type": "response.failed", "response": {"error": {"code": "subscription_sharing_usage_limit_exceeded", "message": "x"}}}),
+			"server": ev({"type": "response.output_text.delta", "delta": "metade"}),
+			"blocked": ev({"type": "response.refusal.delta", "delta": "não"}, {"type": "response.completed", "response": {}}),
+		}
+		for kind, text in bad.items():
+			with self.subTest(kind):
+				with self.assertRaises(providers.ProviderError) as cm:
+					chatgptPlan.parseStream(text)
+				self.assertEqual(cm.exception.kind, kind)
+		with self.assertRaises(providers.ProviderError) as cm:
+			chatgptPlan.parseStream(ev({"type": "response.output_text.delta", "delta": "a"}, {"type": "response.incomplete", "response": {"incomplete_details": {"reason": "max_output_tokens"}}}))
+		self.assertIn("max_output_tokens", cm.exception.detail)
+
+	def test_stream_from_server(self):
+		self.signIn()
+		mock_server.CHATGPT["stream"] = "data: " + json.dumps({"type": "error", "code": "subscription_sharing_usage_limit_exceeded", "message": "x"}) + "\n\n"
+		with self.assertRaises(providers.ProviderError) as cm:
+			self.provider("gpt-5.5").chat([providers.Message("user", "oi")])
+		self.assertEqual(cm.exception.kind, "planLimit")
+
+	# Loopback --------------------------------------------------------------------
+
+	def test_loopback_only_local_and_callback(self):
+		import urllib.error
+		import urllib.request
+		r = chatgptPlan.LoopbackReceiver("estado", pages={"done": "<b>pronto</b>"})
+		try:
+			self.assertEqual(r._server.server_address[0], "127.0.0.1")
+			self.assertEqual(r.redirectUri, "http://127.0.0.1:%d/callback" % r.port)
+			with self.assertRaises(urllib.error.HTTPError) as cm:
+				urllib.request.urlopen("http://127.0.0.1:%d/outro?state=estado&code=c" % r.port, timeout=5)
+			self.assertEqual(cm.exception.code, 404)
+			with self.assertRaises(urllib.error.HTTPError) as cm:
+				urllib.request.urlopen("http://127.0.0.1:%d/callback?state=errado&code=c" % r.port, timeout=5)
+			self.assertEqual(cm.exception.code, 400)
+			self.assertIsNone(r.result)
+			with urllib.request.urlopen("http://127.0.0.1:%d/callback?state=estado&code=c1" % r.port, timeout=5) as resp:
+				page = resp.read().decode()
+				self.assertEqual(resp.headers["Cache-Control"], "no-store")
+			self.assertIn("&lt;b&gt;pronto&lt;/b&gt;", page)
+			self.assertEqual(r.wait(1)["code"], "c1")
+		finally:
+			r.close()
 
 
 if __name__ == "__main__":

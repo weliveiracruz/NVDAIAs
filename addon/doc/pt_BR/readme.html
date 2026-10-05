@@ -9,7 +9,7 @@
 <ul>
 <li>Autor: Wellington Cruz
 </li>
-<li>Versão: 1.6.0
+<li>Versão: 1.7.0
 </li>
 <li>Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 </li>
@@ -18,9 +18,15 @@
 </ul>
 <p>O NVDAIAs abre uma janela acessível, dentro do NVDA, para você fazer perguntas ao <strong>ChatGPT</strong> (OpenAI), ao <strong>Gemini</strong> (Google) ou ao <strong>Claude</strong> (Anthropic) e ler as respostas sem sair do programa em que está trabalhando. Ele também pode <strong>descrever imagens da tela</strong> usando a IA.</p>
 <p>Partes deste complemento foram escritas com auxílio de IA (Claude), com revisão e testes do autor.</p>
-<h2>Antes de começar: o token de acesso</h2>
-<p>Os três serviços só permitem que programas de terceiros se conectem por meio de um <strong>token de acesso</strong>, também chamado de <strong>chave de API</strong>. Não existe uma forma oficial de entrar com o e-mail e a senha da sua conta do ChatGPT, do Gemini ou do Claude em outro programa. Por isso, a "tela de login" do NVDAIAs é a tela <strong>Conectar conta</strong>, onde você cola o token gerado no site de cada IA.</p>
-<p>Você precisa de um token apenas para as IAs que quiser usar. Pode conectar uma, duas ou as três.</p>
+<h2>Antes de começar: como conectar</h2>
+<p>Há duas formas de conectar, as duas na tela <strong>Conectar conta</strong>:</p>
+<ul>
+<li><strong>ChatGPT: Continuar com o ChatGPT</strong> (novo na 1.7.0). Você entra com a sua conta do ChatGPT no navegador e o NVDAIAs passa a usar <strong>o seu plano do ChatGPT</strong> (Plus, Pro e outros planos que a OpenAI oferecer), sem chave de API e sem cobrança extra: as perguntas contam nos limites de uso do seu plano. É o <em>Entrar com o ChatGPT</em> oficial da OpenAI para apps de código aberto que rodam no computador do usuário.
+</li>
+<li><strong>Token de acesso (chave de API)</strong>, para as três IAs. Gemini e Claude só oferecem esta forma: o Google não tem um jeito oficial de outros programas usarem o Gemini com a conta Google pessoal, e a Anthropic não permite que outros programas usem as assinaturas Free, Pro ou Max do Claude. Cole o token gerado no site de cada IA.
+</li>
+</ul>
+<p>Você precisa conectar apenas as IAs que quiser usar. Pode conectar uma, duas ou as três.</p>
 <table border="1">
 <tr><th>IA</th><th>Onde gerar o token</th><th>Custo</th></tr>
 <tr><td>ChatGPT</td><td>platform.openai.com/api-keys</td><td>Pago por uso. É cobrado à parte da assinatura do ChatGPT Plus; a conta da plataforma precisa ter crédito.</td></tr>
@@ -43,6 +49,8 @@
 </li>
 <li>Como ainda não há nenhuma IA conectada, a tela <strong>Conectar conta</strong> abre sozinha.
 </li>
+<li>Para usar o seu plano do ChatGPT: deixe ChatGPT na caixa <strong>Inteligência artificial</strong> e pressione <strong>Continuar com o ChatGPT</strong> (Alt+U), logo depois da caixa. Veja "Continuar com o ChatGPT" abaixo. Para usar um token, siga os passos 4 a 8.
+</li>
 <li>Na caixa <strong>Inteligência artificial</strong>, escolha ChatGPT, Gemini ou Claude.
 </li>
 <li>Leia as <strong>Instruções</strong> (campo somente leitura; use as setas para ler linha por linha).
@@ -55,6 +63,32 @@
 </li>
 </ol>
 <p>O teste de conexão apenas consulta a lista de modelos da sua conta. Ele não gasta créditos.</p>
+<h2>Continuar com o ChatGPT (o seu plano do ChatGPT)</h2>
+<ol>
+<li>Na tela Conectar conta (ou nas configurações, grupo do ChatGPT), pressione <strong>Continuar com o ChatGPT</strong>.
+</li>
+<li>Uma janela pequena avisa que o navegador foi aberto e fica aguardando (o botão <strong>Cancelar entrada</strong> desiste). No navegador, entre na sua conta do ChatGPT, confira o nome NVDAIAs e permita que ele use o seu plano do ChatGPT.
+</li>
+<li>O navegador mostra "Pronto, você entrou. Pode fechar esta aba e voltar ao NVDA." O NVDA anuncia "Conectado ao ChatGPT como" e o seu e-mail.
+</li>
+<li>Na primeira vez, o aviso <strong>Você está usando o seu plano do ChatGPT</strong> explica que as perguntas contam nos limites do seu plano (botão <strong>Entendi</strong>).
+</li>
+</ol>
+<p>Depois disso:</p>
+<ul>
+<li>A linha de situação da janela de conversa diz <strong>usando o seu plano do ChatGPT</strong> e o e-mail da conta, e o botão <strong>Gerenciar uso do ChatGPT</strong> (Alt+A) abre a página chatgpt.com/settings/usage.
+</li>
+<li>A caixa Modelo mostra os modelos que o seu plano oferece (são diferentes dos modelos da API).
+</li>
+<li>Quando o plano chega ao limite de uso, o NVDAIAs avisa e oferece <strong>Gerenciar uso</strong> como botão principal.
+</li>
+<li>A entrada continua valendo enquanto você usa: o acesso é renovado sozinho. Se ela terminar (por exemplo, depois de 30 dias sem uso ou se você remover o acesso no ChatGPT), o NVDAIAs pede para entrar de novo.
+</li>
+<li>Nas configurações, grupo do ChatGPT: situação da conta, <strong>Continuar com o ChatGPT</strong>, <strong>Sair do ChatGPT</strong>, <strong>Gerenciar uso do ChatGPT</strong> e a opção <strong>Usar o meu plano do ChatGPT em vez do token de API quando estiver conectado</strong>. Salvar um token na tela Conectar conta faz o ChatGPT voltar a usar o token.
+</li>
+<li>Limites desta versão de prévia da OpenAI: não dá para enviar áudio e vídeo (imagens, PDF e arquivos de texto funcionam), e só os modelos do próprio plano ficam disponíveis. O NVDAIAs não vê as suas conversas do ChatGPT, e elas não veem o NVDAIAs.
+</li>
+</ul>
 <h2>A janela de conversa</h2>
 <p>Abra com <strong>NVDA+Alt+I</strong> ou pelo menu do NVDA &gt; Ferramentas &gt; <strong>NVDAIAs - Conversar com IA</strong>. O cursor já começa no campo Pergunta.</p>
 <p>Ordem dos elementos com a tecla Tab:</p>
@@ -71,7 +105,7 @@
 </li>
 <li><strong>Arquivos anexados</strong>: lista que só aparece quando há arquivos esperando para ir com a próxima pergunta.
 </li>
-<li>Botões: Cancelar envio, Ler mensagem, Copiar mensagem, <strong>Ações da mensagem</strong>, Nova conversa, Salvar conversa, Conectar conta, Configurações, <strong>Enviar feedback</strong> e Fechar.
+<li>Botões: Cancelar envio, Ler mensagem, Copiar mensagem, <strong>Ações da mensagem</strong>, Nova conversa, Salvar conversa, Conectar conta, Configurações, <strong>Enviar feedback</strong>, <strong>Gerenciar uso do ChatGPT</strong> (só quando o plano do ChatGPT está em uso) e Fechar.
 </li>
 </ol>
 <p>Como o campo Pergunta vem logo depois da lista, <strong>Shift+Tab no campo Pergunta leva direto para a lista da conversa</strong>, e Tab na lista volta para a pergunta.</p>
@@ -195,6 +229,8 @@
 <ul>
 <li><strong>IA padrão</strong>: a IA usada quando a janela abre.
 </li>
+<li>No grupo do <strong>ChatGPT</strong>, além do token: <strong>Plano do ChatGPT</strong> (diz se você entrou e com qual e-mail), <strong>Continuar com o ChatGPT</strong>, <strong>Sair do ChatGPT</strong> (encerra e revoga o acesso na OpenAI), <strong>Gerenciar uso do ChatGPT</strong> e <strong>Usar o meu plano do ChatGPT em vez do token de API quando estiver conectado</strong>. Testar conexão e Atualizar lista de modelos usam o plano quando essa opção está marcada e nenhum token novo foi digitado.
+</li>
 <li>Para <strong>cada IA</strong> (ChatGPT, Gemini e Claude):
 <ul>
 <li><strong>Situação</strong>: diz se há um token salvo e mostra só os 4 últimos caracteres dele.
@@ -237,7 +273,9 @@
 <ul>
 <li>Os tokens <strong>não</strong> ficam no arquivo de configuração do NVDA (nvda.ini). Eles são guardados no arquivo <code>NVDAIAs-credentials.json</code>, na pasta de configuração do NVDA, <strong>criptografados com a proteção de dados do Windows (DPAPI)</strong>. Só o seu usuário do Windows, neste computador, consegue abrir. Se o arquivo for copiado para outro computador, os tokens não funcionam lá.
 </li>
-<li><strong>Atualizar o complemento mantém os tokens e o histórico.</strong> Só a desinstalação de verdade apaga os tokens e o histórico.
+<li>A entrada com o ChatGPT segue as regras da OpenAI para apps de código aberto: o navegador só volta para este computador (127.0.0.1), com PKCE, um "state" aleatório e um "nonce"; o token de identidade é conferido (assinatura, emissor, destinatário, validade e nonce); os tokens da entrada ficam criptografados com DPAPI, como os tokens de API, e nunca vão para o log; <strong>Sair do ChatGPT</strong> revoga o acesso na OpenAI.
+</li>
+<li><strong>Atualizar o complemento mantém os tokens, a entrada com o ChatGPT e o histórico.</strong> Só a desinstalação de verdade apaga os tokens e o histórico.
 </li>
 <li>O que você digita, o histórico da conversa e as imagens de tela que você pedir para descrever são enviados diretamente do seu computador para a IA escolhida (OpenAI, Google ou Anthropic), por conexão segura (HTTPS). Não passam por nenhum outro servidor. Cada empresa trata esses dados conforme a política de privacidade dela.
 </li>
@@ -260,8 +298,20 @@
 <tr><td>"demorou demais para responder"</td><td>Tente de novo ou aumente o tempo limite.</td></tr>
 <tr><td>"problema temporário"</td><td>O serviço está sobrecarregado. Tente em alguns instantes.</td></tr>
 <tr><td>"bloqueada pelo provedor"</td><td>A IA se recusou a responder ou o filtro de segurança dela bloqueou a pergunta.</td></tr>
+<tr><td>"limite de uso do seu plano do ChatGPT"</td><td>Use Gerenciar uso do ChatGPT para ver o uso e quando o limite renova, ou conecte um token de API.</td></tr>
+<tr><td>"A sua entrada no ChatGPT expirou ou foi encerrada"</td><td>Pressione Conectar conta &gt; Continuar com o ChatGPT.</td></tr>
+<tr><td>"O uso do seu plano do ChatGPT não está disponível"</td><td>A conta, o espaço de trabalho ou a região não permitem. Use um token de API.</td></tr>
 </table>
 <h2>Histórico de versões</h2>
+<h3>1.7.0</h3>
+<ul>
+<li>Continuar com o ChatGPT: entre com a sua conta do ChatGPT e use o seu plano do ChatGPT, sem chave de API. A opção de token continua.
+</li>
+<li>Indicação do plano na linha de situação e botão Gerenciar uso do ChatGPT.
+</li>
+<li>Gemini e Claude não têm uma forma oficial equivalente e continuam usando tokens.
+</li>
+</ul>
 <h3>1.6.0</h3>
 <ul>
 <li>Botão Enviar feedback, que avisa que a avaliação abre numa nova aba do navegador, com as opções Dar feedback e Cancelar.

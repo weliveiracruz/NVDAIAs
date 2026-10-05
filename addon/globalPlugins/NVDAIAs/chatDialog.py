@@ -207,6 +207,10 @@ class ChatDialog(wx.Dialog):
 		# Translators: button that opens the feedback form (asks for confirmation first).
 		self.feedbackButton = row2.addButton(self, label=_("Send fee&dback…"))
 		self.feedbackButton.Bind(wx.EVT_BUTTON, self.onFeedback)
+		# Shown only while ChatGPT uses the user's ChatGPT plan ("Manage usage" of OpenAI's guidelines).
+		# Translators: button that opens the ChatGPT page with the usage of the ChatGPT plan.
+		self.usageButton = row2.addButton(self, label=_("Manage ChatGPT &usage…"))
+		self.usageButton.Bind(wx.EVT_BUTTON, self.onManageUsage)
 		# Translators: button that closes the chat window.
 		self.closeButton = row2.addButton(self, id=wx.ID_CLOSE, label=_("&Close"))
 		self.closeButton.Bind(wx.EVT_BUTTON, lambda evt: self.Close())
@@ -244,11 +248,8 @@ class ChatDialog(wx.Dialog):
 
 	def _fillModels(self):
 		providerId = self.providerId
-		cls = getProviderClass(providerId)
 		current = core.getModel(providerId)
-		choices = list(core.modelCache.get(providerId) or cls.suggestedModels)
-		if current not in choices:
-			choices.insert(0, current)
+		choices = core.modelChoices(providerId)
 		self.modelCombo.Set(choices)
 		self.modelCombo.SetValue(current)
 
@@ -437,12 +438,18 @@ class ChatDialog(wx.Dialog):
 		providerId = self.providerId
 		name = getProviderClass(providerId).name
 		model = core.getModel(providerId)
+		plan = core.usingPlan(providerId)
+		if self.usageButton.IsShown() != plan:
+			self.usageButton.Show(plan)
 		if errorText:
 			# Translators: status line after an error. {name} is the AI.
 			self.statusLine.setStatus(_("{name} · the last question failed, it is back in the Question field").format(name=name), "error")
 		elif self.session.busy:
 			# Translators: status line while waiting. {name} is the AI, {model} the model.
 			self.statusLine.setStatus(_("{name} · {model} · answering…").format(name=name, model=model), "busy")
+		elif plan:
+			# Translators: status line when ChatGPT uses the user's ChatGPT plan. {name} is the AI, {model} the model, {email} the account.
+			self.statusLine.setStatus(_("{name} · {model} · using your ChatGPT plan ({email})").format(name=name, model=model or "-", email=core.plan().email() or "-"), "ok")
 		elif core.store().has(providerId):
 			# Translators: status line when the AI is connected. {name} is the AI, {model} the model.
 			self.statusLine.setStatus(_("{name} · {model} · connected").format(name=name, model=model), "ok")
@@ -468,7 +475,7 @@ class ChatDialog(wx.Dialog):
 		core.conf()["provider"] = providerId
 		self._fillModels()
 		self.updateStatus()
-		if not core.store().has(providerId):
+		if not core.isConnected(providerId):
 			# Translators: announced when the chosen AI has no token yet.
 			ui.message(_("This AI is not connected yet. A connection screen will open when you send a question."))
 
@@ -643,7 +650,7 @@ class ChatDialog(wx.Dialog):
 			ui.message(_("Please wait for the current answer"))
 			return False
 		providerId = self.providerId
-		if not core.store().has(providerId):
+		if not core.isConnected(providerId):
 			if not self._runConnect(providerId):
 				return False
 			providerId = self.providerId
@@ -744,7 +751,7 @@ class ChatDialog(wx.Dialog):
 			return
 		self._saveModel()
 		providerId = self.providerId
-		if not core.store().has(providerId):
+		if not core.isConnected(providerId):
 			if not self._runConnect(providerId):
 				self.questionEdit.SetFocus()
 				return
@@ -954,10 +961,25 @@ class ChatDialog(wx.Dialog):
 		if connected:
 			self.providerChoice.SetSelection(PROVIDER_IDS.index(connected))
 			self._fillModels()
+		self.updateStatus()
 		return connected
 
 	def onConnect(self, evt):
 		self._runConnect()
+		self.questionEdit.SetFocus()
+
+	def onManageUsage(self, evt):
+		from . import planUi
+
+		planUi.openUsagePage(self)
+
+	def onUsageLimit(self):
+		"""The ChatGPT plan reached its limit: offer Manage usage as the main action."""
+		if not self:
+			return
+		from . import planUi
+
+		planUi.askManageUsage(self)
 		self.questionEdit.SetFocus()
 
 	def onFeedback(self, evt):

@@ -1,7 +1,7 @@
 # NVDAIAs – Chat with ChatGPT, Gemini and Claude from NVDA
 
 * Author: Wellington Cruz
-* Version: 1.6.0
+* Version: 1.7.0
 * Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 * License: GNU General Public License, version 2
 * Documentation in Portuguese (Brazil): docs/pt_BR/readme.md
@@ -10,9 +10,12 @@ NVDAIAs opens an accessible NVDA window where you ask questions to **ChatGPT** (
 
 Parts of this add-on were written with the help of AI (Claude), and reviewed and tested by the author.
 
-## Before you start: the access token
+## Before you start: how to connect
 
-The three services only let third-party programs connect through an **access token**, also called an **API key**. There is no official way to sign in to ChatGPT, Gemini or Claude with your e-mail and password from another program. The NVDAIAs "login screen" is therefore the **Connect account** screen, where you paste the token generated on each provider's site.
+There are two ways to connect, both on the **Connect account** screen:
+
+* **ChatGPT: Continue with ChatGPT** (new in 1.7.0). Sign in with your ChatGPT account in the browser and NVDAIAs uses **your ChatGPT plan** (Plus, Pro and other plans offered by OpenAI), with no API key and no extra billing: questions count toward the usage limits of your plan. This uses OpenAI's official *Sign in with ChatGPT* for open-source apps that run on the user's computer.
+* **Access token (API key)**, for the three AIs. Gemini and Claude only offer this way: Google has no official way for other programs to use Gemini with a personal Google account, and Anthropic does not allow other programs to use the Claude Free, Pro or Max subscriptions. Paste the token generated on each provider's site.
 
 | AI | Where to create the token | Cost |
 |---|---|---|
@@ -23,15 +26,32 @@ The three services only let third-party programs connect through an **access tok
 ## First use
 
 1. Press **NVDA+Alt+I**. With no AI connected yet, the **Connect account** screen opens.
-2. Choose the AI, read the instructions and press **Open page to generate token**.
-3. Sign in on the site, create the key, copy it, paste it in **Token (API key)** and press **Connect**.
-4. NVDAIAs tests the token (listing the models, which costs nothing) and stores it encrypted.
+2. For ChatGPT with your plan: keep ChatGPT in the AI box and press **Continue with ChatGPT** (Alt+W), right after the AI box. See "Continue with ChatGPT" below.
+3. For a token: choose the AI, read the instructions and press **Open page to generate token**.
+4. Sign in on the site, create the key, copy it, paste it in **Token (API key)** and press **Connect**.
+5. NVDAIAs tests the token (listing the models, which costs nothing) and stores it encrypted.
+
+## Continue with ChatGPT (your ChatGPT plan)
+
+1. On the Connect account screen (or in the settings, ChatGPT group) press **Continue with ChatGPT**.
+2. A small window says the browser was opened and waits (**Cancel sign-in** stops it). In the browser, sign in to ChatGPT, review the name NVDAIAs and allow it to use your ChatGPT plan.
+3. The browser shows "Signed in. You can close this tab and go back to NVDA." NVDA announces "Signed in to ChatGPT as" and your e-mail.
+4. The first time, a notice **You're using your ChatGPT plan** explains that questions count toward your plan's limits (button **Got it**).
+
+After that:
+
+* The status line of the chat window says **using your ChatGPT plan** and the account e-mail, and the button **Manage ChatGPT usage** (Alt+U) opens chatgpt.com/settings/usage.
+* The Model box lists the models your plan offers (they are different from the API models).
+* When the plan reaches its usage limit, NVDAIAs says so and offers **Manage usage** as the main button.
+* The sign-in lasts while you use it: the access is renewed automatically; if it ends (for example after 30 days without use or if you remove it in ChatGPT), NVDAIAs asks you to sign in again.
+* In the settings, ChatGPT group: account status, **Continue with ChatGPT**, **Sign out of ChatGPT**, **Manage ChatGPT usage** and the option **Use my ChatGPT plan instead of the API token when signed in**. Saving a token on the Connect account screen switches ChatGPT to the token.
+* Limits of this OpenAI preview: audio and video cannot be sent (images, PDF and text files can), and only the plan's own models are available. NVDAIAs does not see your ChatGPT conversations, and they do not see NVDAIAs.
 
 ## The chat window
 
 Open it with **NVDA+Alt+I** or NVDA menu > Tools > **NVDAIAs - Chat with AI**. Focus starts in the Question field.
 
-Tab order: **AI** (combo box), **Model**, **Conversation** (a tree with two branches: **Previous conversations**, collapsed, and **Current conversation (N messages)**, expanded; both collapse and expand with the arrows or Enter, and the current one opens again when a new answer arrives), **Question**, **Attach files**, Send, the **Attached files** list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings, Send feedback and Close. **Shift+Tab from the Question field goes straight to the conversation list.**
+Tab order: **AI** (combo box), **Model**, **Conversation** (a tree with two branches: **Previous conversations**, collapsed, and **Current conversation (N messages)**, expanded; both collapse and expand with the arrows or Enter, and the current one opens again when a new answer arrives), **Question**, **Attach files**, Send, the **Attached files** list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings, Send feedback, Manage ChatGPT usage (only while using the ChatGPT plan) and Close. **Shift+Tab from the Question field goes straight to the conversation list.**
 
 The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a **thick orange frame around the field that has the focus**. A **status line** under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.
 
@@ -90,10 +110,11 @@ All commands can be changed in NVDA menu > Preferences > Input gestures, categor
 
 ## Settings
 
-NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; keep previous conversations, maximum number and Delete all previous conversations; use the visual theme; larger text; maximum answer size for Claude; time limit.
+NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for ChatGPT, the ChatGPT plan controls described above; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; keep previous conversations, maximum number and Delete all previous conversations; use the visual theme; larger text; maximum answer size for Claude; time limit.
 
 ## Privacy and security
 
+* The ChatGPT sign-in follows OpenAI's rules for open-source apps: the browser comes back only to this computer (127.0.0.1), with PKCE, a random state and a nonce; the ID token is checked (signature, issuer, audience, expiry and nonce); the sign-in tokens are stored encrypted with DPAPI like the API tokens and never written to the log; Sign out revokes the session at OpenAI.
 * Tokens are not stored in nvda.ini. They are kept in `NVDAIAs-credentials.json` in the NVDA configuration folder, **encrypted with the Windows Data Protection API (DPAPI)** for the current Windows user. Updating the add-on keeps the tokens and the history; only a real uninstall deletes them.
 * Questions, conversation history and the screenshots you ask to describe are sent directly from your computer to the chosen provider (OpenAI, Google or Anthropic) over HTTPS, and to no one else. Each provider handles the data under its own privacy policy.
 * Screenshots include everything visible in the captured area.
@@ -101,6 +122,12 @@ NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for each AI the to
 * Conversations are saved automatically after each answer in the `NVDAIAs-history` folder of the NVDA configuration, **encrypted with DPAPI** like the tokens (screenshots and attached files included). Delete one with the Delete key, delete all in the settings or turn the history off. The history is kept when the add-on is updated and deleted when it is uninstalled. **Save conversation** writes a plain text file.
 
 ## Changes
+
+### 1.7.0
+
+* Continue with ChatGPT: sign in with your ChatGPT account and use your ChatGPT plan, without an API key. The token option stays.
+* Plan indicator in the status line and Manage ChatGPT usage button.
+* Gemini and Claude have no official equivalent, so they keep using tokens.
 
 ### 1.6.0
 

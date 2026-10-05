@@ -40,6 +40,7 @@ Os testes automáticos não substituem estes pontos:
 
 * A criptografia dos tokens com a proteção de dados do Windows (DPAPI).
 * A conexão real com as três empresas, usando os seus tokens.
+* A entrada real com o ChatGPT (Continuar com o ChatGPT) e o uso do plano, que dependem da sua conta e da OpenAI.
 * A fala e as teclas no NVDA de verdade, incluindo a janela de leitura.
 * A captura de tela no Windows.
 
@@ -56,4 +57,14 @@ Os testes automáticos não substituem estes pontos:
 9. Repita os passos 2 e 3 com o ChatGPT e o Claude, se tiver os tokens.
 10. Abra menu do NVDA > Preferências > Configurações > NVDAIAs. Use Testar conexão e Atualizar lista de modelos em cada IA.
 11. Confira a criptografia: abra a pasta `%APPDATA%\nvda` (pressione Windows+R, digite `%APPDATA%\nvda` e Enter) e abra `NVDAIAs-credentials.json` no Bloco de Notas. Cada token deve aparecer como um texto longo que começa com `AQAAANCMnd8BFdERjHoAwE`, que é a assinatura da criptografia do Windows (DPAPI).
-12. Se algo falhar, abra o log do NVDA (NVDA+F1) e procure por "NVDAIAs".
+12. Continuar com o ChatGPT (1.7.0 em diante), com uma conta ChatGPT Plus ou Pro:
+    1. Na janela de conversa, pressione Conectar conta (Alt+T), deixe ChatGPT e pressione Continuar com o ChatGPT (Alt+U em português). A janela "Continuar com o ChatGPT" deve abrir com o foco no texto, e o navegador deve abrir em auth.openai.com.
+    2. No navegador, entre na conta, confira o nome NVDAIAs e permita. A aba deve mostrar "Pronto, você entrou". Volte ao NVDA: deve ouvir "Conectado ao ChatGPT como" e o seu e-mail, e o aviso "Você está usando o seu plano do ChatGPT" com o botão Entendi.
+    3. A linha de situação deve dizer "usando o seu plano do ChatGPT". A caixa Modelo deve listar os modelos do plano. Pergunte algo e confira a resposta.
+    4. Pressione Gerenciar uso do ChatGPT (Alt+A): deve abrir chatgpt.com/settings/usage.
+    5. Anexe uma imagem e um PDF e pergunte. Anexe um MP3: deve aparecer a mensagem de que o ChatGPT não lê áudio.
+    6. Reinicie o NVDA e pergunte de novo: a entrada deve continuar valendo. Depois de mais de uma hora sem usar, pergunte de novo: deve funcionar sem pedir entrada (o acesso é renovado sozinho).
+    7. Em Configurações > NVDAIAs, grupo ChatGPT: confira "Plano do ChatGPT: conectado como", use Testar conexão e Atualizar lista de modelos. Desmarque "Usar o meu plano do ChatGPT…", pressione OK e confira que o ChatGPT volta a usar o token (ou aparece como não conectado, se não houver token). Marque de novo.
+    8. Pressione Sair do ChatGPT e confirme: a situação deve mudar para "não conectado" e o acesso deve sumir da lista de apps em chatgpt.com (Configurações > Segurança ou Apps).
+    9. Na tela de permissão do navegador, escolha não permitir: o NVDAIAs deve dizer que o acesso não foi permitido. Teste também Cancelar entrada na janela de espera.
+13. Se algo falhar, abra o log do NVDA (NVDA+F1) e procure por "NVDAIAs". Os tokens nunca aparecem no log.
