@@ -1,7 +1,7 @@
 # NVDAIAs – Chat with ChatGPT, Gemini and Claude from NVDA
 
 * Author: Wellington Cruz
-* Version: 1.5.0
+* Version: 1.6.0
 * Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 * License: GNU General Public License, version 2
 * Documentation in Portuguese (Brazil): docs/pt_BR/readme.md
@@ -31,7 +31,7 @@ The three services only let third-party programs connect through an **access tok
 
 Open it with **NVDA+Alt+I** or NVDA menu > Tools > **NVDAIAs - Chat with AI**. Focus starts in the Question field.
 
-Tab order: **AI** (combo box), **Model**, **Conversation** (a tree with two branches: **Previous conversations**, collapsed, and **Current conversation (N messages)**, expanded; both collapse and expand with the arrows or Enter, and the current one opens again when a new answer arrives), **Question**, **Attach files**, Send, the **Attached files** list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings and Close. **Shift+Tab from the Question field goes straight to the conversation list.**
+Tab order: **AI** (combo box), **Model**, **Conversation** (a tree with two branches: **Previous conversations**, collapsed, and **Current conversation (N messages)**, expanded; both collapse and expand with the arrows or Enter, and the current one opens again when a new answer arrives), **Question**, **Attach files**, Send, the **Attached files** list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings, Send feedback and Close. **Shift+Tab from the Question field goes straight to the conversation list.**
 
 The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a **thick orange frame around the field that has the focus**. A **status line** under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.
 
@@ -72,6 +72,10 @@ Attached files are listed under the question (Delete removes one) and go with th
 
 Every conversation is saved automatically. The first item of the Conversation tree, **Previous conversations (N)**, starts collapsed. Expand it with the Right arrow; each previous conversation shows its date, AIs, first question and number of messages, and expands to show its messages. **Enter** on a previous conversation or on any of its messages reopens it as the current conversation, focus goes to the Question field and the AI receives the whole history. The conversation that was open goes to the history. **New conversation** saves the current one and starts a blank one.
 
+### Send feedback
+
+The **Send feedback** button (Alt+D) shows a standard message box saying that the evaluation will open in a new tab of the browser, with **Give feedback** (opens the form) and **Cancel**.
+
 ## Commands
 
 | Command | Action |
@@ -80,6 +84,7 @@ Every conversation is saved automatically. The first item of the Conversation tr
 | NVDA+Alt+D | Sends an image of the navigator object to the AI and reads the description |
 | NVDA+Shift+Alt+D | Same for the whole screen (monitor of the active window) |
 | (unassigned) | Opens the NVDAIAs settings |
+| (unassigned) | Send feedback: opens the feedback form after confirming |
 
 All commands can be changed in NVDA menu > Preferences > Input gestures, category **NVDAIAs**.
 
@@ -96,6 +101,10 @@ NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for each AI the to
 * Conversations are saved automatically after each answer in the `NVDAIAs-history` folder of the NVDA configuration, **encrypted with DPAPI** like the tokens (screenshots and attached files included). Delete one with the Delete key, delete all in the settings or turn the history off. The history is kept when the add-on is updated and deleted when it is uninstalled. **Save conversation** writes a plain text file.
 
 ## Changes
+
+### 1.6.0
+
+* Send feedback button with confirmation (Give feedback / Cancel).
 
 ### 1.5.0
 

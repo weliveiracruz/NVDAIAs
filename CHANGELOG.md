@@ -1,5 +1,10 @@
 # Changelog / Histórico de versões
 
+## 1.6.0
+
+* "Send feedback" button in the chat window (Alt+D) and an unassigned "Send feedback" command in Input gestures. A standard message box says "The evaluation will open in a new tab of your browser" with the buttons Give feedback and Cancel; Give feedback opens the feedback form.
+* Botão "Enviar feedback" na janela de conversa (Alt+D) e comando "Enviar feedback", sem atalho, em Definir comandos. Uma caixa de mensagem padrão avisa "A avaliação será aberta numa nova aba do seu navegador", com os botões Dar feedback e Cancelar; Dar feedback abre o formulário.
+
 ## 1.5.0
 
 * Tokens and conversation history are kept when the add-on is updated. NVDA runs the uninstall task of the old version during an update, and versions 1.0.0 to 1.4.0 deleted the data there. Now the uninstall task only deletes on a real uninstall, and installing 1.5.0 makes a copy that is restored when it starts, so updating from older versions is safe too.

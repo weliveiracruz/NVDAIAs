@@ -1,7 +1,7 @@
 # NVDAIAs – Converse com o ChatGPT, o Gemini e o Claude pelo NVDA
 
 * Autor: Wellington Cruz
-* Versão: 1.5.0
+* Versão: 1.6.0
 * Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 * Licença: GNU General Public License, versão 2
 
@@ -53,7 +53,7 @@ Ordem dos elementos com a tecla Tab:
 4. **Pergunta**: campo onde você digita.
 5. **Anexar arquivos** e **Enviar**, ao lado do campo Pergunta.
 6. **Arquivos anexados**: lista que só aparece quando há arquivos esperando para ir com a próxima pergunta.
-7. Botões: Cancelar envio, Ler mensagem, Copiar mensagem, **Ações da mensagem**, Nova conversa, Salvar conversa, Conectar conta, Configurações e Fechar.
+7. Botões: Cancelar envio, Ler mensagem, Copiar mensagem, **Ações da mensagem**, Nova conversa, Salvar conversa, Conectar conta, Configurações, **Enviar feedback** e Fechar.
 
 Como o campo Pergunta vem logo depois da lista, **Shift+Tab no campo Pergunta leva direto para a lista da conversa**, e Tab na lista volta para a pergunta.
 
@@ -154,6 +154,15 @@ Para descrever só uma parte da tela, mova o objeto de navegação até ela com 
 
 Os três serviços aceitam imagens nos modelos atuais. Se o modelo escolhido não aceitar imagens, a IA vai responder com um erro.
 
+## Enviar feedback
+
+O botão **Enviar feedback** (Alt+D), na janela de conversa, serve para avaliar o NVDAIAs e mandar sugestões ou relatar problemas. Ao pressioná-lo, uma caixa de mensagem avisa que a avaliação será aberta numa nova aba do seu navegador, com dois botões:
+
+* **Dar feedback** (Enter): abre o formulário de avaliação no navegador.
+* **Cancelar** (Esc): fecha o aviso sem abrir nada.
+
+O mesmo comando existe em Definir comandos, na categoria NVDAIAs, sem atalho definido. Você pode atribuir um atalho a ele.
+
 ## Comandos globais
 
 | Comando | Ação |
@@ -162,6 +171,7 @@ Os três serviços aceitam imagens nos modelos atuais. Se o modelo escolhido nã
 | NVDA+Alt+D | Descreve o objeto de navegação |
 | NVDA+Shift+Alt+D | Descreve a tela inteira |
 | (sem atalho) | Abre as configurações do NVDAIAs |
+| (sem atalho) | Enviar feedback: abre o formulário de avaliação, depois de confirmar |
 
 Todos os comandos podem ser alterados em menu do NVDA > Preferências > Definir comandos, na categoria **NVDAIAs**.
 
@@ -213,6 +223,10 @@ Os tokens só são gravados quando você pressiona OK ou Aplicar.
 | "bloqueada pelo provedor" | A IA se recusou a responder ou o filtro de segurança dela bloqueou a pergunta. |
 
 ## Histórico de versões
+
+### 1.6.0
+
+* Botão Enviar feedback, que avisa que a avaliação abre numa nova aba do navegador, com as opções Dar feedback e Cancelar.
 
 ### 1.5.0
 

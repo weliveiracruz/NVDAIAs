@@ -65,6 +65,7 @@ O executor `tests/run_all.py` roda todas as suítes, conta testes, aprovados e f
 | FUN-17 | Atualização a partir das versões 1.0.0 a 1.4.0 | A cópia feita na instalação é restaurada quando a nova versão inicia | update |
 | FUN-18 | Restauração segura | Nunca sobrescreve um token ou conversa mais novos | update |
 | FUN-19 | Primeira instalação e falhas | Sem cópia desnecessária; falha na cópia não bloqueia a instalação | update |
+| FUN-21 | Enviar feedback | Botão pede confirmação ("Dar feedback" ou "Cancelar"); só Dar feedback abre o formulário numa nova aba; falha do navegador mostra o endereço | gui |
 | FUN-20 | Conversa atual em ramo | "Conversa atual (N mensagens)" recolhe e expande, abre quando chega resposta | gui |
 
 ## 6. Casos de teste de acessibilidade (ACE)
@@ -120,6 +121,7 @@ Referências: OWASP Top 10, OWASP ASVS (armazenamento, comunicação, validaçã
 | SEG-19 | Redirecionamento | A chave de API nunca é reenviada a outro endereço por redirecionamento |
 | SEG-20 | Captura de tela | Só acontece por comando explícito do usuário |
 | SEG-21 | Tamanho dos detalhes de erro | Detalhes de erro limitados, sem inundar a fala |
+| SEG-22 | Endereços abertos no navegador | Só endereços fixos em HTTPS: formulário de feedback e páginas de token |
 
 ## 8. Critérios de aprovação
 

@@ -330,6 +330,13 @@ def run():
 	initSrc = sources[os.path.join("addon", "globalPlugins", "NVDAIAs", "__init__.py")]
 	R.check("SEG-20 no timer triggers a capture", "Timer" not in initSrc and "CallLater" not in initSrc)
 
+	# SEG-22 addresses opened in the browser
+	from NVDAIAs import feedback
+	R.check("SEG-22 feedback form address is HTTPS on docs.google.com", feedback.FEEDBACK_URL.startswith("https://docs.google.com/forms/"))
+	opens = ["%s: %s" % (p, line.strip()) for p, src in sources.items() for line in src.splitlines() if "webbrowser.open(" in line]
+	R.check("SEG-22 the browser is only opened with fixed addresses (feedback form and token pages)", len(opens) == 2 and all(("(url" in o) for o in opens), opens)
+	R.check("SEG-22 token pages are HTTPS", all(cls.tokenUrl.startswith("https://") for cls in providers.PROVIDERS))
+
 	# SEG-21 error detail size ----------------------------------------------------------------------------------
 	msg = core.errorMessage(providers.ProviderError("other", "x" * 5000), "Claude")
 	R.check("SEG-21 error details are limited", len(msg) < 600, len(msg))

@@ -577,5 +577,171 @@
     "failures": []
    }
   ]
+ },
+ {
+  "number": 8,
+  "date": "2026-10-04T21:40:24-03:00",
+  "version": "1.6.0",
+  "note": "1.6.0 execução 1: botão Enviar feedback com confirmação",
+  "total": 423,
+  "passed": 422,
+  "failed": 1,
+  "corrected": [],
+  "suites": [
+   {
+    "suite": "unit (python 3.11)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.12)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.13)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "interface (test_gui)",
+    "total": 166,
+    "passed": 165,
+    "failed": 1,
+    "failures": [
+     "confirmation is a standard message box with OK and Cancel"
+    ]
+   },
+   {
+    "suite": "visual theme (test_theme)",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "translation (test_translation)",
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "accessibility (test_accessibility)",
+    "total": 49,
+    "passed": 49,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "security (test_security)",
+    "total": 38,
+    "passed": 38,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "updates (test_update)",
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "package (build.py)",
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "failures": []
+   }
+  ]
+ },
+ {
+  "number": 9,
+  "date": "2026-10-04T21:41:25-03:00",
+  "version": "1.6.0",
+  "note": "1.6.0 execução 2: teste do estilo da caixa de mensagem corrigido (wx.OK_DEFAULT vale 0, T-06) e duas verificações de foco que sempre passavam agora verificam de verdade (T-07)",
+  "total": 423,
+  "passed": 423,
+  "failed": 0,
+  "corrected": [],
+  "suites": [
+   {
+    "suite": "unit (python 3.11)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.12)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.13)",
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "interface (test_gui)",
+    "total": 166,
+    "passed": 166,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "visual theme (test_theme)",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "translation (test_translation)",
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "accessibility (test_accessibility)",
+    "total": 49,
+    "passed": 49,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "security (test_security)",
+    "total": 38,
+    "passed": 38,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "updates (test_update)",
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "package (build.py)",
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "failures": []
+   }
+  ]
  }
 ]

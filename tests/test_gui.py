@@ -118,6 +118,7 @@ def run():
 		"script_describeNavigator": ["kb:NVDA+alt+d"],
 		"script_describeScreen": ["kb:NVDA+shift+alt+d"],
 		"script_openSettings": [],
+		"script_sendFeedback": [],
 	}, gestures)
 	check("defaults", core.conf()["provider"] == "openai" and core.getModel("anthropic") == "claude-sonnet-5-5")
 
@@ -653,7 +654,8 @@ def run():
 	check("delete removes the message", len(plugin.session.conversation) == n - 1 and first not in plugin.session.conversation.entries and RECORD["spoken"][-1] == "Message deleted")
 	saved = core.history().load(plugin.session.conversation.id)
 	check("history updated after delete", len(saved["entries"]) == n - 1)
-	check("focus stays in the conversation after delete", wx.Window.FindFocus() is tree or True)
+	pump(timeout=0.2)
+	check("focus stays in the conversation after delete", wx.Window.FindFocus() is tree, wx.Window.FindFocus())
 	convId = plugin.session.conversation.id
 	while len(plugin.session.conversation):
 		tree.SelectItem(topItems(dlg)[0])
@@ -722,6 +724,75 @@ def run():
 	core.conf()["saveHistory"] = True
 	dlg.onHistoryChanged()
 	check("history branch comes back before the current conversation", children(tree, root) == [dlg._historyNode, dlg._currentNode])
+
+	# 20. Send feedback -------------------------------------------------------------------
+	dlg = chatDialog.ChatDialog._instance
+	from NVDAIAs import feedback
+	focusable = [c for c in dlg.GetChildren() if c.IsShown() and c.AcceptsFocusFromKeyboard() and not isinstance(c, wx.StaticText)]
+	check("Send feedback button between Settings and Close", focusable.index(dlg.feedbackButton) == focusable.index(dlg.settingsButton) + 1 and focusable.index(dlg.closeButton) == focusable.index(dlg.feedbackButton) + 1)
+	check("Send feedback button label", dlg.feedbackButton.GetLabel() == "Send fee&dback…", dlg.feedbackButton.GetLabel())
+	calls = {"confirm": [], "open": []}
+	answer = {"value": False}
+
+	def fakeConfirm(parent, message, caption, okLabel, cancelLabel):
+		calls["confirm"].append((message, caption, okLabel, cancelLabel))
+		return answer["value"]
+
+	def fakeOpen(url):
+		calls["open"].append(url)
+		return True
+
+	realConfirm, realOpen = feedback.confirm, feedback.openBrowser
+	feedback.confirm, feedback.openBrowser = fakeConfirm, fakeOpen
+	dlg.onFeedback(None)
+	check("feedback asks before opening", calls["confirm"] == [("The evaluation will open in a new tab of your browser.", "NVDAIAs - Send feedback", "Give &feedback", "&Cancel")], calls["confirm"])
+	check("Cancel does not open the browser", calls["open"] == [])
+	pump(timeout=0.2)
+	check("focus back on the feedback button after cancel", wx.Window.FindFocus() is dlg.feedbackButton, wx.Window.FindFocus())
+	answer["value"] = True
+	dlg.onFeedback(None)
+	check("Give feedback opens the form", calls["open"] == [feedback.FEEDBACK_URL])
+	check("opening the form is announced", RECORD["spoken"][-1] == "Opening the feedback form in your browser")
+	feedback.openBrowser = lambda url: False
+	n = len(RECORD["messageBoxes"])
+	r = feedback.askAndOpen(dlg)
+	check("browser failure shows the address", r is False and len(RECORD["messageBoxes"]) == n + 1 and feedback.FEEDBACK_URL in RECORD["messageBoxes"][-1])
+	feedback.openBrowser = fakeOpen
+	calls["open"].clear()
+	plugin.script_sendFeedback(None)
+	pump(timeout=0.3)
+	check("command Send feedback (Input gestures) opens the form", calls["open"] == [feedback.FEEDBACK_URL])
+	feedback.confirm, feedback.openBrowser = realConfirm, realOpen
+	# the real confirmation window: native message box with the buttons renamed
+	created = []
+
+	class FakeMessageDialog:
+		def __init__(self, parent, message, caption, style):
+			self.args = (message, caption, style)
+			self.labels = None
+			created.append(self)
+
+		def SetOKCancelLabels(self, ok, cancel):
+			self.labels = (ok, cancel)
+			return True
+
+		def ShowModal(self):
+			return wx.ID_CANCEL
+
+		def Destroy(self):
+			self.destroyed = True
+
+	realMD = feedback.wx.MessageDialog
+	feedback.wx.MessageDialog = FakeMessageDialog
+	try:
+		result = feedback.confirm(dlg, "m", "c", "Give &feedback", "&Cancel")
+	finally:
+		feedback.wx.MessageDialog = realMD
+	md = created[0]
+	# wx.OK_DEFAULT is 0 (OK is already the default): check that Cancel is NOT the default instead.
+	check("confirmation is a standard message box with OK and Cancel, OK as default", bool(md.args[2] & wx.OK) and bool(md.args[2] & wx.CANCEL) and not md.args[2] & wx.CANCEL_DEFAULT, md.args[2])
+	check("its buttons are called Give feedback and Cancel", md.labels == ("Give &feedback", "&Cancel"))
+	check("Cancel in the message box returns False and closes it", result is False and getattr(md, "destroyed", False))
 
 	# 15. Secure screens ----------------------------------------------------------------
 	import globalVars

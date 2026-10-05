@@ -9,7 +9,7 @@
 <ul>
 <li>Autor: Wellington Cruz
 </li>
-<li>Versão: 1.5.0
+<li>Versão: 1.6.0
 </li>
 <li>Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 </li>
@@ -71,7 +71,7 @@
 </li>
 <li><strong>Arquivos anexados</strong>: lista que só aparece quando há arquivos esperando para ir com a próxima pergunta.
 </li>
-<li>Botões: Cancelar envio, Ler mensagem, Copiar mensagem, <strong>Ações da mensagem</strong>, Nova conversa, Salvar conversa, Conectar conta, Configurações e Fechar.
+<li>Botões: Cancelar envio, Ler mensagem, Copiar mensagem, <strong>Ações da mensagem</strong>, Nova conversa, Salvar conversa, Conectar conta, Configurações, <strong>Enviar feedback</strong> e Fechar.
 </li>
 </ol>
 <p>Como o campo Pergunta vem logo depois da lista, <strong>Shift+Tab no campo Pergunta leva direto para a lista da conversa</strong>, e Tab na lista volta para a pergunta.</p>
@@ -171,6 +171,15 @@
 <p>A janela de conversa abre com a pergunta e a imagem, e a descrição é lida quando chegar. Você pode fazer perguntas sobre a imagem em seguida, por exemplo "qual é a cor do botão?", porque a imagem fica no histórico da conversa.</p>
 <p>Para descrever só uma parte da tela, mova o objeto de navegação até ela com os comandos de navegação de objetos do NVDA antes de pressionar NVDA+Alt+D.</p>
 <p>Os três serviços aceitam imagens nos modelos atuais. Se o modelo escolhido não aceitar imagens, a IA vai responder com um erro.</p>
+<h2>Enviar feedback</h2>
+<p>O botão <strong>Enviar feedback</strong> (Alt+D), na janela de conversa, serve para avaliar o NVDAIAs e mandar sugestões ou relatar problemas. Ao pressioná-lo, uma caixa de mensagem avisa que a avaliação será aberta numa nova aba do seu navegador, com dois botões:</p>
+<ul>
+<li><strong>Dar feedback</strong> (Enter): abre o formulário de avaliação no navegador.
+</li>
+<li><strong>Cancelar</strong> (Esc): fecha o aviso sem abrir nada.
+</li>
+</ul>
+<p>O mesmo comando existe em Definir comandos, na categoria NVDAIAs, sem atalho definido. Você pode atribuir um atalho a ele.</p>
 <h2>Comandos globais</h2>
 <table border="1">
 <tr><th>Comando</th><th>Ação</th></tr>
@@ -178,6 +187,7 @@
 <tr><td>NVDA+Alt+D</td><td>Descreve o objeto de navegação</td></tr>
 <tr><td>NVDA+Shift+Alt+D</td><td>Descreve a tela inteira</td></tr>
 <tr><td>(sem atalho)</td><td>Abre as configurações do NVDAIAs</td></tr>
+<tr><td>(sem atalho)</td><td>Enviar feedback: abre o formulário de avaliação, depois de confirmar</td></tr>
 </table>
 <p>Todos os comandos podem ser alterados em menu do NVDA &gt; Preferências &gt; Definir comandos, na categoria <strong>NVDAIAs</strong>.</p>
 <h2>Configurações</h2>
@@ -252,6 +262,11 @@
 <tr><td>"bloqueada pelo provedor"</td><td>A IA se recusou a responder ou o filtro de segurança dela bloqueou a pergunta.</td></tr>
 </table>
 <h2>Histórico de versões</h2>
+<h3>1.6.0</h3>
+<ul>
+<li>Botão Enviar feedback, que avisa que a avaliação abre numa nova aba do navegador, com as opções Dar feedback e Cancelar.
+</li>
+</ul>
 <h3>1.5.0</h3>
 <ul>
 <li>Tokens e histórico de conversas mantidos na atualização do complemento, inclusive vindo das versões 1.0.0 a 1.4.0.

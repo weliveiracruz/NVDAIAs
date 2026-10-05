@@ -204,6 +204,9 @@ class ChatDialog(wx.Dialog):
 		# Translators: button that opens the NVDAIAs settings.
 		self.settingsButton = row2.addButton(self, label=_("Settin&gs…"))
 		self.settingsButton.Bind(wx.EVT_BUTTON, self.onSettings)
+		# Translators: button that opens the feedback form (asks for confirmation first).
+		self.feedbackButton = row2.addButton(self, label=_("Send fee&dback…"))
+		self.feedbackButton.Bind(wx.EVT_BUTTON, self.onFeedback)
 		# Translators: button that closes the chat window.
 		self.closeButton = row2.addButton(self, id=wx.ID_CLOSE, label=_("&Close"))
 		self.closeButton.Bind(wx.EVT_BUTTON, lambda evt: self.Close())
@@ -956,6 +959,12 @@ class ChatDialog(wx.Dialog):
 	def onConnect(self, evt):
 		self._runConnect()
 		self.questionEdit.SetFocus()
+
+	def onFeedback(self, evt):
+		from . import feedback
+
+		feedback.askAndOpen(self)
+		self.feedbackButton.SetFocus()
 
 	def onSettings(self, evt):
 		from .settingsPanel import openSettings

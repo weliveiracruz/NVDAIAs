@@ -181,6 +181,15 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.describeRect(monitorRectAt(x, y), _("whole screen"))
 
 	@script(
+		# Translators: description of the command that opens the feedback form.
+		description=_("Opens the NVDAIAs feedback form in the browser (asks for confirmation first)"),
+	)
+	def script_sendFeedback(self, gesture):
+		from . import feedback
+
+		wx.CallAfter(feedback.askAndOpen)
+
+	@script(
 		# Translators: description of the command that opens the settings.
 		description=_("Opens the NVDAIAs settings"),
 	)

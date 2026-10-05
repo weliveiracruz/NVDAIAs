@@ -9,7 +9,7 @@
 <ul>
 <li>Author: Wellington Cruz
 </li>
-<li>Version: 1.5.0
+<li>Version: 1.6.0
 </li>
 <li>Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 </li>
@@ -41,7 +41,7 @@
 </ol>
 <h2>The chat window</h2>
 <p>Open it with <strong>NVDA+Alt+I</strong> or NVDA menu &gt; Tools &gt; <strong>NVDAIAs - Chat with AI</strong>. Focus starts in the Question field.</p>
-<p>Tab order: <strong>AI</strong> (combo box), <strong>Model</strong>, <strong>Conversation</strong> (a tree with two branches: <strong>Previous conversations</strong>, collapsed, and <strong>Current conversation (N messages)</strong>, expanded; both collapse and expand with the arrows or Enter, and the current one opens again when a new answer arrives), <strong>Question</strong>, <strong>Attach files</strong>, Send, the <strong>Attached files</strong> list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings and Close. <strong>Shift+Tab from the Question field goes straight to the conversation list.</strong></p>
+<p>Tab order: <strong>AI</strong> (combo box), <strong>Model</strong>, <strong>Conversation</strong> (a tree with two branches: <strong>Previous conversations</strong>, collapsed, and <strong>Current conversation (N messages)</strong>, expanded; both collapse and expand with the arrows or Enter, and the current one opens again when a new answer arrives), <strong>Question</strong>, <strong>Attach files</strong>, Send, the <strong>Attached files</strong> list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings, Send feedback and Close. <strong>Shift+Tab from the Question field goes straight to the conversation list.</strong></p>
 <p>The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a <strong>thick orange frame around the field that has the focus</strong>. A <strong>status line</strong> under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.</p>
 <table border="1">
 <tr><th>Where</th><th>Key</th><th>Action</th></tr>
@@ -72,6 +72,8 @@
 <p>Attached files are listed under the question (Delete removes one) and go with the next question; you can send without typing (the AI is asked to analyse and summarise them). On errors or cancel the question and files come back. Files stay in the conversation and in the history. Limits: 20 MB per file; text cut at 300,000 characters.</p>
 <h3>Previous conversations</h3>
 <p>Every conversation is saved automatically. The first item of the Conversation tree, <strong>Previous conversations (N)</strong>, starts collapsed. Expand it with the Right arrow; each previous conversation shows its date, AIs, first question and number of messages, and expands to show its messages. <strong>Enter</strong> on a previous conversation or on any of its messages reopens it as the current conversation, focus goes to the Question field and the AI receives the whole history. The conversation that was open goes to the history. <strong>New conversation</strong> saves the current one and starts a blank one.</p>
+<h3>Send feedback</h3>
+<p>The <strong>Send feedback</strong> button (Alt+D) shows a standard message box saying that the evaluation will open in a new tab of the browser, with <strong>Give feedback</strong> (opens the form) and <strong>Cancel</strong>.</p>
 <h2>Commands</h2>
 <table border="1">
 <tr><th>Command</th><th>Action</th></tr>
@@ -79,6 +81,7 @@
 <tr><td>NVDA+Alt+D</td><td>Sends an image of the navigator object to the AI and reads the description</td></tr>
 <tr><td>NVDA+Shift+Alt+D</td><td>Same for the whole screen (monitor of the active window)</td></tr>
 <tr><td>(unassigned)</td><td>Opens the NVDAIAs settings</td></tr>
+<tr><td>(unassigned)</td><td>Send feedback: opens the feedback form after confirming</td></tr>
 </table>
 <p>All commands can be changed in NVDA menu &gt; Preferences &gt; Input gestures, category <strong>NVDAIAs</strong>.</p>
 <h2>Settings</h2>
@@ -97,6 +100,11 @@
 </li>
 </ul>
 <h2>Changes</h2>
+<h3>1.6.0</h3>
+<ul>
+<li>Send feedback button with confirmation (Give feedback / Cancel).
+</li>
+</ul>
 <h3>1.5.0</h3>
 <ul>
 <li>Tokens and conversation history kept when the add-on is updated, also coming from 1.0.0 to 1.4.0.
