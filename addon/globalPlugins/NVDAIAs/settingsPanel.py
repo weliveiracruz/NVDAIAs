@@ -12,7 +12,7 @@ from gui import guiHelper, nvdaControls
 from gui.settingsDialogs import NVDASettingsDialog, SettingsPanel
 from logHandler import log
 
-from . import chatgptPlan, core, planUi
+from . import core, planUi
 from .connectDialog import openTokenPage
 from .credentials import maskToken
 from .providers import PROVIDER_IDS, getProviderClass
@@ -39,7 +39,7 @@ class _ProviderGroup:
 
 		self.statusText = group.addItem(wx.StaticText(boxParent, label=""))
 		self.planCheck = None
-		if providerId == "openai":
+		if providerId == "openai" and core.planAvailable():
 			self._addPlanControls(group, boxParent)
 		self.tokenEdit = group.addLabeledControl(
 			# Translators: label of the token field in the settings. {name} is ChatGPT, Gemini or Claude.
@@ -152,7 +152,7 @@ class _ProviderGroup:
 	def _provider(self):
 		model = self.modelCombo.GetValue().strip() or None
 		if self.usesPlan():
-			return chatgptPlan.ChatGPTPlanProvider(core.plan(), model=model, timeout=core.conf()["timeout"])
+			return core.chatgptPlan.ChatGPTPlanProvider(core.plan(), model=model, timeout=core.conf()["timeout"])
 		return core.makeProvider(self.providerId, token=self.currentToken(), model=model)
 
 	def onTest(self, evt):

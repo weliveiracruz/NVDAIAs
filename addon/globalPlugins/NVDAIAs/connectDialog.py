@@ -134,7 +134,7 @@ class ConnectDialog(wx.Dialog):
 		self._updateInstructions()
 
 	def _updateInstructions(self):
-		isChatGPT = self.providerId == "openai"
+		isChatGPT = self.providerId == "openai" and core.planAvailable()
 		if self.chatgptButton.IsShown() != isChatGPT:
 			self.chatgptButton.Show(isChatGPT)
 			self.Layout()

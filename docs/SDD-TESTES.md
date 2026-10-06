@@ -71,6 +71,7 @@ O executor `tests/run_all.py` roda todas as suítes, conta testes, aprovados e f
 | FUN-23 | Pergunta pelo plano do ChatGPT | API Responses com store false, stream true, instructions, histórico, imagens, PDF e textos; áudio e vídeo recusados antes de enviar; modelos do plano (visibility list) | pure, gui |
 | FUN-24 | Renovação e fim da entrada | Token renovado antes de expirar e depois de um 401, refresh token trocado a cada renovação; refresh token reutilizado ou inválido encerra a sessão e pede nova entrada | pure |
 | FUN-25 | Erros do plano | Limite de uso (oferece Gerenciar uso), plano não elegível, recurso não aceito, indisponível, entrada expirada, acesso negado, cancelamento, tempo esgotado | pure, gui |
+| FUN-27 | Python do NVDA | O complemento só importa módulos do Python que o NVDA traz; a entrada com o ChatGPT funciona com secrets, hmac, http.server e socketserver bloqueados; se o módulo do ChatGPT falhar, o resto funciona com tokens | pure, gui |
 | FUN-26 | Plano ou token | Opção nas configurações escolhe; modelos do plano guardados à parte; token salvo em Conectar conta volta para o token; Sair do ChatGPT revoga e apaga a sessão | gui |
 
 ## 6. Casos de teste de acessibilidade (ACE)

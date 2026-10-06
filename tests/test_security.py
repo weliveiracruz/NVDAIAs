@@ -356,7 +356,7 @@ def run():
 	states = {chatgptPlan.randomToken() for _ in range(200)}
 	R.check("SEG-23 state values never repeat", len(states) == 200)
 	receiver = chatgptPlan.LoopbackReceiver("s")
-	R.check("SEG-23 the sign-in listener only accepts this computer (127.0.0.1)", receiver._server.server_address[0] == "127.0.0.1")
+	R.check("SEG-23 the sign-in listener only accepts this computer (127.0.0.1)", receiver.address[0] == "127.0.0.1")
 	import urllib.request
 	import urllib.error
 	try:
@@ -366,7 +366,7 @@ def run():
 		forged = receiver.result is not None
 	receiver.close()
 	R.check("SEG-23 an answer with another state is refused (CSRF)", not forged)
-	R.check("SEG-23 the listener never logs the address (it carries the code)", "def log_message(self, *args):\n\t\t# Never log" in srcPlan)
+	R.check("SEG-23 the sign-in module never logs or prints (the address carries the code)", not re.search(r"\blog\.|\bprint\(|logging", srcPlan))
 	R.check("SEG-23 OAuth requests have a time limit", "self._opener(req, self.timeout)" in srcPlan and "_urlopen(req, self.timeout)" in srcPlan)
 
 	# SEG-24 ChatGPT session at rest and in logs ---------------------------------------------------------------

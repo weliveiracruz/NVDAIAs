@@ -6,10 +6,12 @@
 * The status line says when the ChatGPT plan is in use, with the account e-mail; new Manage ChatGPT usage button (only while using the plan). When the plan reaches its usage limit, Manage usage is offered as the main action. One-time notice "You're using your ChatGPT plan".
 * Gemini and Claude have no official equivalent (Google offers no sign-in for third-party apps with a personal account; Anthropic does not allow third-party apps to use Claude subscriptions), so they keep using tokens.
 * Fix: the credential file is now safe when written from background threads at the same time (P-10 in reports/PROBLEMAS-1.7.0.md).
+* The ChatGPT sign-in uses only the parts of Python that NVDA ships; if it ever fails to load, the rest of the add-on keeps working with tokens (P-14).
 * Continuar com o ChatGPT: entre com a sua conta do ChatGPT e use o seu plano do ChatGPT (Plus, Pro e outros) sem chave de API, pelo Entrar com o ChatGPT oficial da OpenAI para apps de código aberto (OAuth com PKCE no navegador, resposta recebida só em 127.0.0.1, token de identidade conferido, tokens criptografados com DPAPI e renovados sozinhos, revogados ao sair). Disponível na tela Conectar conta e nas configurações. A opção de token continua; uma opção escolhe qual o ChatGPT usa.
 * A linha de situação diz quando o plano do ChatGPT está em uso, com o e-mail da conta; novo botão Gerenciar uso do ChatGPT (só com o plano em uso). Quando o plano atinge o limite de uso, Gerenciar uso é oferecido como ação principal. Aviso único "Você está usando o seu plano do ChatGPT".
 * Gemini e Claude não têm algo oficial equivalente (o Google não oferece entrada com conta pessoal para apps de terceiros; a Anthropic não permite que apps de terceiros usem as assinaturas do Claude), então continuam usando tokens.
 * Correção: o arquivo de credenciais agora é gravado com segurança quando duas tarefas em segundo plano escrevem ao mesmo tempo (P-10 em reports/PROBLEMAS-1.7.0.md).
+* A entrada com o ChatGPT usa só as partes do Python que o NVDA traz; se um dia falhar ao carregar, o resto do complemento continua funcionando com tokens (P-14).
 
 ## 1.6.0
 

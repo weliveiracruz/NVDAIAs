@@ -14,7 +14,7 @@ import ui
 import wx
 from logHandler import log
 
-from . import chatgptPlan, core, theme
+from . import core, theme
 from .feedback import confirm
 
 addonHandler.initTranslation()
@@ -30,10 +30,10 @@ def openBrowser(url):
 
 def openUsagePage(parent=None):
 	"""Opens the ChatGPT page where the plan usage is shown (Manage usage)."""
-	if openBrowser(chatgptPlan.USAGE_URL) is False:
+	if openBrowser(core.chatgptPlan.USAGE_URL) is False:
 		gui.messageBox(
 			# Translators: shown when the browser could not be opened. {url} is the address.
-			_("Could not open the browser. Open this address manually: {url}").format(url=chatgptPlan.USAGE_URL),
+			_("Could not open the browser. Open this address manually: {url}").format(url=core.chatgptPlan.USAGE_URL),
 			"NVDAIAs", wx.OK | wx.ICON_WARNING, parent or gui.mainFrame,
 		)
 		return False
@@ -159,7 +159,7 @@ class SignInDialog(wx.Dialog):
 			session = core.plan().signIn(openBrowser, cancelEvent=cancelEvent, pages=pages)
 			models = []
 			try:
-				models = chatgptPlan.ChatGPTPlanProvider(core.plan(), timeout=core.conf()["timeout"]).listModels()
+				models = core.chatgptPlan.ChatGPTPlanProvider(core.plan(), timeout=core.conf()["timeout"]).listModels()
 			except Exception:
 				log.debugWarning("NVDAIAs: could not list the ChatGPT plan models", exc_info=True)
 			return session, models

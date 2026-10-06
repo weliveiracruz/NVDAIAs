@@ -13,14 +13,15 @@
 # refreshed when needed, refresh token revoked on sign out.
 #
 # Like providers.py, this module uses only the Python standard library and does
-# not import NVDA modules, so it can be unit tested outside NVDA.
+# not import NVDA modules, so it can be unit tested outside NVDA. NVDA ships only
+# the parts of the standard library it uses itself, so this module avoids
+# secrets, hmac, http.server and socketserver (see tests: NVDA_STDLIB).
 
 import base64
 import hashlib
-import hmac
 import html
 import json
-import secrets
+import os
 import socket
 import threading
 import time
@@ -28,7 +29,6 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
-from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from .providers import USER_AGENT, BaseProvider, ProviderError, _extractErrorMessage, _urlopen
 
@@ -86,13 +86,25 @@ def b64urlDecode(text):
 	return base64.urlsafe_b64decode(text + b"=" * (-len(text) % 4))
 
 
+def constantTimeEqual(a, b):
+	"""Comparison that takes the same time wherever the first difference is."""
+	if isinstance(a, str):
+		a = a.encode("utf-8")
+	if isinstance(b, str):
+		b = b.encode("utf-8")
+	result = len(a) ^ len(b)
+	for x, y in zip(a, b if len(a) == len(b) else a):
+		result |= x ^ y
+	return result == 0
+
+
 def randomToken(nbytes=32):
-	return secrets.token_urlsafe(nbytes)
+	return b64url(os.urandom(nbytes))
 
 
 def pkcePair():
 	"""Returns (verifier, challenge) for PKCE with S256."""
-	verifier = b64url(secrets.token_bytes(48))
+	verifier = b64url(os.urandom(48))
 	challenge = b64url(hashlib.sha256(verifier.encode("ascii")).digest())
 	return verifier, challenge
 
@@ -138,7 +150,7 @@ def verifyRs256(signingInput, signature, n, e):
 	em = pow(s, e, n).to_bytes(k, "big")
 	digestInfo = _SHA256_PREFIX + hashlib.sha256(signingInput).digest()
 	expected = b"\x00\x01" + b"\xff" * (k - 3 - len(digestInfo)) + b"\x00" + digestInfo
-	return hmac.compare_digest(em, expected)
+	return constantTimeEqual(em, expected)
 
 
 def decodeJwt(token):
@@ -185,7 +197,7 @@ def validateIdToken(token, keys, issuer, clientId, nonce, now=None):
 		raise ProviderError("signin", "ID token without expiry")
 	if exp + CLOCK_SKEW < now:
 		raise ProviderError("signin", "ID token expired")
-	if not nonce or not hmac.compare_digest(str(claims.get("nonce") or ""), nonce):
+	if not nonce or not constantTimeEqual(str(claims.get("nonce") or ""), nonce):
 		raise ProviderError("signin", "ID token nonce is not valid")
 	if not claims.get("sub"):
 		raise ProviderError("signin", "ID token without subject")
@@ -351,44 +363,19 @@ _PAGE = (
 )
 
 
-class _CallbackHandler(BaseHTTPRequestHandler):
-	server_version = "NVDAIAs"
-	sys_version = ""
-
-	def log_message(self, *args):
-		# Never log: the address carries the authorization code.
-		pass
-
-	def _reply(self, status, title, text):
-		body = _PAGE.format(title=html.escape(title), text=html.escape(text)).encode("utf-8")
-		self.send_response(status)
-		self.send_header("Content-Type", "text/html; charset=utf-8")
-		self.send_header("Content-Length", str(len(body)))
-		self.send_header("Cache-Control", "no-store")
-		self.send_header("Referrer-Policy", "no-referrer")
-		self.end_headers()
-		self.wfile.write(body)
-
-	def do_GET(self):
-		receiver = self.server.receiver
-		parts = urllib.parse.urlsplit(self.path)
-		if parts.path != "/callback":
-			self._reply(404, "NVDAIAs", "Not found.")
-			return
-		params = {k: v[0] for k, v in urllib.parse.parse_qs(parts.query, keep_blank_values=True).items()}
-		# A request with another state does not come from this sign-in: ignore it.
-		if not hmac.compare_digest(params.get("state", ""), receiver.state):
-			self._reply(400, "NVDAIAs", receiver.pages["invalid"])
-			return
-		if params.get("error"):
-			self._reply(200, "NVDAIAs", receiver.pages["error"])
-		else:
-			self._reply(200, "NVDAIAs", receiver.pages["done"])
-		receiver._finish(params)
+_REASONS = {200: "OK", 400: "Bad Request", 404: "Not Found", 405: "Method Not Allowed"}
+#: Biggest request accepted by the loopback listener.
+_MAX_REQUEST = 16 * 1024
 
 
 class LoopbackReceiver:
-	"""Waits for the browser to come back to http://127.0.0.1:PORT/callback."""
+	"""Waits for the browser to come back to http://127.0.0.1:PORT/callback.
+
+	A tiny HTTP listener written on plain sockets: NVDA ships only the parts of
+	the Python standard library it uses itself, and http.server/socketserver
+	are not guaranteed to be there. It listens only on 127.0.0.1, answers only
+	GET /callback with the right state, and never logs the address (it carries
+	the authorization code)."""
 
 	#: Texts of the pages shown in the browser (the add-on passes them translated).
 	DEFAULT_PAGES = {
@@ -402,18 +389,80 @@ class LoopbackReceiver:
 		self.pages = dict(self.DEFAULT_PAGES, **(pages or {}))
 		self.result = None
 		self._event = threading.Event()
-		self._server = HTTPServer(("127.0.0.1", 0), _CallbackHandler)
-		self._server.receiver = self
-		self._thread = threading.Thread(target=self._server.serve_forever, name="NVDAIAs-signin", daemon=True)
+		self._closed = False
+		self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self._sock.bind(("127.0.0.1", 0))
+		self._sock.listen(8)
+		self._sock.settimeout(0.3)
+		self.address = self._sock.getsockname()
+		self._thread = threading.Thread(target=self._serve, name="NVDAIAs-signin", daemon=True)
 		self._thread.start()
 
 	@property
 	def port(self):
-		return self._server.server_address[1]
+		return self.address[1]
 
 	@property
 	def redirectUri(self):
 		return "http://127.0.0.1:%d/callback" % self.port
+
+	def _serve(self):
+		while not self._closed:
+			try:
+				conn, _peer = self._sock.accept()
+			except socket.timeout:
+				continue
+			except OSError:
+				break
+			try:
+				self._handle(conn)
+			except Exception:  # a broken request never stops the sign-in
+				pass
+			finally:
+				try:
+					conn.close()
+				except OSError:
+					pass
+
+	def _handle(self, conn):
+		conn.settimeout(5)
+		data = b""
+		while b"\r\n\r\n" not in data and b"\n\n" not in data:
+			chunk = conn.recv(4096)
+			if not chunk:
+				break
+			data += chunk
+			if len(data) > _MAX_REQUEST:
+				break
+		line = data.split(b"\n", 1)[0].decode("latin-1").strip()
+		parts = line.split(" ")
+		if len(parts) < 2:
+			return self._reply(conn, 400, self.pages["invalid"])
+		method, target = parts[0], parts[1]
+		url = urllib.parse.urlsplit(target)
+		if url.path != "/callback":
+			return self._reply(conn, 404, "Not found.")
+		if method != "GET":
+			return self._reply(conn, 405, "Not allowed.")
+		params = {k: v[0] for k, v in urllib.parse.parse_qs(url.query, keep_blank_values=True).items()}
+		# A request with another state does not come from this sign-in: ignore it.
+		if not constantTimeEqual(params.get("state", ""), self.state):
+			return self._reply(conn, 400, self.pages["invalid"])
+		self._reply(conn, 200, self.pages["error"] if params.get("error") else self.pages["done"])
+		self._finish(params)
+
+	@staticmethod
+	def _reply(conn, status, text):
+		body = _PAGE.format(title="NVDAIAs", text=html.escape(text)).encode("utf-8")
+		head = (
+			"HTTP/1.1 %d %s\r\n"
+			"Content-Type: text/html; charset=utf-8\r\n"
+			"Content-Length: %d\r\n"
+			"Cache-Control: no-store\r\n"
+			"Referrer-Policy: no-referrer\r\n"
+			"Connection: close\r\n\r\n"
+		) % (status, _REASONS.get(status, "Error"), len(body))
+		conn.sendall(head.encode("ascii") + body)
 
 	def _finish(self, params):
 		if self.result is None:
@@ -432,10 +481,10 @@ class LoopbackReceiver:
 				raise ProviderError("timeout", "sign-in")
 
 	def close(self):
+		self._closed = True
 		try:
-			self._server.shutdown()
-			self._server.server_close()
-		except Exception:
+			self._sock.close()
+		except OSError:
 			pass
 
 

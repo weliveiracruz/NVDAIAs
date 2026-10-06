@@ -907,5 +907,171 @@
     "failures": []
    }
   ]
+ },
+ {
+  "number": 12,
+  "date": "2026-10-05T22:09:53-03:00",
+  "version": "1.7.0",
+  "note": "",
+  "total": 590,
+  "passed": 589,
+  "failed": 1,
+  "corrected": [],
+  "suites": [
+   {
+    "suite": "unit (python 3.11)",
+    "total": 71,
+    "passed": 71,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.12)",
+    "total": 71,
+    "passed": 71,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.13)",
+    "total": 71,
+    "passed": 71,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "interface (test_gui)",
+    "total": 211,
+    "passed": 211,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "visual theme (test_theme)",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "translation (test_translation)",
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "accessibility (test_accessibility)",
+    "total": 67,
+    "passed": 67,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "security (test_security)",
+    "total": 44,
+    "passed": 43,
+    "failed": 1,
+    "failures": [
+     "suite ran to the end"
+    ]
+   },
+   {
+    "suite": "updates (test_update)",
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "package (build.py)",
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "failures": []
+   }
+  ]
+ },
+ {
+  "number": 13,
+  "date": "2026-10-05T22:10:40-03:00",
+  "version": "1.7.0",
+  "note": "",
+  "total": 600,
+  "passed": 600,
+  "failed": 0,
+  "corrected": [],
+  "suites": [
+   {
+    "suite": "unit (python 3.11)",
+    "total": 71,
+    "passed": 71,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.12)",
+    "total": 71,
+    "passed": 71,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "unit (python 3.13)",
+    "total": 71,
+    "passed": 71,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "interface (test_gui)",
+    "total": 211,
+    "passed": 211,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "visual theme (test_theme)",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "translation (test_translation)",
+    "total": 9,
+    "passed": 9,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "accessibility (test_accessibility)",
+    "total": 67,
+    "passed": 67,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "security (test_security)",
+    "total": 54,
+    "passed": 54,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "updates (test_update)",
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "failures": []
+   },
+   {
+    "suite": "package (build.py)",
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "failures": []
+   }
+  ]
  }
 ]

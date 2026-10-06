@@ -17,12 +17,25 @@ from logHandler import log
 
 from .conversation import ChatEntry, Conversation
 from .credentials import CredentialStore
-from . import chatgptPlan
 from .history import HistoryStore
 from .providers import PROVIDERS, PROVIDER_IDS, ProviderError, getProviderClass
 from . import textutils
 
 addonHandler.initTranslation()
+
+# "Continue with ChatGPT" is optional: if its module cannot load in this NVDA
+# (for example a missing part of Python), the rest of the add-on keeps working
+# with tokens and the button is hidden.
+try:
+	from . import chatgptPlan
+except Exception:
+	chatgptPlan = None
+	log.error("NVDAIAs: Continue with ChatGPT is not available in this NVDA", exc_info=True)
+
+
+def planAvailable():
+	return chatgptPlan is not None
+
 
 CONFIG_SECTION = "NVDAIAs"
 
@@ -167,6 +180,8 @@ def plan():
 
 
 def planSignedIn():
+	if chatgptPlan is None:
+		return False
 	try:
 		return plan().signedIn()
 	except Exception:

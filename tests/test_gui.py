@@ -947,6 +947,19 @@ def run():
 	check("Manage usage hidden after sign out", not dlg.usageButton.IsShown())
 	planUi.wx.MessageDialog = realMD
 	core.store().set("openai", mock_server.VALID["openai"])
+	# If the sign-in module cannot load in some NVDA, the rest keeps working with tokens.
+	realModule = core.chatgptPlan
+	core.chatgptPlan = None
+	cd = connectDialog.ConnectDialog(dlg, "openai")
+	check("without the sign-in module the button is hidden", not cd.chatgptButton.IsShown())
+	cd.Destroy()
+	frame = wx.Frame(None)
+	panel = settingsPanel.NVDAIAsSettingsPanel(frame)
+	check("without the sign-in module the settings still open", {x.providerId: x for x in panel.groups}["openai"].planCheck is None)
+	frame.Destroy()
+	dlg.updateStatus()
+	check("without the sign-in module ChatGPT uses the token", not core.usingPlan("openai") and core.isConnected("openai") and "connected" in dlg.statusLine.GetLabel())
+	core.chatgptPlan = realModule
 	dlg.Close()
 	pump(timeout=0.3)
 

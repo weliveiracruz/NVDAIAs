@@ -27,6 +27,9 @@ from NVDAIAs import providers, textutils, credentials, conversation, history, at
 import mock_server  # noqa: E402
 
 SERVER, BASE = mock_server.start()
+#: Standard modules that NVDA does not ship (or may not ship): NVDA bundles only the
+#: parts of Python that NVDA itself imports. The add-on must not need them.
+NVDA_MISSING = ["secrets", "hmac", "http.server", "socketserver", "xmlrpc", "asyncio", "sqlite3", "tkinter", "unittest"]
 PNG = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==")
 
 
@@ -520,6 +523,43 @@ class _FlipCodec:
 		return bytes(b ^ 0x33 for b in data)
 
 
+#: Standard modules the add-on may import. All of them were already used by
+#: version 1.6.0 inside NVDA (so NVDA ships them), plus hashlib (imported by
+#: urllib.request) and datetime (imported lazily, with a fallback).
+NVDA_PROVEN_STDLIB = {
+	"base64", "ctypes", "hashlib", "html", "html.parser", "io", "json", "mimetypes", "os", "re", "shutil",
+	"socket", "ssl", "sys", "threading", "time", "urllib.error", "urllib.parse", "urllib.request", "uuid",
+	"webbrowser", "xml.etree", "xml.etree.ElementTree", "zipfile", "datetime", "certifi",
+}
+NVDA_MODULES = {"addonHandler", "addonStore.models.status", "api", "config", "globalPluginHandler", "globalVars",
+	"gui", "gui.settingsDialogs", "gui.guiHelper", "logHandler", "scriptHandler", "tones", "ui", "wx", "screenBitmap",
+	"NVDAObjects", "controlTypes", "textInfos", "locationHelper", "winUser", "nvwave"}
+
+
+class NvdaCompatibilityTests(unittest.TestCase):
+	def test_only_modules_that_nvda_ships(self):
+		import ast
+		bad = []
+		root = os.path.join(HERE, "..", "addon")
+		for folder, _dirs, files in os.walk(root):
+			for name in files:
+				if not name.endswith(".py"):
+					continue
+				path = os.path.join(folder, name)
+				with open(path, encoding="utf-8") as f:
+					tree = ast.parse(f.read())
+				for node in ast.walk(tree):
+					names = []
+					if isinstance(node, ast.Import):
+						names = [a.name for a in node.names]
+					elif isinstance(node, ast.ImportFrom) and node.level == 0:
+						names = [node.module]
+					for mod in names:
+						if mod not in NVDA_PROVEN_STDLIB and mod not in NVDA_MODULES and mod.split(".")[0] not in ("gui", "NVDAObjects"):
+							bad.append("%s: %s" % (os.path.relpath(path, root), mod))
+		self.assertEqual(bad, [], "modules that NVDA may not ship")
+
+
 class ChatGPTPlanTests(unittest.TestCase):
 	def setUp(self):
 		mock_server.REQUESTS.clear()
@@ -845,6 +885,37 @@ class ChatGPTPlanTests(unittest.TestCase):
 			self.provider("gpt-5.5").chat([providers.Message("user", "oi")])
 		self.assertEqual(cm.exception.kind, "planLimit")
 
+	def test_works_with_nvda_standard_library(self):
+		"""NVDA ships only the parts of Python it uses. The sign-in must work without
+		modules NVDA does not ship (the 1.7.0 test package failed to load in NVDA)."""
+		import subprocess
+		code = r"""
+import sys, types, importlib.abc
+sys.path.insert(0, %r)
+import mock_server, tempfile  # the fake servers use http.server: loaded before the block
+srv, base = mock_server.start()
+BLOCKED = %r
+class Blocker(importlib.abc.MetaPathFinder):
+	def find_spec(self, name, path, target=None):
+		if name in BLOCKED or any(name.startswith(b + ".") for b in BLOCKED):
+			raise ImportError("not shipped with NVDA: " + name)
+for name in list(sys.modules):
+	if name in BLOCKED or any(name.startswith(b + ".") for b in BLOCKED):
+		del sys.modules[name]
+sys.meta_path.insert(0, Blocker())
+pkg = types.ModuleType("NVDAIAs"); pkg.__path__ = [%r]; sys.modules["NVDAIAs"] = pkg
+from NVDAIAs import chatgptPlan, credentials, providers
+store = chatgptPlan.PlanStore(credentials.CredentialStore(tempfile.mkdtemp()))
+sess = chatgptPlan.PlanSession(store, chatgptPlan.OAuthClient(issuer=base + "/chatgpt/auth", timeout=5))
+sess.signIn(mock_server.fakeBrowser, timeout=10)
+p = chatgptPlan.ChatGPTPlanProvider(sess, baseUrl=base + "/chatgpt/v1", timeout=5)
+print(p.chat([providers.Message("user", "oi")], "s"))
+print(sess.signOut())
+""" % (HERE, NVDA_MISSING, PKG_DIR)
+		proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=60)
+		self.assertEqual(proc.returncode, 0, proc.stderr[-1500:])
+		self.assertIn("Plano ChatGPT responde: oi", proc.stdout)
+
 	# Loopback --------------------------------------------------------------------
 
 	def test_loopback_only_local_and_callback(self):
@@ -852,7 +923,7 @@ class ChatGPTPlanTests(unittest.TestCase):
 		import urllib.request
 		r = chatgptPlan.LoopbackReceiver("estado", pages={"done": "<b>pronto</b>"})
 		try:
-			self.assertEqual(r._server.server_address[0], "127.0.0.1")
+			self.assertEqual(r.address[0], "127.0.0.1")
 			self.assertEqual(r.redirectUri, "http://127.0.0.1:%d/callback" % r.port)
 			with self.assertRaises(urllib.error.HTTPError) as cm:
 				urllib.request.urlopen("http://127.0.0.1:%d/outro?state=estado&code=c" % r.port, timeout=5)
