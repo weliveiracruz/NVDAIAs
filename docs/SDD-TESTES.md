@@ -87,7 +87,7 @@ Referências: WCAG 2.2 nível AA, guia de complementos do NVDA e as práticas de
 | ACE-05 | Teclado | Todas as funções funcionam só pelo teclado (Enter, Aplicações, Delete, Esc, setas) |
 | ACE-06 | Anúncios | Envio, resposta, erro, anexo, exclusão, tradução, abertura de conversa e cancelamento são falados |
 | ACE-07 | Foco | Depois de cada ação o foco fica em um controle da janela |
-| ACE-08 | Contraste | Texto 4,5:1 e indicadores 3:1 |
+| ACE-08 | Contraste | Texto 4,5:1 (3:1 só para texto grande em negrito, como o título na barra laranja) e indicadores 3:1 |
 | ACE-09 | Alto contraste | Tema desligado no alto contraste do Windows |
 | ACE-10 | Cor não é a única informação | A linha de situação tem texto para cada estado |
 | ACE-11 | Janela de leitura | HTML com títulos, listas e tabelas reais |
@@ -100,6 +100,7 @@ Referências: WCAG 2.2 nível AA, guia de complementos do NVDA e as práticas de
 | ACE-18 | Mensagens longas | Item da lista resumido, texto completo na janela de leitura |
 | ACE-19 | Ramos da árvore | Conversas anteriores e Conversa atual dizem quantos itens têm; Enter e setas expandem e recolhem |
 | ACE-20 | Continuar com o ChatGPT | Botão logo depois da caixa IA, com letra de atalho, fora da tabulação para outras IAs; janela de espera com título, foco na explicação e Cancelar entrada; entrada, saída e limite anunciados; linha de situação diz que o plano está em uso; Gerenciar uso do ChatGPT só aparece com o plano |
+| ACE-21 | Layout moderno | Cartões, chip de situação e anel de foco só pintados (sem foco, sem mudar a ordem de tabulação); todo controle com anel fica sobre um cartão branco; cartões não se sobrepõem; rótulos dos cartões com a cor do cartão; fonte cai para uma instalada; tokens de raio presentes |
 
 ## 7. Casos de teste de vulnerabilidade (SEG)
 

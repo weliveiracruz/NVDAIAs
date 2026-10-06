@@ -76,20 +76,33 @@ class ConnectDialog(wx.Dialog):
 			# Translators: title of the coloured header of the connect dialog.
 			headerTitle = _("Connect account")
 			# Translators: subtitle of the coloured header of the connect dialog.
-			headerSubtitle = _("Paste the token generated on the AI's site")
+			headerSubtitle = _("Sign in with ChatGPT or paste the token generated on the AI's site")
 			mainSizer.Add(theme.HeaderPanel(self, headerTitle, headerSubtitle), flag=wx.EXPAND)
 		sHelper = guiHelper.BoxSizerHelper(self, orientation=wx.VERTICAL)
+		cardPad = theme.space("md") if themed else 0
 
+		def addCard(helper):
+			if not themed:
+				sHelper.addItem(helper, flag=wx.EXPAND)
+				return
+			outer = wx.BoxSizer(wx.VERTICAL)
+			outer.Add(helper.sizer, flag=wx.ALL | wx.EXPAND, border=cardPad)
+			sHelper.addItem(outer, flag=wx.EXPAND)
+
+		# Card 1: which AI, and the ChatGPT sign-in.
+		aiCard = guiHelper.BoxSizerHelper(self, orientation=wx.VERTICAL)
 		# Translators: label of the combo box to choose the AI in the connect dialog.
-		self.providerChoice = sHelper.addLabeledControl(_("&Artificial intelligence:"), wx.Choice, choices=[core.providerLabel(p) for p in PROVIDER_IDS])
+		self.providerChoice = aiCard.addLabeledControl(_("&Artificial intelligence:"), wx.Choice, choices=[core.providerLabel(p) for p in PROVIDER_IDS])
 		self.providerChoice.SetSelection(PROVIDER_IDS.index(providerId))
 		self.providerChoice.Bind(wx.EVT_CHOICE, self.onProviderChanged)
-
 		# "Sign in with ChatGPT": uses the user's ChatGPT plan, no API key (ChatGPT only).
 		# Translators: button that signs in with the ChatGPT account and uses the ChatGPT plan, without API key.
-		self.chatgptButton = sHelper.addItem(wx.Button(self, label=_("Continue &with ChatGPT")))
+		self.chatgptButton = aiCard.addItem(wx.Button(self, label=_("Continue &with ChatGPT")))
 		self.chatgptButton.Bind(wx.EVT_BUTTON, self.onContinueWithChatGPT)
+		addCard(aiCard)
 
+		# Card 2: instructions and token.
+		tokenCard = guiHelper.BoxSizerHelper(self, orientation=wx.VERTICAL)
 		# Translators: label of the read-only field with the connection instructions.
 		instructionsLabel = wx.StaticText(self, label=_("&Instructions:"))
 		self.instructionsText = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2, size=(560, 180))
@@ -97,16 +110,14 @@ class ConnectDialog(wx.Dialog):
 		instructionsBox.Add(instructionsLabel)
 		instructionsBox.AddSpacer(theme.space("sm"))
 		instructionsBox.Add(self.instructionsText, proportion=1, flag=wx.EXPAND)
-		sHelper.addItem(instructionsBox, flag=wx.EXPAND)
-
+		tokenCard.addItem(instructionsBox, flag=wx.EXPAND)
 		# Translators: button that opens the provider site where the token is generated.
-		self.openPageButton = sHelper.addItem(wx.Button(self, label=_("&Open page to generate token")))
+		self.openPageButton = tokenCard.addItem(wx.Button(self, label=_("&Open page to generate token")))
 		self.openPageButton.Bind(wx.EVT_BUTTON, lambda evt: openTokenPage(self.providerId))
-
 		# Translators: label of the password field where the token is pasted.
-		self.tokenEdit = sHelper.addLabeledControl(_("&Token (API key):"), wx.TextCtrl, style=wx.TE_PASSWORD, size=(400, -1))
-
-		self.statusLabel = sHelper.addItem(wx.StaticText(self, label=""))
+		self.tokenEdit = tokenCard.addLabeledControl(_("&Token (API key):"), wx.TextCtrl, style=wx.TE_PASSWORD, size=(400, -1))
+		self.statusLabel = tokenCard.addItem(wx.StaticText(self, label=""))
+		addCard(tokenCard)
 
 		bHelper = guiHelper.ButtonHelper(wx.HORIZONTAL)
 		# Translators: button that tests and saves the token.
@@ -118,8 +129,18 @@ class ConnectDialog(wx.Dialog):
 		sHelper.addDialogDismissButtons(bHelper)
 		mainSizer.Add(sHelper.sizer, border=guiHelper.BORDER_FOR_DIALOGS + (theme.space("xs") if themed else 0), flag=wx.ALL | wx.EXPAND)
 		if themed:
-			theme.applyColors(self, bodyControls=(self.instructionsText, self.tokenEdit))
-			self.focusFrames = theme.FocusFrames(self, (self.providerChoice, self.instructionsText, self.tokenEdit))
+			aiLabel = self.providerChoice.GetPrevSibling()
+			tokenLabel = self.tokenEdit.GetPrevSibling()
+			cards = (
+				theme.Card(aiCard.sizer, (aiLabel, self.providerChoice, self.chatgptButton)),
+				theme.Card(tokenCard.sizer, (instructionsLabel, self.instructionsText, self.openPageButton, tokenLabel, self.tokenEdit, self.statusLabel), title=instructionsLabel),
+			)
+			theme.applyColors(self, bodyControls=(self.instructionsText, self.tokenEdit), cards=cards)
+			self.focusFrames = theme.FocusFrames(
+				self,
+				(self.providerChoice, self.chatgptButton, self.instructionsText, self.openPageButton, self.tokenEdit),
+				cards=cards,
+			)
 		self.SetSizer(mainSizer)
 		mainSizer.Fit(self)
 		self._updateInstructions()
@@ -138,6 +159,7 @@ class ConnectDialog(wx.Dialog):
 		if self.chatgptButton.IsShown() != isChatGPT:
 			self.chatgptButton.Show(isChatGPT)
 			self.Layout()
+			self.Refresh()
 		text = instructions(self.providerId)
 		if isChatGPT:
 			# Translators: explanation of the Continue with ChatGPT button in the connect dialog.

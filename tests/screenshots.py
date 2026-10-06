@@ -111,10 +111,10 @@ shot(dlg, "chat-erro.png")
 dlg.Close()
 pump()
 
-cd = connectDialog.ConnectDialog(gui.mainFrame, "gemini")
+cd = connectDialog.ConnectDialog(gui.mainFrame, "openai")
 cd.SetPosition((40, 40))
 cd.Show()
-cd.tokenEdit.SetFocus()
+cd.chatgptButton.SetFocus()
 shot(cd, "conectar-conta.png")
 cd.Destroy()
 

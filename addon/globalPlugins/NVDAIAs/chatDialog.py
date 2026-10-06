@@ -92,9 +92,28 @@ class ChatDialog(wx.Dialog):
 			mainSizer.Add(self.header, flag=wx.EXPAND)
 		sHelper = guiHelper.BoxSizerHelper(self, orientation=wx.VERTICAL)
 
-		self.statusLine = sHelper.addItem(theme.StatusLine(self), flag=wx.EXPAND)
 		gapS = theme.space("sm")
 		gapL = theme.space("lg")
+		# Modern layout: each group sits on a white card; the sizer leaves room
+		# for the card padding around it (only with the theme on).
+		cardPad = theme.space("md") if self.themed else 0
+
+		def onCard(item, **kw):
+			if not self.themed:
+				return sHelper.addItem(item, **kw)
+			outer = wx.BoxSizer(wx.VERTICAL)
+			outer.Add(item, proportion=1 if kw.get("proportion") else 0, flag=wx.ALL | wx.EXPAND, border=cardPad)
+			sHelper.addItem(outer, **kw)
+			return item
+
+		# Status chip (themed) or plain status line.
+		self.statusLine = theme.StatusLine(self)
+		if self.themed:
+			chipRow = wx.BoxSizer(wx.HORIZONTAL)
+			chipRow.Add(self.statusLine, flag=wx.LEFT | wx.TOP | wx.BOTTOM, border=cardPad)
+			sHelper.addItem(chipRow)
+		else:
+			sHelper.addItem(self.statusLine, flag=wx.EXPAND)
 
 		# AI and model side by side. Creation order = tab order: AI, Model.
 		selectors = wx.BoxSizer(wx.HORIZONTAL)
@@ -111,7 +130,7 @@ class ChatDialog(wx.Dialog):
 		self.modelCombo.Bind(wx.EVT_KILL_FOCUS, self.onModelKillFocus)
 		self.modelCombo.Bind(wx.EVT_COMBOBOX, lambda evt: self._saveModel())
 		selectors.Add(modelHelper.sizer, flag=wx.ALIGN_CENTER_VERTICAL)
-		sHelper.addItem(selectors)
+		onCard(selectors, flag=wx.EXPAND)
 
 		# Conversation: label above, list fills the window.
 		# Translators: label of the list with the messages of the conversation.
@@ -139,7 +158,7 @@ class ChatDialog(wx.Dialog):
 		conversationBox.Add(conversationLabel)
 		conversationBox.AddSpacer(gapS)
 		conversationBox.Add(self.conversationTree, proportion=1, flag=wx.EXPAND)
-		sHelper.addItem(conversationBox, proportion=1, flag=wx.EXPAND)
+		onCard(conversationBox, proportion=1, flag=wx.EXPAND)
 
 		# Question: label above, field and Send button on the same row (chat layout).
 		# Translators: label of the field where the user types the question.
@@ -174,7 +193,7 @@ class ChatDialog(wx.Dialog):
 		questionBox.Add(self.attachmentsLabel)
 		questionBox.Add(self.attachmentsList, flag=wx.EXPAND)
 		self._attachmentsBox = questionBox
-		sHelper.addItem(questionBox, flag=wx.EXPAND)
+		onCard(questionBox, flag=wx.EXPAND)
 
 		row1 = guiHelper.ButtonHelper(wx.HORIZONTAL)
 		# Translators: button that cancels the question being sent.
@@ -218,8 +237,18 @@ class ChatDialog(wx.Dialog):
 
 		mainSizer.Add(sHelper.sizer, proportion=1, border=guiHelper.BORDER_FOR_DIALOGS + (theme.space("xs") if self.themed else 0), flag=wx.ALL | wx.EXPAND)
 		if self.themed:
-			theme.applyColors(self, bodyControls=(self.conversationTree, self.questionEdit, self.modelCombo, self.attachmentsList))
-			self.focusFrames = theme.FocusFrames(self, (self.providerChoice, self.modelCombo, self.conversationTree, self.questionEdit, self.attachmentsList))
+			cards = (
+				theme.Card(selectors, (self.providerChoice, aiHelper.sizer.GetItem(0).GetWindow(), self.modelCombo, modelHelper.sizer.GetItem(0).GetWindow())),
+				theme.Card(conversationBox, (conversationLabel, self.conversationTree), title=conversationLabel),
+				theme.Card(questionBox, (questionLabel, self.questionEdit, self.attachButton, self.sendButton, self.attachmentsLabel, self.attachmentsList), title=questionLabel),
+			)
+			theme.applyColors(self, bodyControls=(self.conversationTree, self.questionEdit, self.modelCombo, self.attachmentsList), cards=cards)
+			self.focusFrames = theme.FocusFrames(
+				self,
+				(self.providerChoice, self.modelCombo, self.conversationTree, self.questionEdit, self.attachButton, self.sendButton, self.attachmentsList),
+				cards=cards,
+				chips=(self.statusLine,),
+			)
 		self.SetSizer(mainSizer)
 		mainSizer.Fit(self)
 		width, height = self.GetSize()
@@ -457,6 +486,8 @@ class ChatDialog(wx.Dialog):
 			# Translators: status line when the AI has no token. {name} is the AI.
 			self.statusLine.setStatus(_("{name} · not connected, sending a question opens the connection screen").format(name=name), "idle")
 		self.Layout()
+		if self.themed:
+			self.Refresh()
 
 	def _updateButtons(self):
 		busy = self.session.busy
@@ -801,6 +832,7 @@ class ChatDialog(wx.Dialog):
 		self.attachmentsLabel.Show(show)
 		self.attachmentsList.Show(show)
 		self.Layout()
+		self.Refresh()
 
 	def addAttachmentFiles(self, paths):
 		"""Loads the files (any format). Returns the number added."""

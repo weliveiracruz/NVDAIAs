@@ -134,13 +134,20 @@ class SignInDialog(wx.Dialog):
 		self.cancelButton = wx.Button(self, id=wx.ID_CANCEL, label=_("&Cancel sign-in"))
 		self.cancelButton.Bind(wx.EVT_BUTTON, lambda evt: self.cancel())
 		self.Bind(wx.EVT_CLOSE, lambda evt: self.cancel())
-		sizer.Add(label, flag=wx.ALL, border=10)
-		sizer.Add(self.messageText, proportion=1, flag=wx.LEFT | wx.RIGHT | wx.EXPAND, border=10)
-		sizer.Add(self.cancelButton, flag=wx.ALL | wx.ALIGN_RIGHT, border=10)
+		themed = theme.isEnabled()
+		pad = theme.space("md") if themed else 0
+		card = wx.BoxSizer(wx.VERTICAL)
+		card.Add(label)
+		card.AddSpacer(theme.space("sm"))
+		card.Add(self.messageText, proportion=1, flag=wx.EXPAND)
+		sizer.Add(card, proportion=1, flag=wx.ALL | wx.EXPAND, border=10 + 2 * pad)
+		sizer.Add(self.cancelButton, flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.ALIGN_RIGHT, border=10 + pad)
 		self.SetSizer(sizer)
 		sizer.Fit(self)
-		if theme.isEnabled():
-			theme.applyColors(self, bodyControls=(self.messageText,))
+		if themed:
+			cards = (theme.Card(card, (label, self.messageText), title=label),)
+			theme.applyColors(self, bodyControls=(self.messageText,), cards=cards)
+			self.focusFrames = theme.FocusFrames(self, (self.messageText,), cards=cards)
 		self.SetEscapeId(wx.ID_CANCEL)
 		self.CentreOnScreen()
 

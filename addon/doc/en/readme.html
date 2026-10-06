@@ -9,7 +9,7 @@
 <ul>
 <li>Author: Wellington Cruz
 </li>
-<li>Version: 1.7.0
+<li>Version: 1.8.0
 </li>
 <li>Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 </li>
@@ -76,7 +76,7 @@
 <h2>The chat window</h2>
 <p>Open it with <strong>NVDA+Alt+I</strong> or NVDA menu &gt; Tools &gt; <strong>NVDAIAs - Chat with AI</strong>. Focus starts in the Question field.</p>
 <p>Tab order: <strong>AI</strong> (combo box), <strong>Model</strong>, <strong>Conversation</strong> (a tree with two branches: <strong>Previous conversations</strong>, collapsed, and <strong>Current conversation (N messages)</strong>, expanded; both collapse and expand with the arrows or Enter, and the current one opens again when a new answer arrives), <strong>Question</strong>, <strong>Attach files</strong>, Send, the <strong>Attached files</strong> list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings, Send feedback, Manage ChatGPT usage (only while using the ChatGPT plan) and Close. <strong>Shift+Tab from the Question field goes straight to the conversation list.</strong></p>
-<p>The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a <strong>thick orange frame around the field that has the focus</strong>. A <strong>status line</strong> under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.</p>
+<p>The window has a modern visual theme that also helps people with low vision: an orange top bar with the title, a light grey page, <strong>white cards with rounded corners</strong> for each group (AI and model, conversation, question), larger fonts and a <strong>rounded orange ring around the control that has the focus</strong>. A <strong>status chip</strong> under the header shows the AI, the model and the state (connected, answering, last question failed) on a tinted background; colours only repeat what the text says. The Portuguese texts follow a close, simple and direct tone of voice (docs/DESIGN.md). The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.</p>
 <table border="1">
 <tr><th>Where</th><th>Key</th><th>Action</th></tr>
 <tr><td>Question</td><td>Enter</td><td>Sends the question</td></tr>
@@ -136,6 +136,11 @@
 </li>
 </ul>
 <h2>Changes</h2>
+<h3>1.8.0</h3>
+<ul>
+<li>Modern layout: orange top bar, white cards with rounded corners, status chip, rounded focus ring, new design tokens (colours, fonts, spacing, radius) and a tone of voice for the Portuguese texts. Screen reader behaviour, tab order and shortcuts are unchanged.
+</li>
+</ul>
 <h3>1.7.0</h3>
 <ul>
 <li>Continue with ChatGPT: sign in with your ChatGPT account and use your ChatGPT plan, without an API key. The token option stays.

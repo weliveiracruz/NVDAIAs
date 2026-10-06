@@ -1,7 +1,7 @@
 # NVDAIAs – Chat with ChatGPT, Gemini and Claude from NVDA
 
 * Author: Wellington Cruz
-* Version: 1.7.0
+* Version: 1.8.0
 * Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 * License: GNU General Public License, version 2
 * Documentation in Portuguese (Brazil): docs/pt_BR/readme.md
@@ -53,7 +53,7 @@ Open it with **NVDA+Alt+I** or NVDA menu > Tools > **NVDAIAs - Chat with AI**. F
 
 Tab order: **AI** (combo box), **Model**, **Conversation** (a tree with two branches: **Previous conversations**, collapsed, and **Current conversation (N messages)**, expanded; both collapse and expand with the arrows or Enter, and the current one opens again when a new answer arrives), **Question**, **Attach files**, Send, the **Attached files** list (only while files are waiting), then the buttons Cancel sending, Read message, Copy message, Actions for this message, New conversation, Save conversation, Connect account, Settings, Send feedback, Manage ChatGPT usage (only while using the ChatGPT plan) and Close. **Shift+Tab from the Question field goes straight to the conversation list.**
 
-The window has a visual theme that also helps people with low vision: navy header, light background, orange accents, larger fonts and a **thick orange frame around the field that has the focus**. A **status line** under the header shows the AI, the model and the state (connected, answering, last question failed); colours only repeat what the text says. The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.
+The window has a modern visual theme that also helps people with low vision: an orange top bar with the title, a light grey page, **white cards with rounded corners** for each group (AI and model, conversation, question), larger fonts and a **rounded orange ring around the control that has the focus**. A **status chip** under the header shows the AI, the model and the state (connected, answering, last question failed) on a tinted background; colours only repeat what the text says. The Portuguese texts follow a close, simple and direct tone of voice (docs/DESIGN.md). The theme turns itself off in Windows high contrast and can be turned off in the settings, which also offer larger text. Buttons stay standard Windows buttons.
 
 | Where | Key | Action |
 |---|---|---|
@@ -122,6 +122,10 @@ NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for ChatGPT, the C
 * Conversations are saved automatically after each answer in the `NVDAIAs-history` folder of the NVDA configuration, **encrypted with DPAPI** like the tokens (screenshots and attached files included). Delete one with the Delete key, delete all in the settings or turn the history off. The history is kept when the add-on is updated and deleted when it is uninstalled. **Save conversation** writes a plain text file.
 
 ## Changes
+
+### 1.8.0
+
+* Modern layout: orange top bar, white cards with rounded corners, status chip, rounded focus ring, new design tokens (colours, fonts, spacing, radius) and a tone of voice for the Portuguese texts. Screen reader behaviour, tab order and shortcuts are unchanged.
 
 ### 1.7.0
 

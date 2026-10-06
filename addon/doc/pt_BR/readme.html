@@ -9,7 +9,7 @@
 <ul>
 <li>Autor: Wellington Cruz
 </li>
-<li>Versão: 1.7.0
+<li>Versão: 1.8.0
 </li>
 <li>Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 </li>
@@ -164,7 +164,7 @@
 </li>
 </ol>
 <h3>Aparência</h3>
-<p>A janela tem um tema visual pensado também para quem tem baixa visão: cabeçalho azul-marinho com o nome do complemento, fundo claro, destaques em laranja, fontes maiores e uma <strong>moldura laranja grossa em volta do campo que está com o foco</strong>. Logo abaixo do cabeçalho, uma <strong>linha de situação</strong> mostra a IA, o modelo e o estado: conectado, respondendo, ou que a última pergunta falhou. As cores só repetem o que o texto já diz.</p>
+<p>A janela tem um visual moderno, pensado também para quem tem baixa visão: barra superior laranja com o título, fundo cinza-claro, <strong>cartões brancos com cantos arredondados</strong> para cada grupo (IA e modelo, conversa, pergunta), fontes maiores e um <strong>anel laranja arredondado em volta do controle que está com o foco</strong>. Logo abaixo do cabeçalho, um <strong>chip de situação</strong> mostra a IA, o modelo e o estado (conectado, preparando a resposta, ou que não deu para enviar) sobre um fundo colorido. As cores só repetem o que o texto já diz. Os textos seguem um tom próximo, simples e direto (veja docs/DESIGN.md).</p>
 <p>O tema se desliga sozinho quando o alto contraste do Windows está ativo. Também pode ser desligado nas configurações, onde há ainda a opção de texto maior. Os botões continuam sendo os botões padrão do Windows, para o NVDA apresentá-los como sempre.</p>
 <h3>Teclas da janela</h3>
 <table border="1">
@@ -259,7 +259,7 @@
 </li>
 <li><strong>Guardar as conversas anteriores</strong> (ligado por padrão), <strong>Número máximo de conversas anteriores</strong> (padrão 100; as mais antigas são apagadas) e o botão <strong>Apagar todas as conversas anteriores</strong>.
 </li>
-<li><strong>Usar o tema visual nas janelas do NVDAIAs</strong> (ligado por padrão): cores, cabeçalho e moldura de foco.
+<li><strong>Usar o tema visual nas janelas do NVDAIAs</strong> (ligado por padrão): cores, cabeçalho, cartões, chip de situação e anel de foco.
 </li>
 <li><strong>Texto maior nas janelas do NVDAIAs</strong> (desligado por padrão): aumenta as fontes em 25%.
 </li>
@@ -303,6 +303,11 @@
 <tr><td>"O uso do seu plano do ChatGPT não está disponível"</td><td>A conta, o espaço de trabalho ou a região não permitem. Use um token de API.</td></tr>
 </table>
 <h2>Histórico de versões</h2>
+<h3>1.8.0</h3>
+<ul>
+<li>Layout moderno: barra superior laranja, cartões brancos com cantos arredondados, chip de situação, anel de foco arredondado, novos design tokens (cores, fontes, espaçamentos, raios) e tom de voz nos textos em português. A leitura pelo NVDA, a ordem de tabulação e os atalhos não mudaram.
+</li>
+</ul>
 <h3>1.7.0</h3>
 <ul>
 <li>Continuar com o ChatGPT: entre com a sua conta do ChatGPT e use o seu plano do ChatGPT, sem chave de API. A opção de token continua.

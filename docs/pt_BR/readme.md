@@ -1,7 +1,7 @@
 # NVDAIAs – Converse com o ChatGPT, o Gemini e o Claude pelo NVDA
 
 * Autor: Wellington Cruz
-* Versão: 1.7.0
+* Versão: 1.8.0
 * Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 * Licença: GNU General Public License, versão 2
 
@@ -129,7 +129,7 @@ Toda conversa é guardada automaticamente. O primeiro item da árvore **Conversa
 
 ### Aparência
 
-A janela tem um tema visual pensado também para quem tem baixa visão: cabeçalho azul-marinho com o nome do complemento, fundo claro, destaques em laranja, fontes maiores e uma **moldura laranja grossa em volta do campo que está com o foco**. Logo abaixo do cabeçalho, uma **linha de situação** mostra a IA, o modelo e o estado: conectado, respondendo, ou que a última pergunta falhou. As cores só repetem o que o texto já diz.
+A janela tem um visual moderno, pensado também para quem tem baixa visão: barra superior laranja com o título, fundo cinza-claro, **cartões brancos com cantos arredondados** para cada grupo (IA e modelo, conversa, pergunta), fontes maiores e um **anel laranja arredondado em volta do controle que está com o foco**. Logo abaixo do cabeçalho, um **chip de situação** mostra a IA, o modelo e o estado (conectado, preparando a resposta, ou que não deu para enviar) sobre um fundo colorido. As cores só repetem o que o texto já diz. Os textos seguem um tom próximo, simples e direto (veja docs/DESIGN.md).
 
 O tema se desliga sozinho quando o alto contraste do Windows está ativo. Também pode ser desligado nas configurações, onde há ainda a opção de texto maior. Os botões continuam sendo os botões padrão do Windows, para o NVDA apresentá-los como sempre.
 
@@ -214,7 +214,7 @@ Menu do NVDA > Preferências > Configurações > categoria **NVDAIAs**. Também 
 * **Bipar enquanto aguarda a resposta** (ligado por padrão).
 * **Remover símbolos de formatação ao ler as respostas** (ligado por padrão).
 * **Guardar as conversas anteriores** (ligado por padrão), **Número máximo de conversas anteriores** (padrão 100; as mais antigas são apagadas) e o botão **Apagar todas as conversas anteriores**.
-* **Usar o tema visual nas janelas do NVDAIAs** (ligado por padrão): cores, cabeçalho e moldura de foco.
+* **Usar o tema visual nas janelas do NVDAIAs** (ligado por padrão): cores, cabeçalho, cartões, chip de situação e anel de foco.
 * **Texto maior nas janelas do NVDAIAs** (desligado por padrão): aumenta as fontes em 25%.
 * **Tamanho máximo da resposta em tokens (Claude)**: o Claude exige esse limite. Padrão 4096.
 * **Tempo limite para aguardar a resposta**: em segundos. Padrão 120.
@@ -248,6 +248,10 @@ Os tokens só são gravados quando você pressiona OK ou Aplicar.
 | "O uso do seu plano do ChatGPT não está disponível" | A conta, o espaço de trabalho ou a região não permitem. Use um token de API. |
 
 ## Histórico de versões
+
+### 1.8.0
+
+* Layout moderno: barra superior laranja, cartões brancos com cantos arredondados, chip de situação, anel de foco arredondado, novos design tokens (cores, fontes, espaçamentos, raios) e tom de voz nos textos em português. A leitura pelo NVDA, a ordem de tabulação e os atalhos não mudaram.
 
 ### 1.7.0
 

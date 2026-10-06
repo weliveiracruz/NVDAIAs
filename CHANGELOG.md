@@ -1,5 +1,12 @@
 # Changelog / Histórico de versões
 
+## 1.8.0
+
+* Modern layout built from new design tokens: orange top bar with the title in large bold white text, light grey page, white cards with 12px rounded corners for each group of controls (with an orange accent bar next to the card title), status chip with tinted background, rounded orange focus ring, fonts chosen from the token list (brand font when installed, otherwise Segoe UI Variable or Segoe UI). Applied to the chat window, the Connect account screen and the ChatGPT sign-in window. Native controls, tab order, names and shortcuts are unchanged; the theme still turns off in Windows high contrast.
+* Tone of voice for the Portuguese texts (close, simple, direct), applied to the header subtitles, the status chip and some messages (docs/DESIGN.md).
+* Layout moderno feito com novos design tokens: barra superior laranja com o título em branco, grande e em negrito, fundo cinza-claro, cartões brancos com cantos arredondados de 12px para cada grupo de controles (com uma barra laranja ao lado do título do cartão), chip de situação com fundo colorido, anel de foco laranja arredondado e fontes escolhidas pela lista dos tokens (a fonte da marca, se estiver instalada; senão Segoe UI Variable ou Segoe UI). Vale para a janela de conversa, a tela Conectar conta e a janela de entrada com o ChatGPT. Controles nativos, ordem de tabulação, nomes e atalhos não mudaram; o tema continua se desligando no alto contraste do Windows.
+* Tom de voz nos textos em português (próximo, simples e direto), aplicado aos subtítulos dos cabeçalhos, ao chip de situação e a algumas mensagens (docs/DESIGN.md).
+
 ## 1.7.0
 
 * Continue with ChatGPT: sign in with your ChatGPT account and use your ChatGPT plan (Plus, Pro and others) without an API key, using OpenAI's official Sign in with ChatGPT for open-source apps (OAuth with PKCE in the browser, answer received only on 127.0.0.1, ID token checked, tokens encrypted with DPAPI and renewed automatically, revoked on sign out). Available on the Connect account screen and in the settings. The API token option stays; a setting chooses which one ChatGPT uses.
