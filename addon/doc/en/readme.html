@@ -9,7 +9,7 @@
 <ul>
 <li>Author: Wellington Cruz
 </li>
-<li>Version: 1.8.0
+<li>Version: 1.9.0
 </li>
 <li>Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 </li>
@@ -33,6 +33,7 @@
 <tr><td>ChatGPT</td><td>platform.openai.com/api-keys</td><td>Pay per use, billed separately from ChatGPT Plus; the platform account needs credit.</td></tr>
 <tr><td>Gemini</td><td>aistudio.google.com/app/apikey</td><td>Has a free tier with usage limits.</td></tr>
 <tr><td>Claude</td><td>console.anthropic.com/settings/keys</td><td>Pay per use, billed separately from Claude Pro; the Console account needs credit.</td></tr>
+<tr><td>Groq</td><td>console.groq.com/keys</td><td><strong>Free</strong>, no credit card, with a daily limit of questions. Runs open models (Llama, gpt-oss). Reads text and images; not PDF, audio or video.</td></tr>
 </table>
 <h2>First use</h2>
 <ol>
@@ -96,10 +97,10 @@
 <p><strong>Attach files</strong> (next to the Question field, Tab from it) opens the standard Windows file dialog with all formats; several files can be chosen.</p>
 <table border="1">
 <tr><th>File</th><th>What happens</th><th>AIs</th></tr>
-<tr><td>Images (JPG, PNG, GIF, WebP; BMP, TIFF and others are converted to PNG)</td><td>Sent as an image</td><td>ChatGPT, Gemini, Claude</td></tr>
-<tr><td>PDF</td><td>Sent as a document</td><td>ChatGPT, Gemini, Claude</td></tr>
-<tr><td>.docx, .xlsx, .pptx (with notes), .odt, .ods, .odp, EPUB, RTF, HTML</td><td>Text extracted on this computer</td><td>ChatGPT, Gemini, Claude</td></tr>
-<tr><td>Text, CSV, JSON, XML, Markdown, source code and any other text file</td><td>Sent as text</td><td>ChatGPT, Gemini, Claude</td></tr>
+<tr><td>Images (JPG, PNG, GIF, WebP; BMP, TIFF and others are converted to PNG)</td><td>Sent as an image</td><td>ChatGPT, Gemini, Claude; Groq with vision models</td></tr>
+<tr><td>PDF</td><td>Sent as a document</td><td>ChatGPT, Gemini, Claude (not Groq)</td></tr>
+<tr><td>.docx, .xlsx, .pptx (with notes), .odt, .ods, .odp, EPUB, RTF, HTML</td><td>Text extracted on this computer</td><td>All</td></tr>
+<tr><td>Text, CSV, JSON, XML, Markdown, source code and any other text file</td><td>Sent as text</td><td>All</td></tr>
 <tr><td>Audio and video</td><td>Sent to be listened to or watched</td><td>Gemini only</td></tr>
 <tr><td>.doc, .xls, .ppt, programs, archives and other binaries</td><td>Not read; a message explains how to convert</td><td>-</td></tr>
 </table>
@@ -119,7 +120,7 @@
 </table>
 <p>All commands can be changed in NVDA menu &gt; Preferences &gt; Input gestures, category <strong>NVDAIAs</strong>.</p>
 <h2>Settings</h2>
-<p>NVDA menu &gt; Preferences &gt; Settings &gt; <strong>NVDAIAs</strong>: default AI; for ChatGPT, the ChatGPT plan controls described above; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; keep previous conversations, maximum number and Delete all previous conversations; use the visual theme; larger text; maximum answer size for Claude; time limit.</p>
+<p>NVDA menu &gt; Preferences &gt; Settings &gt; <strong>NVDAIAs</strong>: default AI; <strong>AI to connect or configure</strong> (Alt+O), a combo box that chooses which AI is shown below: its token field, buttons and model change with the choice, and the other AIs are hidden; for ChatGPT, the ChatGPT plan controls described above; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; keep previous conversations, maximum number and Delete all previous conversations; use the visual theme; larger text; maximum answer size for Claude; time limit.</p>
 <h2>Privacy and security</h2>
 <ul>
 <li>The ChatGPT sign-in follows OpenAI's rules for open-source apps: the browser comes back only to this computer (127.0.0.1), with PKCE, a random state and a nonce; the ID token is checked (signature, issuer, audience, expiry and nonce); the sign-in tokens are stored encrypted with DPAPI like the API tokens and never written to the log; Sign out revokes the session at OpenAI.
@@ -136,6 +137,13 @@
 </li>
 </ul>
 <h2>Changes</h2>
+<h3>1.9.0</h3>
+<ul>
+<li>New AI: Groq, free (no credit card) with a daily limit, with open models such as Llama and gpt-oss.
+</li>
+<li>Settings: the AI to connect or configure is chosen in a combo box, and only its token field, buttons and model are shown.
+</li>
+</ul>
 <h3>1.8.0</h3>
 <ul>
 <li>Modern layout: orange top bar, white cards with rounded corners, status chip, rounded focus ring, new design tokens (colours, fonts, spacing, radius) and a tone of voice for the Portuguese texts. Screen reader behaviour, tab order and shortcuts are unchanged.

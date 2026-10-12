@@ -33,6 +33,7 @@ class _ProviderGroup:
 		cls = getProviderClass(providerId)
 		self.cls = cls
 		box = wx.StaticBoxSizer(wx.VERTICAL, panel, label=core.providerLabel(providerId))
+		self.box = box
 		boxParent = box.GetStaticBox()
 		group = guiHelper.BoxSizerHelper(panel, sizer=box)
 		parentHelper.addItem(group)
@@ -67,6 +68,14 @@ class _ProviderGroup:
 		self.updateModelsButton = group.addItem(wx.Button(boxParent, label=_("Update {name} model list").format(name=cls.name)))
 		self.updateModelsButton.Bind(wx.EVT_BUTTON, self.onUpdateModels)
 		self.updateStatus()
+
+	def show(self, visible):
+		"""Only the AI chosen in "AI to configure" is shown (hidden controls are out of the tab order)."""
+		self.box.GetStaticBox().Show(visible)
+		self.box.ShowItems(visible)
+
+	def isShown(self):
+		return self.box.GetStaticBox().IsShown()
 
 	def _addPlanControls(self, group, boxParent):
 		"""Sign in with ChatGPT: use the ChatGPT plan instead of an API key."""
@@ -272,7 +281,17 @@ class NVDAIAsSettingsPanel(SettingsPanel):
 		self.providerChoice = sHelper.addLabeledControl(_("Default &AI:"), wx.Choice, choices=[core.providerLabel(p) for p in PROVIDER_IDS])
 		self.providerChoice.SetSelection(PROVIDER_IDS.index(c["provider"]))
 
+		# One AI at a time: the combo chooses which AI's token, buttons and model are shown.
+		self.configureChoice = sHelper.addLabeledControl(
+			# Translators: label of the combo box that chooses which AI is connected or configured below.
+			_("AI t&o connect or configure:"),
+			wx.Choice,
+			choices=[core.providerLabel(p) for p in PROVIDER_IDS],
+		)
+		self.configureChoice.SetSelection(PROVIDER_IDS.index(c["provider"]))
+		self.configureChoice.Bind(wx.EVT_CHOICE, self.onConfigureChanged)
 		self.groups = [_ProviderGroup(self, sHelper, p) for p in PROVIDER_IDS]
+		self.showGroup(c["provider"])
 
 		self.systemPromptEdit = sHelper.addLabeledControl(
 			# Translators: label of the field with the instructions sent to the AI.
@@ -334,6 +353,30 @@ class NVDAIAsSettingsPanel(SettingsPanel):
 			max=600,
 			initial=c["timeout"],
 		)
+
+	@property
+	def configuredProvider(self):
+		return PROVIDER_IDS[self.configureChoice.GetSelection()]
+
+	def group(self, providerId):
+		return next(g for g in self.groups if g.providerId == providerId)
+
+	def showGroup(self, providerId):
+		for g in self.groups:
+			g.show(g.providerId == providerId)
+		self.Layout()
+		parent = self.GetParent()
+		if parent is not None:
+			parent.Layout()
+			if hasattr(parent, "FitInside"):
+				parent.FitInside()
+
+	def onConfigureChanged(self, evt):
+		providerId = self.configuredProvider
+		self.showGroup(providerId)
+		g = self.group(providerId)
+		# Translators: announced when another AI is chosen in the settings. {name} is the AI, {status} its connection status.
+		ui.message(_("{name}: {status}").format(name=g.cls.name, status=g.statusText.GetLabel()))
 
 	def onClearHistory(self, evt):
 		if gui.messageBox(

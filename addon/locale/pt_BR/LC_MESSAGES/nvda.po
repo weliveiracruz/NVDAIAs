@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NVDAIAs 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 23:09-0300\n"
+"POT-Creation-Date: 2026-10-12 07:38-0300\n"
 "Last-Translator: Wellington Cruz <weliveiracruz@gmail.com>\n"
 "Language-Team: Portuguese (Brazil)\n"
 "Language: pt_BR\n"
@@ -15,7 +15,7 @@ msgstr ""
 #. Translators: category of the NVDAIAs commands in the Input gestures dialog.
 #. Translators: title of the settings category.
 #: addon/globalPlugins/NVDAIAs/__init__.py:23
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:265
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:274
 msgid "NVDAIAs"
 msgstr "NVDAIAs"
 
@@ -280,7 +280,8 @@ msgstr "{name} está respondendo…"
 #: addon/globalPlugins/NVDAIAs/chatDialog.py:475
 #, python-brace-format
 msgid "{name} · the last question failed, it is back in the Question field"
-msgstr "{name} · não deu para enviar. Sua pergunta voltou para o campo Pergunta"
+msgstr ""
+"{name} · não deu para enviar. Sua pergunta voltou para o campo Pergunta"
 
 #. Translators: status line while waiting. {name} is the AI, {model} the model.
 #: addon/globalPlugins/NVDAIAs/chatDialog.py:478
@@ -304,7 +305,8 @@ msgstr "{name} · {model} · conectado"
 #: addon/globalPlugins/NVDAIAs/chatDialog.py:487
 #, python-brace-format
 msgid "{name} · not connected, sending a question opens the connection screen"
-msgstr "{name} · ainda não conectado. Ao enviar a pergunta, mostramos como conectar"
+msgstr ""
+"{name} · ainda não conectado. Ao enviar a pergunta, mostramos como conectar"
 
 #. Translators: announced when the chosen AI has no token yet.
 #: addon/globalPlugins/NVDAIAs/chatDialog.py:511
@@ -695,7 +697,7 @@ msgstr "Abrindo no navegador a página para gerar o token"
 #. Translators: shown when the browser could not be opened. {url} is the address of the form.
 #. Translators: shown when the browser could not be opened. {url} is the address.
 #: addon/globalPlugins/NVDAIAs/connectDialog.py:31
-#: addon/globalPlugins/NVDAIAs/core.py:272
+#: addon/globalPlugins/NVDAIAs/core.py:275
 #: addon/globalPlugins/NVDAIAs/feedback.py:57
 #: addon/globalPlugins/NVDAIAs/planUi.py:36
 #, python-brace-format
@@ -762,8 +764,22 @@ msgstr ""
 "Observação: o uso da API é cobrado à parte da assinatura do Claude Pro; a "
 "conta precisa ter crédito."
 
+#. Translators: steps to create a Groq API key.
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:59
+msgid ""
+"1. Press the button \"Open page to generate token\". The Groq console "
+"(console.groq.com) opens in your browser.\n"
+"2. Sign in or create a free account (e-mail, Google or GitHub).\n"
+"3. Choose \"Create API Key\", give it a name such as NVDAIAs and confirm.\n"
+"4. Copy the key (it starts with gsk_) and paste it in the Token field "
+"below.\n"
+"Note: Groq is free, without credit card, with a daily limit of questions. It "
+"runs open models (Llama, gpt-oss); it reads text and images, but not PDF, "
+"audio or video."
+msgstr "1. Pressione o botão \"Abrir página para gerar o token\". O console do Groq (console.groq.com) abre no navegador.\n2. Entre ou crie uma conta gratuita (e-mail, Google ou GitHub).\n3. Escolha \"Create API Key\" (criar chave de API), dê um nome como NVDAIAs e confirme.\n4. Copie a chave (ela começa com gsk_) e cole no campo Token abaixo.\nObservação: o Groq é gratuito, sem cartão de crédito, com um limite diário de perguntas. Ele roda modelos abertos (Llama, gpt-oss); lê textos e imagens, mas não PDF, áudio ou vídeo."
+
 #. Translators: first line of the connection instructions. {name} is ChatGPT, Gemini or Claude.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:60
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:67
 #, python-brace-format
 msgid ""
 "To connect NVDAIAs to {name} you need an access token (API key) generated on "
@@ -773,57 +789,57 @@ msgstr ""
 "de API) gerado no site do provedor."
 
 #. Translators: title of the connect account dialog.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:69
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:76
 msgid "NVDAIAs - Connect account"
 msgstr "NVDAIAs - Conectar conta"
 
 #. Translators: title of the coloured header of the connect dialog.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:77
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:84
 msgid "Connect account"
 msgstr "Conectar conta"
 
 #. Translators: subtitle of the coloured header of the connect dialog.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:79
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:86
 msgid "Sign in with ChatGPT or paste the token generated on the AI's site"
 msgstr "Entre com o ChatGPT ou cole o token gerado no site da IA"
 
 #. Translators: label of the combo box to choose the AI in the connect dialog.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:95
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:102
 msgid "&Artificial intelligence:"
 msgstr "&Inteligência artificial:"
 
 #. Translators: button that signs in with the ChatGPT account and uses the ChatGPT plan, without API key.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:100
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:107
 msgid "Continue &with ChatGPT"
 msgstr "Contin&uar com o ChatGPT"
 
 #. Translators: label of the read-only field with the connection instructions.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:107
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:114
 msgid "&Instructions:"
 msgstr "Ins&truções:"
 
 #. Translators: button that opens the provider site where the token is generated.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:115
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:122
 msgid "&Open page to generate token"
 msgstr "&Abrir página para gerar o token"
 
 #. Translators: label of the password field where the token is pasted.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:118
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:125
 msgid "&Token (API key):"
 msgstr "T&oken (chave de API):"
 
 #. Translators: button that tests and saves the token.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:124
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:131
 msgid "&Connect"
 msgstr "&Conectar"
 
 #. Translators: cancel button.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:128
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:135
 msgid "Cancel"
 msgstr "Cancelar"
 
 #. Translators: explanation of the Continue with ChatGPT button in the connect dialog.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:166
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:173
 msgid ""
 "No API key? Press \"Continue with ChatGPT\" to sign in with your ChatGPT "
 "account and use your ChatGPT plan (Plus, Pro and others). Questions then "
@@ -835,13 +851,13 @@ msgstr ""
 "extra."
 
 #. Translators: appended to the instructions when already signed in with ChatGPT. {email} is the account.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:170
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:177
 #, python-brace-format
 msgid "Already signed in with ChatGPT as {email}."
 msgstr "Você já entrou com o ChatGPT como {email}."
 
 #. Translators: appended to the instructions when a token is already saved.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:173
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:180
 msgid ""
 "A token for this AI is already saved. Paste a new one only if you want to "
 "replace it."
@@ -850,46 +866,51 @@ msgstr ""
 "substituí-lo."
 
 #. Translators: message when the token field is empty.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:197
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:204
 msgid "Paste the token in the Token field first."
 msgstr "Cole o token no campo Token para continuar."
 
 #. Translators: shown and announced while the token is being tested.
 #. Translators: announced while testing the connection.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:205
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:167
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:212
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:176
 msgid "Testing the connection, please wait…"
 msgstr "Testando a conexão, aguarde…"
 
 #. Translators: error when the token cannot be saved. {error} is the technical error.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:222
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:229
 #, python-brace-format
 msgid "The connection works, but the token could not be saved: {error}"
 msgstr "A conexão funciona, mas não foi possível salvar o token: {error}"
 
 #. Translators: message after a successful connection. {name} is ChatGPT, Gemini or Claude.
-#: addon/globalPlugins/NVDAIAs/connectDialog.py:232
+#: addon/globalPlugins/NVDAIAs/connectDialog.py:239
 #, python-brace-format
 msgid "Connected to {name}. The token was saved securely on this computer."
 msgstr "Conectado ao {name}. O token foi salvo com segurança neste computador."
 
 #. Translators: name of the OpenAI provider, shown in combo boxes.
-#: addon/globalPlugins/NVDAIAs/core.py:78
+#: addon/globalPlugins/NVDAIAs/core.py:79
 msgid "ChatGPT (OpenAI)"
 msgstr "ChatGPT (OpenAI)"
 
 #. Translators: name of the Google provider, shown in combo boxes.
-#: addon/globalPlugins/NVDAIAs/core.py:80
+#: addon/globalPlugins/NVDAIAs/core.py:81
 msgid "Gemini (Google)"
 msgstr "Gemini (Google)"
 
 #. Translators: name of the Anthropic provider, shown in combo boxes.
-#: addon/globalPlugins/NVDAIAs/core.py:82
+#: addon/globalPlugins/NVDAIAs/core.py:83
 msgid "Claude (Anthropic)"
 msgstr "Claude (Anthropic)"
 
+#. Translators: name of the Groq provider (free open models), shown in combo boxes.
+#: addon/globalPlugins/NVDAIAs/core.py:85
+msgid "Groq (free open models)"
+msgstr "Groq (modelos abertos, gratuito)"
+
 #. Translators: default instructions sent to the AI with every question.
-#: addon/globalPlugins/NVDAIAs/core.py:89
+#: addon/globalPlugins/NVDAIAs/core.py:92
 msgid ""
 "You are a helpful assistant. The user is blind and reads your answers with "
 "the NVDA screen reader. Always answer in the same language as the user's "
@@ -902,7 +923,7 @@ msgstr ""
 "emojis e símbolos decorativos."
 
 #. Translators: error when the API token is invalid. {name} is ChatGPT, Gemini or Claude.
-#: addon/globalPlugins/NVDAIAs/core.py:225
+#: addon/globalPlugins/NVDAIAs/core.py:228
 #, python-brace-format
 msgid ""
 "{name} did not accept the token. Check the token in NVDAIAs settings or "
@@ -912,7 +933,7 @@ msgstr ""
 "ou gere um novo."
 
 #. Translators: error when the account has no credit or hit the rate limit.
-#: addon/globalPlugins/NVDAIAs/core.py:228
+#: addon/globalPlugins/NVDAIAs/core.py:231
 #, python-brace-format
 msgid ""
 "{name}: usage limit reached or no credit available in the account. Wait a "
@@ -922,20 +943,20 @@ msgstr ""
 "verifique o faturamento da sua conta."
 
 #. Translators: error when there is no internet connection.
-#: addon/globalPlugins/NVDAIAs/core.py:231
+#: addon/globalPlugins/NVDAIAs/core.py:234
 #, python-brace-format
 msgid "Could not connect to {name}. Check your internet connection."
 msgstr ""
 "Não foi possível conectar ao {name}. Verifique a sua conexão com a internet."
 
 #. Translators: error when the user did not finish signing in to ChatGPT in time.
-#: addon/globalPlugins/NVDAIAs/core.py:234
+#: addon/globalPlugins/NVDAIAs/core.py:237
 msgid "The sign-in in the browser took too long and was stopped. Try again."
 msgstr ""
 "A entrada pelo navegador demorou demais e foi interrompida. Tente de novo."
 
 #. Translators: error when the AI takes too long to answer.
-#: addon/globalPlugins/NVDAIAs/core.py:237
+#: addon/globalPlugins/NVDAIAs/core.py:240
 #, python-brace-format
 msgid ""
 "{name} took too long to answer. Try again or increase the time limit in the "
@@ -945,7 +966,7 @@ msgstr ""
 "limite nas configurações."
 
 #. Translators: error when the selected model does not exist.
-#: addon/globalPlugins/NVDAIAs/core.py:240
+#: addon/globalPlugins/NVDAIAs/core.py:243
 #, python-brace-format
 msgid ""
 "{name}: the selected model is not available for your account. Choose another "
@@ -955,30 +976,29 @@ msgstr ""
 "outro modelo."
 
 #. Translators: error when the AI refused or blocked the answer.
-#: addon/globalPlugins/NVDAIAs/core.py:243
+#: addon/globalPlugins/NVDAIAs/core.py:246
 #, python-brace-format
 msgid "{name} did not answer this question (blocked by the provider)."
 msgstr "O {name} não respondeu a esta pergunta (bloqueada pelo provedor)."
 
 #. Translators: error when the AI cannot read an attached file. {name} is the AI, {file} the file name.
-#: addon/globalPlugins/NVDAIAs/core.py:246
+#: addon/globalPlugins/NVDAIAs/core.py:249
 #, python-brace-format
 msgid ""
-"{name} cannot read the attached file {file}. Audio and video only work with "
-"Gemini: choose Gemini in the AI box or remove the file."
-msgstr ""
-"O {name} não consegue ler o arquivo anexado {file}. Áudio e vídeo só "
-"funcionam com o Gemini: escolha o Gemini na caixa IA ou remova o arquivo."
+"{name} cannot read the attached file {file}. Choose another AI in the AI box "
+"(only Gemini reads audio and video; Groq does not read PDF) or remove the "
+"file."
+msgstr "O {name} não consegue ler o arquivo anexado {file}. Escolha outra IA na caixa IA (só o Gemini lê áudio e vídeo; o Groq não lê PDF) ou remova o arquivo."
 
 #. Translators: error when the provider has a temporary problem.
-#: addon/globalPlugins/NVDAIAs/core.py:250
+#: addon/globalPlugins/NVDAIAs/core.py:253
 #, python-brace-format
 msgid "{name} had a temporary problem. Try again in a few moments."
 msgstr ""
 "O {name} teve um problema temporário. Tente de novo em alguns instantes."
 
 #. Translators: error when the "Sign in with ChatGPT" session ended. {name} is ChatGPT.
-#: addon/globalPlugins/NVDAIAs/core.py:253
+#: addon/globalPlugins/NVDAIAs/core.py:256
 #, python-brace-format
 msgid ""
 "Your {name} sign-in has expired or was ended. Press Connect account and "
@@ -988,7 +1008,7 @@ msgstr ""
 "escolha Continuar com o ChatGPT para entrar de novo."
 
 #. Translators: error when the ChatGPT plan reached its usage limit. {name} is ChatGPT.
-#: addon/globalPlugins/NVDAIAs/core.py:256
+#: addon/globalPlugins/NVDAIAs/core.py:259
 #, python-brace-format
 msgid ""
 "You have reached the usage limit of your {name} plan. Use Manage ChatGPT "
@@ -998,7 +1018,7 @@ msgstr ""
 "ChatGPT para ver o seu uso nas configurações do ChatGPT."
 
 #. Translators: error when the ChatGPT plan cannot be used by NVDAIAs. {name} is ChatGPT.
-#: addon/globalPlugins/NVDAIAs/core.py:260
+#: addon/globalPlugins/NVDAIAs/core.py:263
 #, python-brace-format
 msgid ""
 "Using your {name} plan is not available for this account, workspace or "
@@ -1008,7 +1028,7 @@ msgstr ""
 "trabalho ou região. Você pode conectar com um token de API."
 
 #. Translators: error when the question uses something the ChatGPT plan does not support here. {name} is ChatGPT.
-#: addon/globalPlugins/NVDAIAs/core.py:263
+#: addon/globalPlugins/NVDAIAs/core.py:266
 #, python-brace-format
 msgid ""
 "{name}: your plan does not support part of this question here. Remove it and "
@@ -1018,24 +1038,24 @@ msgstr ""
 "e tente de novo."
 
 #. Translators: announced when the user cancels the sign in with ChatGPT.
-#: addon/globalPlugins/NVDAIAs/core.py:266
+#: addon/globalPlugins/NVDAIAs/core.py:269
 msgid "Sign-in cancelled."
 msgstr "Entrada cancelada."
 
 #. Translators: error when the user did not allow NVDAIAs on the ChatGPT page.
-#: addon/globalPlugins/NVDAIAs/core.py:269
+#: addon/globalPlugins/NVDAIAs/core.py:272
 #, python-brace-format
 msgid "Access was not allowed on the {name} page. Nothing was changed."
 msgstr "O acesso não foi permitido na página do {name}. Nada foi alterado."
 
 #. Translators: generic error from the AI provider.
-#: addon/globalPlugins/NVDAIAs/core.py:275
+#: addon/globalPlugins/NVDAIAs/core.py:278
 #, python-brace-format
 msgid "{name} returned an error."
 msgstr "O {name} retornou um erro."
 
 #. Translators: technical details appended to an error message.
-#: addon/globalPlugins/NVDAIAs/core.py:279
+#: addon/globalPlugins/NVDAIAs/core.py:282
 #, python-brace-format
 msgid "Details: {detail}"
 msgstr "Detalhes: {detail}"
@@ -1152,18 +1172,18 @@ msgid "&Cancel sign-in"
 msgstr "&Cancelar entrada"
 
 #. Translators: announced when the user cancels the sign in with ChatGPT.
-#: addon/globalPlugins/NVDAIAs/planUi.py:180
+#: addon/globalPlugins/NVDAIAs/planUi.py:187
 msgid "Cancelling the sign-in…"
 msgstr "Cancelando a entrada…"
 
 #. Translators: announced after signing in with ChatGPT. {email} is the account.
-#: addon/globalPlugins/NVDAIAs/planUi.py:197
+#: addon/globalPlugins/NVDAIAs/planUi.py:204
 #, python-brace-format
 msgid "Signed in to ChatGPT as {email}"
 msgstr "Conectado ao ChatGPT como {email}"
 
 #. Translators: confirmation before signing out of ChatGPT. {email} is the account.
-#: addon/globalPlugins/NVDAIAs/planUi.py:234
+#: addon/globalPlugins/NVDAIAs/planUi.py:241
 #, python-brace-format
 msgid ""
 "Sign out of ChatGPT ({email}) on this computer? NVDAIAs will stop using your "
@@ -1173,74 +1193,74 @@ msgstr ""
 "seu plano do ChatGPT."
 
 #. Translators: announced after signing out of ChatGPT.
-#: addon/globalPlugins/NVDAIAs/planUi.py:245
+#: addon/globalPlugins/NVDAIAs/planUi.py:252
 msgid "Signed out of ChatGPT"
 msgstr "Você saiu do ChatGPT"
 
 #. Translators: label of the token field in the settings. {name} is ChatGPT, Gemini or Claude.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:46
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:47
 #, python-brace-format
 msgid "New {name} token (leave empty to keep the saved one):"
 msgstr "Novo token do {name} (deixe vazio para manter o salvo):"
 
 #. Translators: button that opens the provider site to create a token. {name} is ChatGPT, Gemini or Claude.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:53
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:54
 #, python-brace-format
 msgid "Open {name} token page"
 msgstr "Abrir página do token do {name}"
 
 #. Translators: button that tests the token. {name} is ChatGPT, Gemini or Claude.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:56
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:57
 #, python-brace-format
 msgid "Test connection to {name}"
 msgstr "Testar conexão com o {name}"
 
 #. Translators: button that deletes the saved token. {name} is ChatGPT, Gemini or Claude.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:59
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:60
 #, python-brace-format
 msgid "Remove saved {name} token"
 msgstr "Remover token salvo do {name}"
 
 #. Translators: label of the model combo box in the settings.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:64
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:65
 msgid "Model:"
 msgstr "Modelo:"
 
 #. Translators: button that downloads the list of models available for the account. {name} is ChatGPT, Gemini or Claude.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:67
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:68
 #, python-brace-format
 msgid "Update {name} model list"
 msgstr "Atualizar lista de modelos do {name}"
 
 #. Translators: button that signs in with the ChatGPT account and uses the ChatGPT plan, without API key.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:76
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:85
 msgid "Continue with ChatGPT"
 msgstr "Continuar com o ChatGPT"
 
 #. Translators: button that signs out of the ChatGPT account (stops using the ChatGPT plan).
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:79
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:88
 msgid "Sign out of ChatGPT"
 msgstr "Sair do ChatGPT"
 
 #. Translators: button that opens the ChatGPT page with the usage of the plan.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:82
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:91
 msgid "Manage ChatGPT usage"
 msgstr "Gerenciar uso do ChatGPT"
 
 #. Translators: checkbox that chooses between the ChatGPT plan and the API token.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:86
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:95
 msgid "Use my ChatGPT plan instead of the API token when signed in"
 msgstr ""
 "Usar o meu plano do ChatGPT em vez do token de API quando estiver conectado"
 
 #. Translators: status of the sign in with ChatGPT. {email} is the account.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:133
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:142
 #, python-brace-format
 msgid "ChatGPT plan: signed in as {email}."
 msgstr "Plano do ChatGPT: conectado como {email}."
 
 #. Translators: status when not signed in with ChatGPT.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:136
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:145
 msgid ""
 "ChatGPT plan: not signed in. Continue with ChatGPT uses your plan without an "
 "API key."
@@ -1249,30 +1269,30 @@ msgstr ""
 "chave de API."
 
 #. Translators: status of a provider with a saved token. {hint} shows the last characters.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:142
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:151
 #, python-brace-format
 msgid "Status: connected, token saved (ends with {hint})."
 msgstr "Situação: conectado, token salvo (termina em {hint})."
 
 #. Translators: status of a provider without token.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:145
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:154
 msgid "Status: not connected, no token saved."
 msgstr "Situação: não conectado, nenhum token salvo."
 
 #. Translators: message when testing without token.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:161
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:196
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:170
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:205
 msgid "Paste a token first."
 msgstr "Cole um token primeiro."
 
 #. Translators: result of a successful test. {name} is the AI, {count} the number of models.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:177
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:186
 #, python-brace-format
 msgid "Connection to {name} working. {count} models available."
 msgstr "A conexão com o {name} está funcionando. {count} modelos disponíveis."
 
 #. Translators: warning when the chosen model is not available. {model} is the model id.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:180
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:189
 #, python-brace-format
 msgid ""
 "Attention: the model {model} is not in the list of your account. Choose "
@@ -1282,45 +1302,50 @@ msgstr ""
 "campo Modelo."
 
 #. Translators: reminder that a typed token is only stored after OK/Apply.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:183
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:192
 msgid "Press OK or Apply to save the new token."
 msgstr "Pressione OK ou Aplicar para salvar o novo token."
 
 #. Translators: announced while downloading the model list.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:202
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:211
 msgid "Updating the model list…"
 msgstr "Atualizando a lista de modelos…"
 
 #. Translators: announced after updating the model list. {count} is the number of models.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:215
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:224
 #, python-brace-format
 msgid "{count} models available. Choose one in the Model combo box."
 msgstr "{count} modelos disponíveis. Escolha um na caixa Modelo."
 
 #. Translators: confirmation before removing a token. {name} is ChatGPT, Gemini or Claude.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:228
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:237
 #, python-brace-format
 msgid "Remove the saved {name} token from this computer?"
 msgstr "Remover deste computador o token salvo do {name}?"
 
 #. Translators: announced after removing a token.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:238
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:247
 msgid "Token removed"
 msgstr "Token removido"
 
 #. Translators: error when the token cannot be saved. {error} is the technical error.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:251
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:260
 #, python-brace-format
 msgid "The token could not be saved: {error}"
 msgstr "Não foi possível salvar o token: {error}"
 
 #. Translators: label of the default AI combo box.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:272
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:281
 msgid "Default &AI:"
 msgstr "&IA padrão:"
 
+#. Translators: label of the combo box that chooses which AI is connected or configured below.
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:287
+msgid "AI t&o connect or configure:"
+msgstr "IA para c&onectar ou configurar:"
+
 #. Translators: label of the field with the instructions sent to the AI.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:279
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:298
 msgid ""
 "&Instructions sent to the AI with every question (leave empty for the "
 "default):"
@@ -1329,27 +1354,27 @@ msgstr ""
 "padrão):"
 
 #. Translators: button that restores the default instructions.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:286
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:305
 msgid "Res&tore default instructions"
 msgstr "&Restaurar instruções padrão"
 
 #. Translators: checkbox to read answers automatically.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:290
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:309
 msgid "&Read answers automatically when they arrive"
 msgstr "&Ler as respostas automaticamente quando chegarem"
 
 #. Translators: checkbox to beep while waiting.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:293
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:312
 msgid "&Beep while waiting for the answer"
 msgstr "&Bipar enquanto aguarda a resposta"
 
 #. Translators: checkbox to remove Markdown symbols when reading.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:296
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:315
 msgid "Remove &formatting symbols (#, *, |) when reading answers"
 msgstr "Remover símbolos de &formatação (#, *, |) ao ler as respostas"
 
 #. Translators: checkbox that turns the visual theme on or off.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:300
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:319
 msgid ""
 "Use the &visual theme in NVDAIAs windows (colours, header and focus frame)"
 msgstr ""
@@ -1357,38 +1382,44 @@ msgstr ""
 "foco)"
 
 #. Translators: checkbox that makes the text of the NVDAIAs windows bigger.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:303
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:322
 msgid "&Larger text in NVDAIAs windows"
 msgstr "Te&xto maior nas janelas do NVDAIAs"
 
 #. Translators: checkbox to keep previous conversations.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:307
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:326
 msgid "Keep &previous conversations (saved encrypted on this computer)"
 msgstr ""
 "Guardar as &conversas anteriores (salvas com criptografia neste computador)"
 
 #. Translators: label of the maximum number of saved conversations.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:311
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:330
 msgid "Maximum number of previous conversations:"
 msgstr "Número máximo de conversas anteriores:"
 
 #. Translators: button that deletes all previous conversations.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:318
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:337
 msgid "&Delete all previous conversations…"
 msgstr "&Apagar todas as conversas anteriores…"
 
 #. Translators: label of the maximum answer size (used by Claude).
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:323
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:342
 msgid "Maximum answer size in tokens (Claude):"
 msgstr "Tamanho máximo da resposta em tokens (Claude):"
 
 #. Translators: label of the time limit in seconds.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:331
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:350
 msgid "Time limit to wait for an answer (seconds):"
 msgstr "Tempo limite para aguardar a resposta (segundos):"
 
+#. Translators: announced when another AI is chosen in the settings. {name} is the AI, {status} its connection status.
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:379
+#, python-brace-format
+msgid "{name}: {status}"
+msgstr "{name}: {status}"
+
 #. Translators: confirmation before deleting all previous conversations.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:341
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:384
 msgid ""
 "Delete all previous conversations from this computer? This cannot be undone."
 msgstr ""
@@ -1396,6 +1427,6 @@ msgstr ""
 "desfeito."
 
 #. Translators: announced after deleting all previous conversations.
-#: addon/globalPlugins/NVDAIAs/settingsPanel.py:349
+#: addon/globalPlugins/NVDAIAs/settingsPanel.py:392
 msgid "All previous conversations were deleted"
 msgstr "Todas as conversas anteriores foram apagadas"

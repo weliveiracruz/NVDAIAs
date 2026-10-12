@@ -1,5 +1,14 @@
 # Changelog / Histórico de versões
 
+## 1.9.0
+
+* New AI: Groq (console.groq.com), free without credit card and with a daily limit, running open models (Llama, gpt-oss) through an OpenAI compatible API. Reads text and images (vision models); PDF, audio and video get a clear message before anything is sent.
+* Settings: new combo box "AI to connect or configure" (Alt+O). Only the chosen AI's token field, buttons and model are shown; the others are hidden and out of the tab order. Changing it announces the AI and its status.
+* GitHub Models was not added: GitHub retired the service on July 30, 2026.
+* Nova IA: Groq (console.groq.com), gratuito sem cartão de crédito e com limite diário, com modelos abertos (Llama, gpt-oss) por uma API compatível com a da OpenAI. Lê textos e imagens (modelos com visão); PDF, áudio e vídeo recebem uma mensagem clara antes de qualquer envio.
+* Configurações: nova caixa "IA para conectar ou configurar" (Alt+O). Só o campo do token, os botões e o modelo da IA escolhida aparecem; as outras ficam escondidas e fora da tabulação. Ao trocar, o NVDA diz a IA e a situação dela.
+* O GitHub Models não foi adicionado: o GitHub desligou o serviço em 30/07/2026.
+
 ## 1.8.0
 
 * Modern layout built from new design tokens: orange top bar with the title in large bold white text, light grey page, white cards with 12px rounded corners for each group of controls (with an orange accent bar next to the card title), status chip with tinted background, rounded orange focus ring, fonts chosen from the token list (brand font when installed, otherwise Segoe UI Variable or Segoe UI). Applied to the chat window, the Connect account screen and the ChatGPT sign-in window. Native controls, tab order, names and shortcuts are unchanged; the theme still turns off in Windows high contrast.

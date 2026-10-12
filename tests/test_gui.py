@@ -34,7 +34,7 @@ gui.mainFrame = gui.MainFrame()
 import NVDAIAs  # noqa: E402  (the add-on package, exactly as NVDA loads it)
 from NVDAIAs import core, providers, chatDialog, connectDialog, settingsPanel, chatgptPlan, planUi  # noqa: E402
 
-for cls, path in ((providers.OpenAIProvider, "/openai/v1"), (providers.GeminiProvider, "/gemini/v1beta"), (providers.AnthropicProvider, "/anthropic/v1")):
+for cls, path in ((providers.OpenAIProvider, "/openai/v1"), (providers.GeminiProvider, "/gemini/v1beta"), (providers.AnthropicProvider, "/anthropic/v1"), (providers.GroqProvider, "/groq/openai/v1")):
 	cls.defaultBaseUrl = BASE + path
 # Sign in with ChatGPT talks to the fake auth.openai.com and api.openai.com.
 chatgptPlan.ISSUER = BASE + "/chatgpt/auth"
@@ -960,6 +960,73 @@ def run():
 	dlg.updateStatus()
 	check("without the sign-in module ChatGPT uses the token", not core.usingPlan("openai") and core.isConnected("openai") and "connected" in dlg.statusLine.GetLabel())
 	core.chatgptPlan = realModule
+	dlg.Close()
+	pump(timeout=0.3)
+
+
+	# 22. Groq and the settings combo ----------------------------------------------------
+	frame = wx.Frame(None)
+	panel = settingsPanel.NVDAIAsSettingsPanel(frame)
+	choices = [panel.configureChoice.GetString(i) for i in range(panel.configureChoice.GetCount())]
+	check("settings combo lists the AIs, Groq included", choices == ["ChatGPT (OpenAI)", "Gemini (Google)", "Claude (Anthropic)", "Groq (free open models)"], choices)
+	check("settings combo label", panel.configureChoice.GetPrevSibling().GetLabel() == "AI t&o connect or configure:")
+	shown = [g.providerId for g in panel.groups if g.isShown()]
+	check("only the default AI is shown at first", shown == [core.conf()["provider"]], shown)
+	panel.configureChoice.SetSelection(3)
+	RECORD["spoken"].clear()
+	panel.onConfigureChanged(None)
+	shown = [g.providerId for g in panel.groups if g.isShown()]
+	g = panel.group("groq")
+	check("choosing Groq shows only the Groq controls", shown == ["groq"] and g.tokenEdit.IsShown() and not panel.group("openai").tokenEdit.IsShown(), shown)
+	check("token field label follows the chosen AI", g.tokenEdit.GetPrevSibling().GetLabel() == "New Groq token (leave empty to keep the saved one):", g.tokenEdit.GetPrevSibling().GetLabel())
+	check("change announced with the status", RECORD["spoken"][-1].startswith("Groq: Status: not connected"), RECORD["spoken"][-1:])
+	def reachable(win):
+		out = []
+		for c in win.GetChildren():
+			if not c.IsShown():
+				continue
+			if isinstance(c, wx.StaticBox):
+				out.extend(reachable(c))
+			elif c.AcceptsFocusFromKeyboard() and not isinstance(c, wx.StaticText):
+				out.append(c)
+		return out
+
+	focusablesP = reachable(panel)
+	check("hidden AIs are out of the tab order", panel.group("gemini").testButton not in focusablesP and panel.group("openai").tokenEdit not in focusablesP and g.tokenEdit in focusablesP and g.testButton in focusablesP, [type(c).__name__ for c in focusablesP])
+	g.tokenEdit.SetValue(mock_server.VALID["groq"])
+	g.onTest(None)
+	pump(lambda: g.testButton.IsEnabled(), 10)
+	check("Groq test connection works", "Connection to Groq working. 2 models available." in RECORD["messageBoxes"][-1], RECORD["messageBoxes"][-1:])
+	g.onUpdateModels(None)
+	pump(lambda: g.updateModelsButton.IsEnabled(), 10)
+	check("Groq model list from the API", g.modelCombo.GetStrings() == ["llama-3.3-70b-versatile", "openai/gpt-oss-120b"], g.modelCombo.GetStrings())
+	panel.onSave()
+	check("Groq token saved by OK", core.store().get("groq") == mock_server.VALID["groq"])
+	panel.configureChoice.SetSelection(1)
+	panel.onConfigureChanged(None)
+	check("choosing Gemini shows the Gemini controls again", [x.providerId for x in panel.groups if x.isShown()] == ["gemini"])
+	frame.Destroy()
+	cd = connectDialog.ConnectDialog(None, "groq")
+	check("connect dialog has Groq with its instructions", cd.providerId == "groq" and "console.groq.com" in cd.instructionsText.GetValue() and "gsk_" in cd.instructionsText.GetValue() and not cd.chatgptButton.IsShown())
+	cd.Destroy()
+	dlg = chatDialog.ChatDialog.showInstance(plugin.session)
+	dlg.providerChoice.SetSelection(3)
+	dlg.onProviderChanged(None)
+	check("chat window offers Groq with its models", dlg.providerId == "groq" and "llama-3.3-70b-versatile" in dlg.modelCombo.GetStrings())
+	dlg.onNewConversation(None)
+	dlg.questionEdit.SetValue("Pergunta ao Groq")
+	dlg.onSend(None)
+	pump(lambda: not plugin.session.busy, 10)
+	check("question answered by Groq", any("Groq responde: Pergunta ao Groq" in t for t in current(dlg)), current(dlg))
+	dlg.pendingAttachments = [__import__("NVDAIAs.attachments", fromlist=["x"]).Attachment("c.pdf", "pdf", "application/pdf", data=b"%PDF-1.4")]
+	dlg.questionEdit.SetValue("Resuma")
+	dlg.onSend(None)
+	pump(lambda: not plugin.session.busy, 10)
+	check("PDF refused by Groq with a clear message", any("Groq cannot read the attached file c.pdf" in m and "Groq does not read PDF" in m for m in RECORD["spoken"][-3:]), RECORD["spoken"][-3:])
+	dlg.pendingAttachments = []
+	dlg._refreshAttachments()
+	dlg.providerChoice.SetSelection(2)
+	dlg.onProviderChanged(None)
 	dlg.Close()
 	pump(timeout=0.3)
 

@@ -9,7 +9,7 @@
 <ul>
 <li>Autor: Wellington Cruz
 </li>
-<li>Versão: 1.8.0
+<li>Versão: 1.9.0
 </li>
 <li>Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 </li>
@@ -32,6 +32,7 @@
 <tr><td>ChatGPT</td><td>platform.openai.com/api-keys</td><td>Pago por uso. É cobrado à parte da assinatura do ChatGPT Plus; a conta da plataforma precisa ter crédito.</td></tr>
 <tr><td>Gemini</td><td>aistudio.google.com/app/apikey</td><td>Tem um nível gratuito, com limites de uso.</td></tr>
 <tr><td>Claude</td><td>console.anthropic.com/settings/keys</td><td>Pago por uso. É cobrado à parte da assinatura do Claude Pro; a conta do Console precisa ter crédito.</td></tr>
+<tr><td>Groq</td><td>console.groq.com/keys</td><td><strong>Gratuito</strong>, sem cartão de crédito, com limite diário de perguntas. Roda modelos abertos (Llama, gpt-oss). Lê textos e imagens; não lê PDF, áudio ou vídeo.</td></tr>
 </table>
 <p>A tela Conectar conta tem um botão que abre a página certa no navegador e mostra as instruções passo a passo para cada IA.</p>
 <h2>Instalação</h2>
@@ -126,10 +127,10 @@
 <p>O botão <strong>Anexar arquivos</strong> (Alt+X), logo depois do campo Pergunta (Tab a partir dele), abre a janela padrão do Windows para escolher arquivos. Ela mostra todos os formatos, e você pode marcar vários arquivos de uma vez.</p>
 <table border="1">
 <tr><th>Tipo de arquivo</th><th>O que acontece</th><th>IAs</th></tr>
-<tr><td>Imagens (JPG, PNG, GIF, WebP; BMP, TIFF e outras são convertidas para PNG)</td><td>Enviada como imagem</td><td>ChatGPT, Gemini e Claude</td></tr>
-<tr><td>PDF</td><td>Enviado como documento; a IA lê o texto e as imagens das páginas</td><td>ChatGPT, Gemini e Claude</td></tr>
-<tr><td>Word (.docx), Excel (.xlsx), PowerPoint (.pptx, com as anotações), OpenDocument (.odt, .ods, .odp), EPUB, RTF, HTML</td><td>O texto é extraído no seu computador e enviado</td><td>ChatGPT, Gemini e Claude</td></tr>
-<tr><td>Texto, CSV, JSON, XML, Markdown, código-fonte, legendas e qualquer outro arquivo de texto</td><td>Enviado como texto</td><td>ChatGPT, Gemini e Claude</td></tr>
+<tr><td>Imagens (JPG, PNG, GIF, WebP; BMP, TIFF e outras são convertidas para PNG)</td><td>Enviada como imagem</td><td>ChatGPT, Gemini e Claude; Groq com modelos que leem imagem</td></tr>
+<tr><td>PDF</td><td>Enviado como documento; a IA lê o texto e as imagens das páginas</td><td>ChatGPT, Gemini e Claude (o Groq não lê)</td></tr>
+<tr><td>Word (.docx), Excel (.xlsx), PowerPoint (.pptx, com as anotações), OpenDocument (.odt, .ods, .odp), EPUB, RTF, HTML</td><td>O texto é extraído no seu computador e enviado</td><td>Todas</td></tr>
+<tr><td>Texto, CSV, JSON, XML, Markdown, código-fonte, legendas e qualquer outro arquivo de texto</td><td>Enviado como texto</td><td>Todas</td></tr>
 <tr><td>Áudio (MP3, WAV, M4A, OGG, FLAC...) e vídeo (MP4, MOV, WEBM...)</td><td>Enviado para a IA ouvir ou assistir</td><td>Só o Gemini</td></tr>
 <tr><td>Office antigo (.doc, .xls, .ppt)</td><td>Não é lido. O NVDAIAs pede para salvar como .docx, .xlsx, .pptx ou PDF</td><td>-</td></tr>
 <tr><td>Programas, arquivos compactados e outros binários</td><td>Não é lido. O NVDAIAs explica e sugere converter</td><td>-</td></tr>
@@ -229,9 +230,11 @@
 <ul>
 <li><strong>IA padrão</strong>: a IA usada quando a janela abre.
 </li>
+<li><strong>IA para conectar ou configurar</strong> (Alt+O): caixa de combinação que escolhe qual IA aparece logo abaixo. O campo do token, os botões e o modelo mudam conforme a escolha, e as outras IAs ficam escondidas (fora da tabulação). Ao trocar, o NVDA diz a IA e a situação dela.
+</li>
 <li>No grupo do <strong>ChatGPT</strong>, além do token: <strong>Plano do ChatGPT</strong> (diz se você entrou e com qual e-mail), <strong>Continuar com o ChatGPT</strong>, <strong>Sair do ChatGPT</strong> (encerra e revoga o acesso na OpenAI), <strong>Gerenciar uso do ChatGPT</strong> e <strong>Usar o meu plano do ChatGPT em vez do token de API quando estiver conectado</strong>. Testar conexão e Atualizar lista de modelos usam o plano quando essa opção está marcada e nenhum token novo foi digitado.
 </li>
-<li>Para <strong>cada IA</strong> (ChatGPT, Gemini e Claude):
+<li>Para a IA escolhida (ChatGPT, Gemini, Claude ou Groq):
 <ul>
 <li><strong>Situação</strong>: diz se há um token salvo e mostra só os 4 últimos caracteres dele.
 </li>
@@ -303,6 +306,13 @@
 <tr><td>"O uso do seu plano do ChatGPT não está disponível"</td><td>A conta, o espaço de trabalho ou a região não permitem. Use um token de API.</td></tr>
 </table>
 <h2>Histórico de versões</h2>
+<h3>1.9.0</h3>
+<ul>
+<li>Nova IA: Groq, gratuito (sem cartão de crédito) com limite diário, com modelos abertos como Llama e gpt-oss.
+</li>
+<li>Configurações: a IA a conectar ou configurar é escolhida numa caixa de combinação, e só o campo do token, os botões e o modelo dela aparecem.
+</li>
+</ul>
 <h3>1.8.0</h3>
 <ul>
 <li>Layout moderno: barra superior laranja, cartões brancos com cantos arredondados, chip de situação, anel de foco arredondado, novos design tokens (cores, fontes, espaçamentos, raios) e tom de voz nos textos em português. A leitura pelo NVDA, a ordem de tabulação e os atalhos não mudaram.

@@ -1,7 +1,7 @@
 # NVDAIAs – Converse com o ChatGPT, o Gemini e o Claude pelo NVDA
 
 * Autor: Wellington Cruz
-* Versão: 1.8.0
+* Versão: 1.9.0
 * Compatibilidade: NVDA 2024.1 ou posterior (testado até o NVDA 2026.2), Windows 10 e 11
 * Licença: GNU General Public License, versão 2
 
@@ -23,6 +23,7 @@ Você precisa conectar apenas as IAs que quiser usar. Pode conectar uma, duas ou
 | ChatGPT | platform.openai.com/api-keys | Pago por uso. É cobrado à parte da assinatura do ChatGPT Plus; a conta da plataforma precisa ter crédito. |
 | Gemini | aistudio.google.com/app/apikey | Tem um nível gratuito, com limites de uso. |
 | Claude | console.anthropic.com/settings/keys | Pago por uso. É cobrado à parte da assinatura do Claude Pro; a conta do Console precisa ter crédito. |
+| Groq | console.groq.com/keys | **Gratuito**, sem cartão de crédito, com limite diário de perguntas. Roda modelos abertos (Llama, gpt-oss). Lê textos e imagens; não lê PDF, áudio ou vídeo. |
 
 A tela Conectar conta tem um botão que abre a página certa no navegador e mostra as instruções passo a passo para cada IA.
 
@@ -100,10 +101,10 @@ O botão **Anexar arquivos** (Alt+X), logo depois do campo Pergunta (Tab a parti
 
 | Tipo de arquivo | O que acontece | IAs |
 |---|---|---|
-| Imagens (JPG, PNG, GIF, WebP; BMP, TIFF e outras são convertidas para PNG) | Enviada como imagem | ChatGPT, Gemini e Claude |
-| PDF | Enviado como documento; a IA lê o texto e as imagens das páginas | ChatGPT, Gemini e Claude |
-| Word (.docx), Excel (.xlsx), PowerPoint (.pptx, com as anotações), OpenDocument (.odt, .ods, .odp), EPUB, RTF, HTML | O texto é extraído no seu computador e enviado | ChatGPT, Gemini e Claude |
-| Texto, CSV, JSON, XML, Markdown, código-fonte, legendas e qualquer outro arquivo de texto | Enviado como texto | ChatGPT, Gemini e Claude |
+| Imagens (JPG, PNG, GIF, WebP; BMP, TIFF e outras são convertidas para PNG) | Enviada como imagem | ChatGPT, Gemini e Claude; Groq com modelos que leem imagem |
+| PDF | Enviado como documento; a IA lê o texto e as imagens das páginas | ChatGPT, Gemini e Claude (o Groq não lê) |
+| Word (.docx), Excel (.xlsx), PowerPoint (.pptx, com as anotações), OpenDocument (.odt, .ods, .odp), EPUB, RTF, HTML | O texto é extraído no seu computador e enviado | Todas |
+| Texto, CSV, JSON, XML, Markdown, código-fonte, legendas e qualquer outro arquivo de texto | Enviado como texto | Todas |
 | Áudio (MP3, WAV, M4A, OGG, FLAC...) e vídeo (MP4, MOV, WEBM...) | Enviado para a IA ouvir ou assistir | Só o Gemini |
 | Office antigo (.doc, .xls, .ppt) | Não é lido. O NVDAIAs pede para salvar como .docx, .xlsx, .pptx ou PDF | - |
 | Programas, arquivos compactados e outros binários | Não é lido. O NVDAIAs explica e sugere converter | - |
@@ -200,8 +201,9 @@ Todos os comandos podem ser alterados em menu do NVDA > Preferências > Definir 
 Menu do NVDA > Preferências > Configurações > categoria **NVDAIAs**. Também pelo botão Configurações da janela de conversa.
 
 * **IA padrão**: a IA usada quando a janela abre.
+* **IA para conectar ou configurar** (Alt+O): caixa de combinação que escolhe qual IA aparece logo abaixo. O campo do token, os botões e o modelo mudam conforme a escolha, e as outras IAs ficam escondidas (fora da tabulação). Ao trocar, o NVDA diz a IA e a situação dela.
 * No grupo do **ChatGPT**, além do token: **Plano do ChatGPT** (diz se você entrou e com qual e-mail), **Continuar com o ChatGPT**, **Sair do ChatGPT** (encerra e revoga o acesso na OpenAI), **Gerenciar uso do ChatGPT** e **Usar o meu plano do ChatGPT em vez do token de API quando estiver conectado**. Testar conexão e Atualizar lista de modelos usam o plano quando essa opção está marcada e nenhum token novo foi digitado.
-* Para **cada IA** (ChatGPT, Gemini e Claude):
+* Para a IA escolhida (ChatGPT, Gemini, Claude ou Groq):
   * **Situação**: diz se há um token salvo e mostra só os 4 últimos caracteres dele.
   * **Novo token**: cole aqui para trocar o token. Vazio mantém o salvo.
   * **Abrir página do token** (da IA do grupo).
@@ -248,6 +250,11 @@ Os tokens só são gravados quando você pressiona OK ou Aplicar.
 | "O uso do seu plano do ChatGPT não está disponível" | A conta, o espaço de trabalho ou a região não permitem. Use um token de API. |
 
 ## Histórico de versões
+
+### 1.9.0
+
+* Nova IA: Groq, gratuito (sem cartão de crédito) com limite diário, com modelos abertos como Llama e gpt-oss.
+* Configurações: a IA a conectar ou configurar é escolhida numa caixa de combinação, e só o campo do token, os botões e o modelo dela aparecem.
 
 ### 1.8.0
 

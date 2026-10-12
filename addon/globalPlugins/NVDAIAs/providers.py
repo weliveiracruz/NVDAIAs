@@ -443,7 +443,42 @@ class AnthropicProvider(BaseProvider):
 		return err
 
 
-PROVIDERS = (OpenAIProvider, GeminiProvider, AnthropicProvider)
+# ---------------------------------------------------------------------------
+# Groq (open models, free tier) - OpenAI compatible
+# ---------------------------------------------------------------------------
+
+class GroqProvider(OpenAIProvider):
+	"""Groq runs open models (Llama, gpt-oss...) very fast and has a free tier
+	(no credit card). Same request format as OpenAI's Chat Completions."""
+
+	id = "groq"
+	name = "Groq"
+	tokenUrl = "https://console.groq.com/keys"
+	defaultBaseUrl = "https://api.groq.com/openai/v1"
+	defaultModel = "llama-3.3-70b-versatile"
+	suggestedModels = ("llama-3.3-70b-versatile", "openai/gpt-oss-120b", "openai/gpt-oss-20b", "llama-3.1-8b-instant")
+	#: Models that are not chat models (speech, safety classifiers...).
+	_NOT_CHAT = ("whisper", "tts", "guard", "distil", "embed")
+
+	def buildBody(self, messages, systemPrompt=""):
+		# Groq has no PDF input: only images (vision models) and text.
+		for m in messages:
+			for a in m.attachments:
+				if a.kind not in ("image", "text"):
+					raise ProviderError("attachment", a.name)
+		return super().buildBody(messages, systemPrompt)
+
+	def listModels(self):
+		data = self._request("GET", "/models")
+		ids = [
+			m.get("id", "") for m in data.get("data", [])
+			if isinstance(m, dict) and m.get("active", True) is not False
+		]
+		chat = [i for i in ids if i and not any(x in i.lower() for x in self._NOT_CHAT)]
+		return sorted(chat or ids)
+
+
+PROVIDERS = (OpenAIProvider, GeminiProvider, AnthropicProvider, GroqProvider)
 PROVIDER_IDS = tuple(p.id for p in PROVIDERS)
 
 

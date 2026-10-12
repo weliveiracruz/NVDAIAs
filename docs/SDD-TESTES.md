@@ -6,7 +6,7 @@ Documento de especificação dos testes (Software Design Document) do complement
 
 Garantir, a cada nova versão, que o NVDAIAs:
 
-1. **funciona**: conversa com ChatGPT, Gemini e Claude, anexos, histórico e ações das mensagens (testes funcionais, prefixo FUN);
+1. **funciona**: conversa com ChatGPT, Gemini, Claude e Groq, anexos, histórico e ações das mensagens (testes funcionais, prefixo FUN);
 2. **é acessível** para quem usa o NVDA e para quem tem baixa visão (testes de acessibilidade, prefixo ACE);
 3. **não expõe o usuário**: tokens, conversas, arquivos e rede (testes de vulnerabilidade, prefixo SEG).
 
@@ -73,6 +73,8 @@ O executor `tests/run_all.py` roda todas as suítes, conta testes, aprovados e f
 | FUN-25 | Erros do plano | Limite de uso (oferece Gerenciar uso), plano não elegível, recurso não aceito, indisponível, entrada expirada, acesso negado, cancelamento, tempo esgotado | pure, gui |
 | FUN-27 | Python do NVDA | O complemento só importa módulos do Python que o NVDA traz; a entrada com o ChatGPT funciona com secrets, hmac, http.server e socketserver bloqueados; se o módulo do ChatGPT falhar, o resto funciona com tokens | pure, gui |
 | FUN-26 | Plano ou token | Opção nas configurações escolhe; modelos do plano guardados à parte; token salvo em Conectar conta volta para o token; Sair do ChatGPT revoga e apaga a sessão | gui |
+| FUN-28 | Groq | Resposta e histórico pela API compatível com a OpenAI; só modelos de chat ativos na lista; textos e imagens aceitos, PDF/áudio/vídeo recusados antes de enviar; erros de token, limite e modelo | pure, gui |
+| FUN-29 | IA a configurar nas configurações | Caixa lista as IAs; só a escolhida aparece; o rótulo do token muda; testar, atualizar modelos e salvar funcionam na IA escolhida | gui |
 
 ## 6. Casos de teste de acessibilidade (ACE)
 
@@ -101,6 +103,7 @@ Referências: WCAG 2.2 nível AA, guia de complementos do NVDA e as práticas de
 | ACE-19 | Ramos da árvore | Conversas anteriores e Conversa atual dizem quantos itens têm; Enter e setas expandem e recolhem |
 | ACE-20 | Continuar com o ChatGPT | Botão logo depois da caixa IA, com letra de atalho, fora da tabulação para outras IAs; janela de espera com título, foco na explicação e Cancelar entrada; entrada, saída e limite anunciados; linha de situação diz que o plano está em uso; Gerenciar uso do ChatGPT só aparece com o plano |
 | ACE-21 | Layout moderno | Cartões, chip de situação e anel de foco só pintados (sem foco, sem mudar a ordem de tabulação); todo controle com anel fica sobre um cartão branco; cartões não se sobrepõem; rótulos dos cartões com a cor do cartão; fonte cai para uma instalada; tokens de raio presentes |
+| ACE-22 | Configurações com uma IA por vez | Caixa com letra de atalho (Alt+O); IAs escondidas fora da tabulação; troca anunciada com a situação; nomes únicos nos botões da IA visível |
 
 ## 7. Casos de teste de vulnerabilidade (SEG)
 

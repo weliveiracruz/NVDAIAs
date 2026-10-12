@@ -72,6 +72,8 @@ waiting.Destroy()
 frame = wx.Frame(None)
 panel = settingsPanel.NVDAIAsSettingsPanel(frame)
 checkUnique("settings (top level)", panel)
+if panel.configureChoice.GetPrevSibling().GetLabel() != "IA para c&onectar ou configurar:" or "Groq (modelos abertos, gratuito)" not in [panel.configureChoice.GetString(i) for i in range(panel.configureChoice.GetCount())]:
+	failures.append("groq and settings combo not translated")
 for kind in ("auth", "quota", "network", "timeout", "model", "blocked", "server", "other", "signin", "planLimit", "planNotEligible", "unsupported", "cancelled", "denied", "browser"):
 	msg = core.errorMessage(providers.ProviderError(kind, "detalhe"), "ChatGPT" if kind[:4] in ("sign", "plan", "unsu", "canc", "deni", "brow") else "Claude")
 	print(kind, "->", msg)
@@ -94,6 +96,7 @@ CHECKS = {
 	"pt_BR error messages without placeholders": "placeholder left",
 	"pt_BR default instructions": "default instructions",
 	"pt_BR Continue with ChatGPT": "chatgpt sign-in not translated",
+	"pt_BR Groq and the settings combo": "groq and settings combo not translated",
 	"unique Alt shortcuts: sign-in waiting window": "sign-in waiting window: duplicated",
 }
 failedChecks = [name for name, key in CHECKS.items() if any(key in f for f in failures)]

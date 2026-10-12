@@ -35,7 +35,7 @@ PNG = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4
 
 def make(providerId, token=None, model=None, **kw):
 	cls = providers.getProviderClass(providerId)
-	base = {"openai": "/openai/v1", "gemini": "/gemini/v1beta", "anthropic": "/anthropic/v1"}[providerId]
+	base = {"openai": "/openai/v1", "gemini": "/gemini/v1beta", "anthropic": "/anthropic/v1", "groq": "/groq/openai/v1"}[providerId]
 	return cls(mock_server.VALID[providerId] if token is None else token, model=model, baseUrl=BASE + base, timeout=5, **kw)
 
 
@@ -485,7 +485,7 @@ class AttachmentTests(unittest.TestCase):
 		txt = self.load("notas.txt", b"anotacoes")
 		img = attachments.Attachment.image(PNG, name="foto.png")
 		msg = providers.Message("user", "Resuma", attachments=[pdf, txt, img])
-		for pid in providers.PROVIDER_IDS:
+		for pid in ("openai", "gemini", "anthropic"):
 			with self.subTest(pid):
 				self.assertTrue(make(pid).chat([msg], "sys"))
 		self.assertEqual(mock_server.LAST_ATTACHMENTS["openai"], ["pdf", "texto", "imagem"])
@@ -497,7 +497,7 @@ class AttachmentTests(unittest.TestCase):
 		msg = providers.Message("user", "Transcreva", attachments=[audio])
 		self.assertTrue(make("gemini").chat([msg], "sys"))
 		self.assertEqual(mock_server.LAST_ATTACHMENTS["gemini"], ["audio/mp3"])
-		for pid in ("openai", "anthropic"):
+		for pid in ("openai", "anthropic", "groq"):
 			mock_server.REQUESTS.clear()
 			with self.assertRaises(providers.ProviderError) as cm:
 				make(pid).chat([msg], "sys")
@@ -534,6 +534,59 @@ NVDA_PROVEN_STDLIB = {
 NVDA_MODULES = {"addonHandler", "addonStore.models.status", "api", "config", "globalPluginHandler", "globalVars",
 	"gui", "gui.settingsDialogs", "gui.guiHelper", "logHandler", "scriptHandler", "tones", "ui", "wx", "screenBitmap",
 	"NVDAObjects", "controlTypes", "textInfos", "locationHelper", "winUser", "nvwave"}
+
+
+class GroqTests(unittest.TestCase):
+	"""Groq: free tier, OpenAI compatible, text and images only."""
+
+	def setUp(self):
+		mock_server.REQUESTS.clear()
+		mock_server.FORCE.clear()
+
+	def test_answer_and_history(self):
+		msgs = [providers.Message("user", "Oi"), providers.Message("assistant", "Olá!"), providers.Message("user", "Tudo bem?")]
+		self.assertEqual(make("groq").chat(msgs, "sys"), "Groq responde: Tudo bem? (3 mensagens)")
+		req = mock_server.REQUESTS[-1]
+		self.assertEqual(req["path"], "/groq/openai/v1/chat/completions")
+		self.assertEqual(req["headers"]["Authorization"], "Bearer " + mock_server.VALID["groq"])
+		self.assertEqual(req["body"]["model"], "llama-3.3-70b-versatile")
+
+	def test_defaults(self):
+		cls = providers.getProviderClass("groq")
+		self.assertEqual(cls.defaultBaseUrl, "https://api.groq.com/openai/v1")
+		self.assertEqual(cls.tokenUrl, "https://console.groq.com/keys")
+		self.assertIn(cls.defaultModel, cls.suggestedModels)
+		self.assertEqual(providers.PROVIDER_IDS[-1], "groq", "new AIs go to the end, existing positions stay")
+
+	def test_models_only_active_chat_models(self):
+		self.assertEqual(make("groq").listModels(), ["llama-3.3-70b-versatile", "openai/gpt-oss-120b"])
+		models, found = make("groq").testConnection()
+		self.assertTrue(found)
+
+	def test_text_and_image_but_not_pdf(self):
+		txt = attachments.Attachment("a.txt", "text", "text/plain", text="x")
+		img = attachments.Attachment.image(PNG, name="foto.png")
+		self.assertTrue(make("groq", model="openai/gpt-oss-120b").chat([providers.Message("user", "Veja", attachments=[txt, img])]))
+		self.assertEqual(mock_server.LAST_ATTACHMENTS["groq"], ["texto", "imagem"])
+		pdf = attachments.Attachment("c.pdf", "pdf", "application/pdf", data=b"%PDF-1.4")
+		mock_server.REQUESTS.clear()
+		with self.assertRaises(providers.ProviderError) as cm:
+			make("groq").chat([providers.Message("user", "x", attachments=[pdf])])
+		self.assertEqual((cm.exception.kind, cm.exception.detail), ("attachment", "c.pdf"))
+		self.assertEqual(mock_server.REQUESTS, [], "nothing is sent")
+
+	def test_errors(self):
+		with self.assertRaises(providers.ProviderError) as cm:
+			make("groq", token="gsk_errado").chat([providers.Message("user", "x")])
+		self.assertEqual(cm.exception.kind, "auth")
+		mock_server.FORCE["groq"] = (429, {"error": {"message": "Rate limit reached for model llama-3.3-70b-versatile on requests per day (RPD)", "type": "tokens", "code": "rate_limit_exceeded"}})
+		with self.assertRaises(providers.ProviderError) as cm:
+			make("groq").chat([providers.Message("user", "x")])
+		self.assertEqual(cm.exception.kind, "quota")
+		mock_server.FORCE["groq"] = (404, {"error": {"message": "The model `xyz` does not exist or you do not have access to it.", "code": "model_not_found"}})
+		with self.assertRaises(providers.ProviderError) as cm:
+			make("groq").chat([providers.Message("user", "x")])
+		self.assertEqual(cm.exception.kind, "model")
 
 
 class NvdaCompatibilityTests(unittest.TestCase):

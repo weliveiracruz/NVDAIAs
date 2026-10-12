@@ -39,9 +39,9 @@ gui.mainFrame = gui.MainFrame()
 import NVDAIAs  # noqa: E402
 from NVDAIAs import attachments, chatDialog, core, credentials, history, providers  # noqa: E402
 
-for cls, path in ((providers.OpenAIProvider, "/openai/v1"), (providers.GeminiProvider, "/gemini/v1beta"), (providers.AnthropicProvider, "/anthropic/v1")):
+for cls, path in ((providers.OpenAIProvider, "/openai/v1"), (providers.GeminiProvider, "/gemini/v1beta"), (providers.AnthropicProvider, "/anthropic/v1"), (providers.GroqProvider, "/groq/openai/v1")):
 	cls.defaultBaseUrl = BASE + path
-REAL_BASES = {"openai": "https://api.openai.com/v1", "gemini": "https://generativelanguage.googleapis.com/v1beta", "anthropic": "https://api.anthropic.com/v1"}
+REAL_BASES = {"openai": "https://api.openai.com/v1", "gemini": "https://generativelanguage.googleapis.com/v1beta", "anthropic": "https://api.anthropic.com/v1", "groq": "https://api.groq.com/openai/v1"}
 
 R = Recorder("security (test_security)")
 

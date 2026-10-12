@@ -1,7 +1,7 @@
 # NVDAIAs – Chat with ChatGPT, Gemini and Claude from NVDA
 
 * Author: Wellington Cruz
-* Version: 1.8.0
+* Version: 1.9.0
 * Compatibility: NVDA 2024.1 or later (last tested with NVDA 2026.2), Windows 10 and 11
 * License: GNU General Public License, version 2
 * Documentation in Portuguese (Brazil): docs/pt_BR/readme.md
@@ -22,6 +22,7 @@ There are two ways to connect, both on the **Connect account** screen:
 | ChatGPT | platform.openai.com/api-keys | Pay per use, billed separately from ChatGPT Plus; the platform account needs credit. |
 | Gemini | aistudio.google.com/app/apikey | Has a free tier with usage limits. |
 | Claude | console.anthropic.com/settings/keys | Pay per use, billed separately from Claude Pro; the Console account needs credit. |
+| Groq | console.groq.com/keys | **Free**, no credit card, with a daily limit of questions. Runs open models (Llama, gpt-oss). Reads text and images; not PDF, audio or video. |
 
 ## First use
 
@@ -79,10 +80,10 @@ Enter (or the Applications key, Shift+F10 or the **Actions for this message** bu
 
 | File | What happens | AIs |
 |---|---|---|
-| Images (JPG, PNG, GIF, WebP; BMP, TIFF and others are converted to PNG) | Sent as an image | ChatGPT, Gemini, Claude |
-| PDF | Sent as a document | ChatGPT, Gemini, Claude |
-| .docx, .xlsx, .pptx (with notes), .odt, .ods, .odp, EPUB, RTF, HTML | Text extracted on this computer | ChatGPT, Gemini, Claude |
-| Text, CSV, JSON, XML, Markdown, source code and any other text file | Sent as text | ChatGPT, Gemini, Claude |
+| Images (JPG, PNG, GIF, WebP; BMP, TIFF and others are converted to PNG) | Sent as an image | ChatGPT, Gemini, Claude; Groq with vision models |
+| PDF | Sent as a document | ChatGPT, Gemini, Claude (not Groq) |
+| .docx, .xlsx, .pptx (with notes), .odt, .ods, .odp, EPUB, RTF, HTML | Text extracted on this computer | All |
+| Text, CSV, JSON, XML, Markdown, source code and any other text file | Sent as text | All |
 | Audio and video | Sent to be listened to or watched | Gemini only |
 | .doc, .xls, .ppt, programs, archives and other binaries | Not read; a message explains how to convert | - |
 
@@ -110,7 +111,7 @@ All commands can be changed in NVDA menu > Preferences > Input gestures, categor
 
 ## Settings
 
-NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for ChatGPT, the ChatGPT plan controls described above; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; keep previous conversations, maximum number and Delete all previous conversations; use the visual theme; larger text; maximum answer size for Claude; time limit.
+NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; **AI to connect or configure** (Alt+O), a combo box that chooses which AI is shown below: its token field, buttons and model change with the choice, and the other AIs are hidden; for ChatGPT, the ChatGPT plan controls described above; for each AI the token status, a field to paste a new token, Open page to generate token, Test connection, Remove saved token, Model and Update model list; the instructions sent to the AI with every question (with Restore default instructions); read answers automatically; beep while waiting; remove formatting symbols; keep previous conversations, maximum number and Delete all previous conversations; use the visual theme; larger text; maximum answer size for Claude; time limit.
 
 ## Privacy and security
 
@@ -122,6 +123,11 @@ NVDA menu > Preferences > Settings > **NVDAIAs**: default AI; for ChatGPT, the C
 * Conversations are saved automatically after each answer in the `NVDAIAs-history` folder of the NVDA configuration, **encrypted with DPAPI** like the tokens (screenshots and attached files included). Delete one with the Delete key, delete all in the settings or turn the history off. The history is kept when the add-on is updated and deleted when it is uninstalled. **Save conversation** writes a plain text file.
 
 ## Changes
+
+### 1.9.0
+
+* New AI: Groq, free (no credit card) with a daily limit, with open models such as Llama and gpt-oss.
+* Settings: the AI to connect or configure is chosen in a combo box, and only its token field, buttons and model are shown.
 
 ### 1.8.0
 

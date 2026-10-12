@@ -40,10 +40,11 @@ def planAvailable():
 CONFIG_SECTION = "NVDAIAs"
 
 confspec = {
-	"provider": 'option("openai", "gemini", "anthropic", default="openai")',
+	"provider": 'option("openai", "gemini", "anthropic", "groq", default="openai")',
 	"model_openai": 'string(default="")',
 	"model_gemini": 'string(default="")',
 	"model_anthropic": 'string(default="")',
+	"model_groq": 'string(default="")',
 	# Model used with "Sign in with ChatGPT" (the plan has its own list of models).
 	"model_openai_plan": 'string(default="")',
 	# When signed in with ChatGPT, use the plan instead of the API token.
@@ -80,6 +81,8 @@ def providerLabel(providerId):
 		"gemini": _("Gemini (Google)"),
 		# Translators: name of the Anthropic provider, shown in combo boxes.
 		"anthropic": _("Claude (Anthropic)"),
+		# Translators: name of the Groq provider (free open models), shown in combo boxes.
+		"groq": _("Groq (free open models)"),
 	}
 	return labels.get(providerId, providerId)
 
@@ -243,7 +246,7 @@ def errorMessage(err, providerName):
 		msg = _("{name} did not answer this question (blocked by the provider).")
 	elif kind == "attachment":
 		# Translators: error when the AI cannot read an attached file. {name} is the AI, {file} the file name.
-		msg = _("{name} cannot read the attached file {file}. Audio and video only work with Gemini: choose Gemini in the AI box or remove the file.")
+		msg = _("{name} cannot read the attached file {file}. Choose another AI in the AI box (only Gemini reads audio and video; Groq does not read PDF) or remove the file.")
 		return msg.format(name=providerName, file=detail)
 	elif kind == "server":
 		# Translators: error when the provider has a temporary problem.

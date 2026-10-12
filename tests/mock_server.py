@@ -15,7 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import _testkey
 
-VALID = {"openai": "sk-test-openai-123456", "gemini": "AIza-test-gemini-123456", "anthropic": "sk-ant-test-123456"}
+VALID = {"openai": "sk-test-openai-123456", "gemini": "AIza-test-gemini-123456", "anthropic": "sk-ant-test-123456", "groq": "gsk_test_groq_123456"}
 REQUESTS = []
 #: Optional overrides: {"openai": (status, body)} to force an answer.
 FORCE = {}
@@ -138,6 +138,8 @@ class Handler(BaseHTTPRequestHandler):
 			return self._gemini(method, path[len("/gemini"):], body)
 		if path.startswith("/anthropic/"):
 			return self._anthropic(method, path[len("/anthropic"):], body)
+		if path.startswith("/groq/"):
+			return self._groq(method, path[len("/groq"):], body)
 		if path.startswith("/chatgpt/auth/"):
 			return self._chatgptAuth(method, path[len("/chatgpt/auth"):], body)
 		if path.startswith("/chatgpt/v1/"):
@@ -252,6 +254,37 @@ class Handler(BaseHTTPRequestHandler):
 			text = content[-1]["text"]
 			return self._send(200, {"type": "message", "role": "assistant", "content": [{"type": "text", "text": "Claude responde: %s (%d mensagens)" % (text, len(msgs))}], "stop_reason": "end_turn"})
 		self._send(404, {"type": "error", "error": {"type": "not_found_error", "message": "not found"}})
+
+	# Groq (OpenAI compatible) ---------------------------------------------------
+	def _groq(self, method, path, body):
+		if FORCE.get("groq"):
+			return self._send(*FORCE["groq"])
+		if self.headers.get("Authorization") != "Bearer " + VALID["groq"]:
+			return self._send(401, {"error": {"message": "Invalid API Key", "type": "invalid_request_error", "code": "invalid_api_key"}})
+		if method == "GET" and path == "/openai/v1/models":
+			return self._send(200, {"object": "list", "data": [
+				{"id": "llama-3.3-70b-versatile", "active": True},
+				{"id": "openai/gpt-oss-120b", "active": True},
+				{"id": "whisper-large-v3", "active": True},
+				{"id": "meta-llama/llama-prompt-guard-2-86m", "active": True},
+				{"id": "old-model", "active": False},
+			]})
+		if method == "POST" and path == "/openai/v1/chat/completions":
+			assert body["model"] in ("llama-3.3-70b-versatile", "openai/gpt-oss-120b"), body["model"]
+			assert "temperature" not in body and "max_tokens" not in body
+			msgs = body["messages"]
+			if msgs[0]["role"] == "system":
+				msgs = msgs[1:]
+			last = msgs[-1]["content"]
+			kinds = []
+			if isinstance(last, list):
+				for part in last[:-1]:
+					assert part["type"] in ("image_url", "text"), "Groq does not take files"
+					kinds.append("imagem" if part["type"] == "image_url" else "texto")
+				last = last[-1]["text"]
+			LAST_ATTACHMENTS["groq"] = kinds
+			return self._send(200, {"choices": [{"index": 0, "message": {"role": "assistant", "content": "Groq responde: %s (%d mensagens)" % (last, len(msgs))}, "finish_reason": "stop"}]})
+		self._send(404, {"error": {"message": "not found"}})
 
 	# Sign in with ChatGPT ------------------------------------------------------
 	def _issuer(self):

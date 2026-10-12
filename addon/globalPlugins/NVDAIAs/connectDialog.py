@@ -55,6 +55,13 @@ def instructions(providerId):
 			"4. Copy the key (it starts with sk-ant-) and paste it in the Token field below.\n"
 			"Note: API usage is billed separately from the Claude Pro subscription; the account needs credit."
 		),
+		# Translators: steps to create a Groq API key.
+		"groq": _("1. Press the button \"Open page to generate token\". The Groq console (console.groq.com) opens in your browser.\n"
+			"2. Sign in or create a free account (e-mail, Google or GitHub).\n"
+			"3. Choose \"Create API Key\", give it a name such as NVDAIAs and confirm.\n"
+			"4. Copy the key (it starts with gsk_) and paste it in the Token field below.\n"
+			"Note: Groq is free, without credit card, with a daily limit of questions. It runs open models (Llama, gpt-oss); it reads text and images, but not PDF, audio or video."
+		),
 	}
 	# Translators: first line of the connection instructions. {name} is ChatGPT, Gemini or Claude.
 	head = _("To connect NVDAIAs to {name} you need an access token (API key) generated on the provider's site.").format(name=cls.name)

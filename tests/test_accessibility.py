@@ -34,7 +34,7 @@ gui.mainFrame = gui.MainFrame()
 import NVDAIAs  # noqa: E402
 from NVDAIAs import core, providers, chatDialog, connectDialog, settingsPanel, textutils, theme, chatgptPlan, planUi  # noqa: E402
 
-for cls, path in ((providers.OpenAIProvider, "/openai/v1"), (providers.GeminiProvider, "/gemini/v1beta"), (providers.AnthropicProvider, "/anthropic/v1")):
+for cls, path in ((providers.OpenAIProvider, "/openai/v1"), (providers.GeminiProvider, "/gemini/v1beta"), (providers.AnthropicProvider, "/anthropic/v1"), (providers.GroqProvider, "/groq/openai/v1")):
 	cls.defaultBaseUrl = BASE + path
 
 R = Recorder("accessibility (test_accessibility)")
